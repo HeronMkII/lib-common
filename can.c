@@ -1,7 +1,7 @@
 /*
 Author: Shimi Smith
 
-Code for sending and recievign can messages
+Code for sending and recieving can messages
 -------------------------------------------
 
 How to send a can message
