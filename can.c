@@ -31,6 +31,8 @@ void can_send_message(uint8_t data[], uint8_t size, uint16_t id){
 
 }
 
+
+
 /*
 Initializes a mob for recieving can messages
 --------------------------------------------
