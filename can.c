@@ -30,7 +30,7 @@ Things to add and/or change - I'll get started on these in the near future
 #include "uart.h"
 #include "log.h"
 
-void can_send_message(uint8_t data[], uint8_t size, uint8_t id){  // Sends a maximum of 8
+void can_send_message(uint8_t data[], uint8_t size, uint16_t id){  // Sends a maximum of 8
 
 	st_cmd_t message;  // message object
 
