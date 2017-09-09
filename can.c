@@ -24,9 +24,9 @@ void can_send_message(uint8_t data[], uint8_t size, uint16_t id){
 	message.dlc = size;  // Number of bytes being sent (8 max)
 	message.id.std = id;  // populate ID field with ID Tag
 	message.cmd = CMD_TX_DATA;  // assign this as a transmitting message object.
-	
+
 	while(can_cmd(&message) != CAN_CMD_ACCEPTED);  // wait for MOb to configure
-	
+
 	while(can_get_status(&message) == CAN_STATUS_NOT_COMPLETED);  // wait for message to send or fail
 
 }
@@ -41,7 +41,7 @@ recieved_data[] - an array that will hold the data recieved
 size - the number of bytes the mob will recieve (maximum 8)
 id - this mob is programmmed to recieve can messages with this id, i.e this id must be the same as the id of the can messages you wish to recieve
 */
-void init_rx_mob(st_cmd_t* mob, uint8_t recieved_data[], uint8_t size, uint8_t id){
+void init_rx_mob(st_cmd_t* mob, uint8_t recieved_data[], uint8_t size, uint16_t id){
 
 	mob->pt_data = recieved_data;
 	mob->status = 0;  // clear status
