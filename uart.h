@@ -1,4 +1,5 @@
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -9,7 +10,8 @@
 #define UART_TX PD3
 #define UART_RX PD4
 
+void put_char(const unsigned char);
+char get_char();
 void init_uart();
-void send_uart(const uint8_t *);
-
-void put_char(const uint8_t);
+void send_uart(const unsigned char *);
+void serial_handler(char);
