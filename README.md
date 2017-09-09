@@ -5,7 +5,7 @@ Every subsystem on the team will use this library. It will contain code for UART
 This library is intended to be used as a submodule in other projects. To add this submodule to your specific subsystem project, do this:
 ```
 $ cd your/repo/path
-$ git add submodule https://HeronMkII/lib-common
+$ git submodule add https://github.com/HeronMkII/lib-common
 ```
 This should add it into your repository. Now, **don't touch it**. Refer to next section if you want to make a change to lib-common. If you try to make changes from within your repository it probably will not work, and it might break something.
 To pull the latest changes from the lib-common repo (if it was updated since the last time you used it), do this:
