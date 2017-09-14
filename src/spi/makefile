@@ -10,6 +10,7 @@ SPI_DEP = $(SPI_OBJ:.o=.d)
 
 spi: $(SPI_OBJ)
 	ar rc ../../lib/libspi.a $(SPI_OBJ)
+	ranlib ../../lib/libspi.a
 
 -include $(SPI_DEP)
 

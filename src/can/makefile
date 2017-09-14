@@ -10,6 +10,7 @@ CAN_DEP = $(CAN_OBJ:.o=.d)
 
 can: $(CAN_OBJ)
 	ar rc ../../lib/libcan.a $(CAN_OBJ)
+	ranlib ../../lib/libcan.a
 
 -include $(CAN_DEP)
 

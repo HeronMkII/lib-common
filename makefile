@@ -4,5 +4,10 @@ SUBDIRS = $(addprefix src/,uart spi can)
 
 all: $(SUBDIRS)
 
+clean:
+	@$(MAKE) clean -C src/uart
+	@$(MAKE) clean -C src/spi
+	@$(MAKE) clean -C src/can
+
 $(SUBDIRS):
 	@$(MAKE) -C $@

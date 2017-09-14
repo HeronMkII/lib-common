@@ -10,6 +10,7 @@ UART_DEP = $(UART_OBJ:.o=.d)
 
 uart: $(UART_OBJ)
 	ar rc ../../lib/libuart.a $(UART_OBJ)
+	ranlib ../../lib/libuart.a
 
 -include $(UART_DEP)
 
