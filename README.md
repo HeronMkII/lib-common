@@ -30,6 +30,13 @@ $ git submodule update --remote lib-common
 ```
 in your project's root directory.
 
+To rebuild the library files, run
+```
+$ cd lib-common
+$ make
+```
+in your project's root directory.
+
 # How to use this library
 
 Lib-common provides three static libraries, `libuart.a`, `libspi.a`, `and
