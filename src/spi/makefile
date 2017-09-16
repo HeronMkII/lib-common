@@ -1,0 +1,2 @@
+LIBNAME = spi
+include ../makefile

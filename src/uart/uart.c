@@ -1,15 +1,19 @@
-#include "uart.h"
-#include "log.h"
+#include <uart/uart.h>
+#include <uart/log.h>
 
-void put_char(const unsigned char c) {
+// default rx callback
+void _nop(uint8_t c) {}
+
+void put_char(const uint8_t c) {
     int TIMEOUT = 65535;
     while ((LINSIR & _BV(LBUSY)) && TIMEOUT--);
     LINDAT = c;
 }
 
-char get_char(){
-  while (LINSIR & _BV(LBUSY));
-  return LINDAT;
+uint8_t get_char(){
+    int TIMEOUT = 65535;
+    while ((LINSIR & _BV(LBUSY)) && TIMEOUT--);
+    return LINDAT;
 }
 
 void init_uart() {
@@ -28,27 +32,26 @@ void init_uart() {
     LINCR = _BV(LENA) | _BV(LCMD2) | _BV(LCMD1) | _BV(LCMD0);
     // enable UART, full duplex
 
-    // enable UART interrupts
     LINENIR = _BV(LENRXOK);
+    global_rx_cb = _nop;
     sei();
+    // enable UART interrupts
 }
 
-void send_uart(const unsigned char* msg) {
+void send_uart(const uint8_t* msg) {
     for (int i = 0; i < strlen(msg); i++) {
         put_char(msg[i]);
     }
 }
 
-// RX interrupt handler
-ISR(LIN_TC_vect){
-  if(LINSIR & _BV(LRXOK)){
-    char val = get_char();
-    if(val>10) serial_handler(val);
-  }
+
+void register_callback(global_rx_cb_t cb) {
+    global_rx_cb = cb;
 }
 
-// Change this function to do something, such as a switch statement
-// Maybe a certain input will indicate a series of upcoming integers
-serial_handler(char c){
-  put_char(c);
+ISR(LIN_TC_vect) {
+  if (LINSIR & _BV(LRXOK)) {
+    uint8_t c = get_char();
+    global_rx_cb(c);
+  }
 }

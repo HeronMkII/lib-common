@@ -4,9 +4,7 @@ Author: Shimi Smith
 Code for sending and recieving can messages
 */
 
-#include "can.h"
-#include "uart.h"
-#include "log.h"
+#include <can/can.h>
 
 /*
 Sends a can message of maximum 8 bytes
@@ -84,12 +82,13 @@ ISR(CAN_INT_vect){
 
 			CANSTMOB &= ~_BV(RXOK);  // clear interrupt flag
 
-			// do something with data or just print it
+			/* // do something with data or just print it
 			print("------------\n");
 			for(uint8_t i = 0; i < rx_mob.dlc; i++){
 				print("%u\n", rx_mob.pt_data[i]);
 			}
 			print("------------\n");
+            */
 
 			for(uint8_t i=0; i < rx_mob.dlc; i++) {rx_mob.pt_data[i] = 0;}  // clear data array
 

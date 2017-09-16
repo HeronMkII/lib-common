@@ -1,0 +1,2 @@
+LIBNAME = can
+include ../makefile

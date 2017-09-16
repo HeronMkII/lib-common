@@ -1,4 +1,4 @@
-#include "spi.h"
+#include <spi/spi.h>
 
 // SPI pins
 #define CLK PB7

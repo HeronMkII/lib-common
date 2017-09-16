@@ -1,4 +1,4 @@
-#include "log.h"
+#include <uart/log.h>
 
 char buf[LOG_BUFFER_SIZE];
 // UART must be initialized before calling print
