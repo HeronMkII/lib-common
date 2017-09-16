@@ -1,2 +1,2 @@
-LIBNAME = uart
+PROG = uart_echo
 include ../makefile

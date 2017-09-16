@@ -29,9 +29,9 @@
 //******************************************************************************
 
 //_____ I N C L U D E S ________________________________________________________
-#include "config.h"
-#include "can_lib.h"
-#include "can_drv.h"
+#include <can/config.h>
+#include <can/can_lib.h>
+#include <can/can_drv.h>
 
 //_____ D E F I N I T I O N S __________________________________________________
 

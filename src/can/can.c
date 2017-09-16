@@ -4,7 +4,7 @@ Author: Shimi Smith
 Code for sending and recieving can messages
 */
 
-#include "can.h"
+#include <can/can.h>
 
 /*
 Sends a can message of maximum 8 bytes

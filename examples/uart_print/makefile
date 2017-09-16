@@ -1,2 +1,2 @@
-LIBNAME = uart
+PROG = uart_print
 include ../makefile

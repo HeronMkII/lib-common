@@ -2,6 +2,13 @@ SUBDIRS = $(addprefix src/,uart spi can)
 
 .PHONY: all $(SUBDIRS) clean
 
+export CC = avr-gcc
+export AR = avr-ar
+export RANLIB = avr-ranlib
+export INCLUDES = -I../../include
+#export LDFLAGS = -L../../lib
+export CFLAGS = -g -mmcu=atmega32m1 -Os -mcall-prologues
+
 all: $(SUBDIRS)
 
 clean:
@@ -10,4 +17,4 @@ clean:
 	@$(MAKE) clean -C src/can
 
 $(SUBDIRS):
-	@$(MAKE) -C $@
+	@$(MAKE) -e -C $@
