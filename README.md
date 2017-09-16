@@ -5,7 +5,8 @@ Lib-common currently provides libraries supporting UART, CAN and SPI.
 
 # Prerequisites
 
-Before using this library you must install git, make and the AVR-GCC toolchain.
+Before using this library you must install git, make, and the AVR-GCC
+toolchain.
 
 # Installing and updating this library from another project
 
@@ -23,18 +24,17 @@ repository.
 
 It is important **NOT** to modify this directory or its contents.
 
-To pull the latest changes from the lib-common repository, do
-
+To pull the latest changes from the lib-common repository, run
 ```
 $ git submodule update --remote lib-common
 ```
-
 in your project's root directory.
 
 # How to use this library
 
-Libcommon provides three static libraries, `libuart.a`, `libspi.a`, `libcan.a`.
-The header files for each library can be found in the `include` directory.
+Lib-common provides three static libraries, `libuart.a`, `libspi.a`, `and
+`libcan.a`. The header files for each library can be found in the `include`
+directory.
 
 To access these libraries in your code, you must include the appropriate header
 files in your program. For example, to access UART printing, you must include
@@ -95,7 +95,7 @@ your project.
 This library will be used by all subsystems. If you push changes onto the
 master branch, you could inadvertently break other people's code.
 
-Thus, all changes to this library **MUST** come in the form a pull request.
+Thus, all changes to this library **MUST** come in the form of a pull request.
 Otherwise, your commits will be reverted. Before your pull request is accepted,
 it must be checked by another team member.
 
