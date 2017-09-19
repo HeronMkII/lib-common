@@ -59,6 +59,7 @@
 //------------------------------------------------------------------------------
 uint8_t can_init(uint8_t mode)
 {
+    CANBT1 = 0b01111110;
     if ((Can_bit_timing(mode))==0) return (0);  // c.f. macro in "can_drv.h"
     can_clear_all_mob();                        // c.f. function in "can_drv.c"
     Can_enable();                               // c.f. macro in "can_drv.h"
@@ -314,18 +315,3 @@ uint8_t can_get_status (st_cmd_t* cmd)
 
     return (rtn_val);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

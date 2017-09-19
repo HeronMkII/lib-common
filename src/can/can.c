@@ -89,7 +89,7 @@ ISR(CAN_INT_vect){
 			}
 			print("------------\n");
             */
-
+			can_handler(rx_mob.id.std,rx_mob.pt_data, rx_mob.dlc);
 			for(uint8_t i=0; i < rx_mob.dlc; i++) {rx_mob.pt_data[i] = 0;}  // clear data array
 
 			while(can_cmd(&rx_mob) != CAN_CMD_ACCEPTED);  // Wait for MOb to configure (Must re-configure MOb for every transaction)
