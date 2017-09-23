@@ -22,4 +22,4 @@ clean:
 	rm -f ./*.hex
 
 upload: $(PROG)
-	avr-dude -p $(MCU) -c $(PGMR) -P $(PORT) -U flash:w:$^.hex
+	avrdude -p $(MCU) -c $(PGMR) -P $(PORT) -U flash:w:./$^.hex

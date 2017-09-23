@@ -39,7 +39,7 @@ in your project's root directory.
 
 # How to use this library
 
-Lib-common provides three static libraries, `libuart.a`, `libspi.a`, `and
+Lib-common provides three static libraries, `libuart.a`, `libspi.a`, and
 `libcan.a`. The header files for each library can be found in the `include`
 directory.
 
