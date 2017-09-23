@@ -1,0 +1,2 @@
+LIBNAME = queue
+include ../makefile

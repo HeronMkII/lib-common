@@ -1,4 +1,4 @@
-SUBDIRS = $(addprefix src/,uart spi can timer)
+SUBDIRS = $(addprefix src/,uart spi can timer queue)
 
 .PHONY: all $(SUBDIRS) clean
 
