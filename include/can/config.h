@@ -49,7 +49,9 @@ typedef uint8_t Bool;
 
     // -------------- MCU LIB CONFIGURATION
 #define FOSC           8000        // 8Mhz external clock
-#define F_CPU          (FOSC*1000) // Need for AVR GCC
+#ifndef F_CPU
+	#define F_CPU          (FOSC*1000) // Need for AVR GCC
+#endif
 
     // -------------- CAN LIB CONFIGURATION
 #define CAN_BAUDRATE   250        // in kBit
