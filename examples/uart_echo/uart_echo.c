@@ -1,7 +1,11 @@
 #include <uart/uart.h>
 
-void echo(uint8_t c) {
-    put_char(c);
+void echo(uint8_t *buf, uint8_t len) {
+    if (len == 10) {
+        for (int i = 0; i < len; i++)
+            put_char(buf[i]);
+        clear_rx_buffer();
+    }
 }
 
 int main(void) {
