@@ -37,6 +37,12 @@ $ make
 ```
 in your project's root directory.
 
+## Important!
+
+You must rebuild this library the first time you add it to your project; this
+is because the archive files are not packaged with the git repository. You
+must also rebuild this library every time you update lib-common.
+
 # How to use this library
 
 Lib-common provides three static libraries, `libuart.a`, `libspi.a`, and
