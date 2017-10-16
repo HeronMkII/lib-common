@@ -30,7 +30,6 @@ void can_send_message(uint8_t data[], uint8_t size, uint16_t id){
 }
 
 
-
 /*
 Initializes a mob for recieving can messages
 --------------------------------------------
@@ -48,7 +47,7 @@ void init_rx_mob(st_cmd_t* mob, uint8_t recieved_data[], uint8_t size, uint16_t 
 	mob->ctrl.ide = 0; // This message object accepts only standard (2.0A) CAN frames
 	mob->ctrl.rtr = 0; // this message object is not requesting a remote node to transmit data back
 	mob->dlc = size; // Number of bytes (8 max) of data to expect
-	mob->cmd = CMD_RX_DATA; // assign this as a "Receive Standard (2.0A) CAN frame" message object
+	mob->cmd = CMD_RX_DATA_MASKED; // assign this as a "Receive Standard (2.0A) CAN frame" message object
 
 	while(can_cmd(mob) != CAN_CMD_ACCEPTED);  // Wait for MOb to configure (Must re-configure MOb for every transaction)
 
@@ -69,6 +68,10 @@ void init_rx_interrupts(st_cmd_t mob){
 	sei();  // enable global interrupts
 }
 
+void set_can_handler(CanHandler ch){
+	can_handler = ch;
+}
+
 /*
 This is the ISR to handle all can interrupts
 --------------------------------------------
@@ -82,14 +85,8 @@ ISR(CAN_INT_vect){
 
 			CANSTMOB &= ~_BV(RXOK);  // clear interrupt flag
 
-			/* // do something with data or just print it
-			print("------------\n");
-			for(uint8_t i = 0; i < rx_mob.dlc; i++){
-				print("%u\n", rx_mob.pt_data[i]);
-			}
-			print("------------\n");
-            */
-			can_handler(rx_mob.id.std,rx_mob.pt_data, rx_mob.dlc);
+			can_handler(rx_mob.id.std, rx_mob.pt_data, rx_mob.dlc);  // do ssm somethign with the data
+
 			for(uint8_t i=0; i < rx_mob.dlc; i++) {rx_mob.pt_data[i] = 0;}  // clear data array
 
 			while(can_cmd(&rx_mob) != CAN_CMD_ACCEPTED);  // Wait for MOb to configure (Must re-configure MOb for every transaction)

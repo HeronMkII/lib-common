@@ -6,6 +6,9 @@ void init_rx_interrupts(st_cmd_t mob);
 
 st_cmd_t rx_mob;
 
+typedef void (*CanHandler)(uint16_t identifier, uint8_t* pt_data, uint8_t size);
+CanHandler can_handler;  // the can handler being called
+void set_can_handler(CanHandler ch);
 
 /* MASKS to read sender, reader and message type */
 #define TX_MASK   0x0500
