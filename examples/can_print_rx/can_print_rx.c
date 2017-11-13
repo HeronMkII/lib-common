@@ -1,0 +1,30 @@
+#include <uart/uart.h>
+#include <uart/log.h>
+#include <can/can.h>
+
+void rx_callback(uint8_t*, uint8_t);
+
+rx_mob_t rx_mob = {
+    .mob_num = 0,
+    .dlc = 7,
+    .id_tag = { 0x0000 },
+    .id_mask = { 0x0000 },
+    .ctrl = { 0, 0, 0, 0, 0 },
+    .rx_cb = rx_callback
+};
+
+void rx_callback(uint8_t* data, uint8_t len) {
+    print("TX received!\n");
+    print("%s\n", (char *) data);
+}
+
+int main(void) {
+    init_uart();
+    print("UART initialized\n");
+
+    init_can();
+    init_rx_mob(&rx_mob);
+
+    print("Waiting for TX\n");
+    while (1) {}
+}

@@ -1,97 +1,250 @@
-/*
-Author: Shimi Smith
-
-Code for sending and recieving can messages
-*/
-
 #include <can/can.h>
+#include <uart/log.h>
 
-/*
-Sends a can message of maximum 8 bytes
---------------------------------------
-data - an array of the data being sent
-size - the number of bytes being sent (maximum 8)
-id - the id of the can message
-*/
-void can_send_message(uint8_t data[], uint8_t size, uint16_t id){
+void* mob_array[6] = {0};
 
-	st_cmd_t message;  // message object
-
-	message.pt_data = &data[0];  // point message object to first element of data buffer
-	message.ctrl.ide = 0;  // standard CAN frame type (2.0A)
-	message.dlc = size;  // Number of bytes being sent (8 max)
-	message.id.std = id;  // populate ID field with ID Tag
-	message.cmd = CMD_TX_DATA;  // assign this as a transmitting message object.
-
-	while(can_cmd(&message) != CAN_CMD_ACCEPTED);  // wait for MOb to configure
-
-	while(can_get_status(&message) == CAN_STATUS_NOT_COMPLETED);  // wait for message to send or fail
-
+void select_mob(uint8_t mob_num) {
+    print("Selected mob %d\n", mob_num);
+    CANPAGE = mob_num << 4;
 }
 
-
-/*
-Initializes a mob for recieving can messages
---------------------------------------------
-mob - a pointer to the struct that is representing the mob that is being initialized
-recieved_data[] - an array that will hold the data recieved
-size - the number of bytes the mob will recieve (maximum 8)
-id - this mob is programmmed to recieve can messages with this id, i.e this id must be the same as the id of the can messages you wish to recieve
-*/
-void init_rx_mob(st_cmd_t* mob, uint8_t recieved_data[], uint8_t size, uint16_t id){
-
-	mob->pt_data = recieved_data;
-	mob->status = 0;  // clear status
-
-	mob->id.std = id;  // only accepts frames from this id
-	mob->ctrl.ide = 0; // This message object accepts only standard (2.0A) CAN frames
-	mob->ctrl.rtr = 0; // this message object is not requesting a remote node to transmit data back
-	mob->dlc = size; // Number of bytes (8 max) of data to expect
-	mob->cmd = CMD_RX_DATA_MASKED; // assign this as a "Receive Standard (2.0A) CAN frame" message object
-
-	while(can_cmd(mob) != CAN_CMD_ACCEPTED);  // Wait for MOb to configure (Must re-configure MOb for every transaction)
-
+void set_id_tag(mob_id_tag_t id_tag) {
+    CANIDT2 = id_tag.tab[0] << 5;
+    CANIDT1 = (id_tag.tab[1] << 5) | (id_tag.tab[0] >> 3);
+    print("Set mob id_tag\n");
+    //CANCDMOB &= ~(_BV(IDE)) // set the IDE bit to 0, since we're using rev A
 }
 
-/*
-Enables the can recieve interrupt for the given mob
----------------------------------------------------
-precondition - mob was already initialized as a recieving mob with init_rx_mob
-
-mob - the mob to initialize interrupts on
-*/
-void init_rx_interrupts(st_cmd_t mob){
-
-	CANGIE |= _BV(ENIT) | _BV(ENRX);  // enable CAN interrupts and enable the recieve interrupt
-	CANIE2 |= _BV(mob.handle);
-
-	sei();  // enable global interrupts
+void set_id_mask(mob_id_mask_t id_mask) {
+    CANIDM2 = id_mask.tab[0] << 5;
+    CANIDM1 = (id_mask.tab[1] << 5) | (id_mask.tab[0] >> 3);
+    print("Set mob id mask\n");
 }
 
-void set_can_handler(CanHandler ch){
-	can_handler = ch;
+void set_ctrl_flags(mob_ctrl_t ctrl) {
+    if (ctrl.ide) CANCDMOB |= _BV(IDE); // this should never happen
+    else CANCDMOB &= ~(_BV(IDE)); // set the IDE bit to 0, since we're using rev A
+
+    if (ctrl.ide_mask) CANIDM4 |= _BV(IDEMSK);
+    else CANIDM4 &= ~(_BV(IDEMSK));
+
+    if (ctrl.rtr_mask) CANIDM4 |= _BV(RTRMSK);
+    else CANIDM4 &= ~(_BV(RTRMSK));
+
+    if (ctrl.rtr) CANIDT4 |= _BV(RTRTAG);
+    else CANIDT4 &= ~(_BV(RTRTAG));
+
+    if (ctrl.rbn_tag) CANIDT4 |= _BV(RB0TAG);
+    else CANIDT4 &= ~(_BV(RB0TAG));
+
+    print("Set mob ctrl:\n ide: %d ide_mask: %d rtr: %d rtr_mask: %d rbn: %d\n", ctrl.ide, ctrl.ide_mask, ctrl.rtr, ctrl.rtr_mask, ctrl.rbn_tag);
 }
 
-/*
-This is the ISR to handle all can interrupts
---------------------------------------------
-*/
+void init_can() {
+    CANGCON |= _BV(SWRES);
+
+    // set bit timing for 250 Kbps baudrate
+    // Here one Tscl is one time quantum (TQ) see page 232 of the datasheet
+    CANBT1 = 0x7E; // Tscl = 2 x Tclkio = 250 ns
+    CANBT2 = 0x04; // Tsync = 1 x Tscl, Tprs = 7 x Tscl, Tsjw = 1 x Tscl
+    CANBT3 = 0x13; // Tpsh1 = 4 x Tscl, Tpsh2 = 4 x Tscl, 3 sample pts
+    // These settings are taken directly from the Atmega32M1 datasheet
+    // see page 240
+
+    CANGIE |= _BV(ENIT) | _BV(ENTX) | _BV(ENRX);
+    // enable all CAN interrupts, execept the overrun timer
+
+    // disable all mobs
+    for (uint8_t i = 0; i < 6; i++) {
+        select_mob(i);
+        CANCDMOB = 0x00;
+    }
+
+    sei();
+
+    CANGCON |= _BV(ENASTB);
+    // enable CAN
+
+    while (!(CANGSTA & _BV(ENFG))) {}
+    // wait for CAN to turn on before returning
+
+    print("CAN initialized\n");
+}
+
+void pause_rx_mob(rx_mob_t* mob) {
+    select_mob(mob->mob_num);
+
+    // TODO: only do this RX is not busy?
+    // disable the mob
+    CANCDMOB &= ~(_BV(CONMOB0));
+    CANCDMOB &= ~(_BV(CONMOB1));
+    print("Mob %d paused\n", mob->mob_num);
+}
+
+// TODO: resuming might involve re-initializing the values for all
+// this should not be too difficult because we store all mobs
+// in a global list
+void resume_rx_mob(rx_mob_t* mob) {
+    select_mob(mob->mob_num);
+
+    // enable the mob in RX mode
+    CANCDMOB |= _BV(CONMOB1);
+    CANCDMOB &= ~(_BV(CONMOB0));
+    print("Mob %d resumed\n", mob->mob_num);
+}
+
+void pause_tx_mob(tx_mob_t* mob) {
+    select_mob(mob->mob_num);
+
+    // TODO: only do this when TX is not busy?
+    // disable the mob
+    CANCDMOB &= ~(_BV(CONMOB0));
+    CANCDMOB &= ~(_BV(CONMOB1));
+    print("Mob %d paused\n", mob->mob_num);
+}
+
+void resume_tx_mob(tx_mob_t* mob) {
+    select_mob(mob->mob_num);
+
+    // enable the mob in TX mode
+    CANCDMOB |= _BV(CONMOB0);
+    CANCDMOB &= ~(_BV(CONMOB1));
+    print("Mob %d resumed\n", mob->mob_num);
+}
+
+void init_rx_mob(rx_mob_t* mob) {
+    select_mob(mob->mob_num);
+
+    set_id_tag(mob->id_tag);
+    set_id_mask(mob->id_mask);
+    set_ctrl_flags(mob->ctrl);
+
+    CANCDMOB |= mob->dlc;
+
+    // enable the required interrupts
+    CANGIE |= _BV(ENRX);
+    CANIE2 |= _BV(mob->mob_num);
+
+    // add mob to mob_list
+    mob_array[mob->mob_num] = mob;
+
+    resume_rx_mob(mob); // enable mob
+    print("RX mob initialized\n");
+    print("mob_num: %d dlc: %d\n", mob->mob_num, mob->dlc);
+}
+
+void init_tx_mob(tx_mob_t* mob) {
+    select_mob(mob->mob_num);
+
+    set_id_tag(mob->id_tag);
+    set_ctrl_flags(mob->ctrl);
+
+    // load data from callback
+    (mob->tx_data_cb)(mob->data, &(mob->dlc));
+
+    uint8_t len = mob->dlc;
+    CANCDMOB |= len;
+
+    CANPAGE &= ~(0x07); // reset data buffer index
+    for (uint8_t i = 0; i < len; i++) {
+        CANMSG = (mob->data)[i]; // data buffer index auto-incremented
+    }
+
+    CANGIE |= _BV(ENTX);
+    CANIE2 |= _BV(mob->mob_num);
+
+    mob_array[mob->mob_num] = mob;
+    pause_tx_mob(mob); // tx mobs must be resumed manually
+
+    print("TX mob initialized\n");
+    print("mob_num: %d dlc: %d\n", mob->mob_num, mob->dlc);
+    print("data: %s\n", (char *) mob->data);
+}
+
+void handle_rx_interrupt(rx_mob_t* mob) {
+    print("Handling RX interrupt\n");
+
+    select_mob(mob->mob_num);
+
+    uint8_t len = CANCDMOB & 0x0F;
+    mob->dlc = (len >= 8) ? 8 : len;
+    // update dlc only; no need to update id/mask
+
+    CANPAGE &= ~(0x07); // reset data buffer index
+
+    uint8_t data[8] = {0};
+    for (uint8_t j = 0; j < 8; j++) {
+        data[j] = CANMSG; // reading auto-increments the data buffer index
+    }
+
+    (mob->rx_cb)(data, len);
+    resume_rx_mob(mob);
+    // required because ENMOB is reset after RXOK goes high
+}
+
+void handle_tx_interrupt(tx_mob_t* mob) {
+    print("Handling TX interrupt\n");
+
+    select_mob(mob->mob_num);
+    // update dlc and load the next 8 bytes
+    // load the next 8 bytes to send
+    uint8_t len = 0;
+    uint8_t data[8] = {0};
+
+    (mob->tx_data_cb)(data, &len);
+    print("data: %s len: %d\n", (char *) data, len);
+
+    if (len != 0) {
+        CANPAGE &= ~(0x07); // reset data buffer index
+        for (uint8_t i = 0; i < len; i++) {
+            CANMSG = data[i]; // data buffer index auto-incremented
+        }
+
+        resume_tx_mob(mob);
+    } else {
+        pause_tx_mob(mob);
+    }
+}
+
+uint8_t rx_mob_status(rx_mob_t* mob) {
+    select_mob(mob->mob_num);
+    return CANSTMOB;
+}
+
+uint8_t tx_mob_status(tx_mob_t* mob) {
+    select_mob(mob->mob_num);
+    return CANSTMOB;
+}
+
 ISR(CAN_INT_vect){
-	if(CANSTMOB & _BV(RXOK)){  // interrupt caused by recieve finished
+    print("Interrupt received\n");
+    for (uint8_t i = 0; i < 6; i++) {
+        // ignore un-initialized mobs
+        if (mob_array[i] == 0)
+            continue;
 
-		if(can_get_status(&rx_mob) == CAN_STATUS_COMPLETED){  // interrupt on rx_mob
+        select_mob(i);
+        // should disable interrupts for the time being
+        print("Status: %#02x\n", CANSTMOB);
+        uint8_t err = CANSTMOB & 0x9f;
 
-			CANIE2 &= ~_BV(rx_mob.handle);  // disable interrupts for this mob - this is in case the mob number changes
+        if (err != 0) {
+            print("CAN error\n");
+            CANSTMOB &= ~(0x9f);
+            // TODO: shouldn't just clear the error and move on..
+            continue;
+        }
 
-			CANSTMOB &= ~_BV(RXOK);  // clear interrupt flag
-
-			can_handler(rx_mob.id.std, rx_mob.pt_data, rx_mob.dlc);  // do ssm somethign with the data
-
-			for(uint8_t i=0; i < rx_mob.dlc; i++) {rx_mob.pt_data[i] = 0;}  // clear data array
-
-			while(can_cmd(&rx_mob) != CAN_CMD_ACCEPTED);  // Wait for MOb to configure (Must re-configure MOb for every transaction)
-
-			CANIE2 |= _BV(rx_mob.handle);  // re-enable the interrupt - might be a new mob number
-		}
-	}
+        if (CANSTMOB & _BV(RXOK)) {
+            print("RX OK received\n");
+            rx_mob_t* mob = (rx_mob_t *) mob_array[i];
+            handle_rx_interrupt(mob);
+            CANSTMOB &= ~(_BV(RXOK));  // clear interrupt flag
+        } else if (CANSTMOB & _BV(TXOK)) {
+            print("TX OK received\n");
+            tx_mob_t* mob = (tx_mob_t *) mob_array[i];
+            handle_tx_interrupt(mob);
+            CANSTMOB &= ~(_BV(TXOK));  // clear interrupt flag
+        }
+    }
 }

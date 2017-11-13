@@ -1,59 +1,58 @@
-#include "can_lib.h"
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
-void can_send_message(uint8_t data[], uint8_t size, uint16_t id);
-void init_rx_mob(st_cmd_t* mob, uint8_t recieved_data[], uint8_t size, uint16_t id);
-void init_rx_interrupts(st_cmd_t mob);
+// allows access to the id via table
+typedef union {
+    uint16_t std;
+    uint8_t  tab[2];
+} mob_id_tag_t, mob_id_mask_t;
 
-st_cmd_t rx_mob;
+// struct to hold RTR, IDE, IDE Mask, RTR Mask and RBnTag bits;
+// all boolean
+typedef struct {
+    uint8_t rtr; // 1 for remote frames, 0 for data frames
+    uint8_t ide; // specifies CAN rev; should always be 0, for rev A
+    uint8_t ide_mask; // masking bits for RX
+    uint8_t rtr_mask; // masking bits for RX
+    uint8_t rbn_tag; // masking bit for RX
+} mob_ctrl_t;
 
-typedef void (*CanHandler)(uint16_t identifier, uint8_t* pt_data, uint8_t size);
-CanHandler can_handler;  // the can handler being called
-void set_can_handler(CanHandler ch);
+typedef void (*can_rx_callback_t)(uint8_t*, uint8_t);
+typedef void (*can_tx_callback_t)(uint8_t*, uint8_t*);
 
-/* MASKS to read sender, reader and message type */
-#define TX_MASK   0x0500
-#define RX_MASK   0x01A0
-#define MSG_MASK  0x003F
+typedef struct {
+    uint8_t mob_num;
+    uint8_t dlc;
 
-/* Example message: */
-// uint16_t message_id = (OBC_TX | COM_RX | HK_REQ);
+    mob_id_tag_t id_tag;
+    mob_id_mask_t id_mask;
+    mob_ctrl_t ctrl;
 
-/* SENDER */
-#define OBC_TX        0x0000
-#define COM_TX        0x0200
-#define EPS_TX        0x0400
-#define PAY_TX        0x0500
+    can_rx_callback_t rx_cb;
+} rx_mob_t;
 
+typedef struct {
+    uint8_t mob_num;
+    uint8_t dlc;
 
-/* RECEIVER */
-#define OBC_RX        0x0000
-#define COM_RX        0x0040
-#define EPS_RX        0x0080
-#define PAY_RX        0x00A0
-#define ALL_RX        0x01A0
+    mob_id_tag_t id_tag;
+    mob_ctrl_t ctrl;
 
-/* MESSAGE TYPE */
-#define STATUS        0x0000
-#define REQ_STATUS    0x0001
-#define ACK_STATUS    0x0002
+    uint8_t data[8];
 
-#define TC            0x0006
-#define TM            0x0008
+    can_tx_callback_t tx_data_cb;
+} tx_mob_t;
 
-#define COMMAND_1     0x000A
-#define COMMAND_2     0x000B
-#define COMMAND_3     0x000C
-#define COMMAND_4     0x000D
-#define COMMAND_5     0x000E
-#define COMMAND_6     0x000F
+void init_can(void);
 
-#define HK_DATA       0x0020
+void init_rx_mob(rx_mob_t*);
+void pause_rx_mob(rx_mob_t*);
+void resume_rx_mob(rx_mob_t*);
 
-#define HK_SENSOR     0x0024
+void init_tx_mob(tx_mob_t*);
+void pause_tx_mob(tx_mob_t*);
+void resume_tx_mob(tx_mob_t*);
 
-#define HK_REQ        0x0026
+uint8_t rx_mob_status(rx_mob_t*);
+uint8_t tx_mob_status(tx_mob_t*);
 
-#define HK_REQ_SENSOR 0x0028
-
-#define SCI_REQ       0x02A
-#define SCI_DATA      0x02C
