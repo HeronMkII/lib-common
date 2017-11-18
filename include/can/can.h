@@ -17,6 +17,10 @@ typedef struct {
     uint8_t rbn_tag; // masking bit for RX
 } mob_ctrl_t;
 
+// TODO: change these; ide_mask SHOULD matter
+#define default_rx_ctrl { 0, 0, 0, 0, 0 }
+#define default_tx_ctrl { 0, 0, 0, 0, 0 }
+
 typedef void (*can_rx_callback_t)(uint8_t*, uint8_t);
 typedef void (*can_tx_callback_t)(uint8_t*, uint8_t*);
 

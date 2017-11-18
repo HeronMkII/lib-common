@@ -12,7 +12,6 @@ void set_id_tag(mob_id_tag_t id_tag) {
     CANIDT2 = id_tag.tab[0] << 5;
     CANIDT1 = (id_tag.tab[1] << 5) | (id_tag.tab[0] >> 3);
     print("Set mob id_tag\n");
-    //CANCDMOB &= ~(_BV(IDE)) // set the IDE bit to 0, since we're using rev A
 }
 
 void set_id_mask(mob_id_mask_t id_mask) {
@@ -43,13 +42,12 @@ void set_ctrl_flags(mob_ctrl_t ctrl) {
 void init_can() {
     CANGCON |= _BV(SWRES);
 
-    // set bit timing for 250 Kbps baudrate
-    // Here one Tscl is one time quantum (TQ) see page 232 of the datasheet
-    CANBT1 = 0x7E; // Tscl = 2 x Tclkio = 250 ns
-    CANBT2 = 0x04; // Tsync = 1 x Tscl, Tprs = 7 x Tscl, Tsjw = 1 x Tscl
-    CANBT3 = 0x13; // Tpsh1 = 4 x Tscl, Tpsh2 = 4 x Tscl, 3 sample pts
-    // These settings are taken directly from the Atmega32M1 datasheet
-    // see page 240
+    // TODO: figure out why these settings work, and why they weren't working
+    // earlier. These settings are taken directly from the 32m1 datasheet,
+    // pg 240
+    CANBT1 = 0x08;
+    CANBT2 = 0x0C;
+    CANBT3 = 0x37;
 
     CANGIE |= _BV(ENIT) | _BV(ENTX) | _BV(ENRX);
     // enable all CAN interrupts, execept the overrun timer
@@ -81,9 +79,6 @@ void pause_rx_mob(rx_mob_t* mob) {
     print("Mob %d paused\n", mob->mob_num);
 }
 
-// TODO: resuming might involve re-initializing the values for all
-// this should not be too difficult because we store all mobs
-// in a global list
 void resume_rx_mob(rx_mob_t* mob) {
     select_mob(mob->mob_num);
 
@@ -177,7 +172,10 @@ void handle_rx_interrupt(rx_mob_t* mob) {
         data[j] = CANMSG; // reading auto-increments the data buffer index
     }
 
-    (mob->rx_cb)(data, len);
+    (mob->rx_cb)(data, len); // execute callback
+
+    CANSTMOB &= ~(_BV(RXOK));  // clear interrupt flag
+
     resume_rx_mob(mob);
     // required because ENMOB is reset after RXOK goes high
 }
@@ -193,6 +191,10 @@ void handle_tx_interrupt(tx_mob_t* mob) {
 
     (mob->tx_data_cb)(data, &len);
     print("data: %s len: %d\n", (char *) data, len);
+
+    CANSTMOB &= ~(_BV(TXOK));  // clear interrupt flag
+    // this also resets the mob, without clearing any of the data fields
+    // this is why we must resume the mob if there is still data left to send
 
     if (len != 0) {
         CANPAGE &= ~(0x07); // reset data buffer index
@@ -239,12 +241,10 @@ ISR(CAN_INT_vect){
             print("RX OK received\n");
             rx_mob_t* mob = (rx_mob_t *) mob_array[i];
             handle_rx_interrupt(mob);
-            CANSTMOB &= ~(_BV(RXOK));  // clear interrupt flag
         } else if (CANSTMOB & _BV(TXOK)) {
             print("TX OK received\n");
             tx_mob_t* mob = (tx_mob_t *) mob_array[i];
             handle_tx_interrupt(mob);
-            CANSTMOB &= ~(_BV(TXOK));  // clear interrupt flag
         }
     }
 }

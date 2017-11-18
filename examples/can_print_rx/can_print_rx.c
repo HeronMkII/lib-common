@@ -9,7 +9,7 @@ rx_mob_t rx_mob = {
     .dlc = 7,
     .id_tag = { 0x0000 },
     .id_mask = { 0x0000 },
-    .ctrl = { 0, 0, 0, 0, 0 },
+    .ctrl = default_rx_ctrl,
     .rx_cb = rx_callback
 };
 

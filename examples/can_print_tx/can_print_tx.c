@@ -7,12 +7,12 @@ void tx_callback(uint8_t*, uint8_t*);
 tx_mob_t tx_mob = {
     .mob_num = 0,
     .id_tag = { 0x0000 },
-    .ctrl = { 0, 0, 0, 0, 0 },
+    .ctrl = default_tx_ctrl,
     .tx_data_cb = tx_callback
 };
 
 void tx_callback(uint8_t* data, uint8_t* len) {
-    *len = 8;
+    *len = 7;
     char str[] = "Hello!";
 
     for(uint8_t i = 0; i < *len; i++) {
