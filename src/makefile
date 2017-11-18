@@ -1,8 +1,8 @@
 $(LIBNAME)_SRC = $(wildcard *.c)
-$(LIBNAME)_OBJ = $($(LIBNAME)_SRC:%.c=../../build/uart/%.o)
+$(LIBNAME)_OBJ = $($(LIBNAME)_SRC:%.c=../../build/$(LIBNAME)/%.o)
 $(LIBNAME)_DEP = $($(LIBNAME)_OBJ:.o=.d)
 
-../../build/uart/%.o: %.c
+../../build/$(LIBNAME)/%.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 $(LIBNAME): $($(LIBNAME)_OBJ)

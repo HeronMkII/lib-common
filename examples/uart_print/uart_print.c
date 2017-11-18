@@ -1,5 +1,5 @@
-#include<uart/uart.h>
-#include<uart/log.h>
+#include <uart/uart.h>
+#include <uart/log.h>
 
 int main(void) {
     init_uart();
