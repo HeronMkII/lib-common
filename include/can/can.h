@@ -1,6 +1,13 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+// mob types
+typedef enum {
+    TX_MOB,
+    RX_MOB,
+    AUTO_MOB
+} mob_type_t;
+
 // allows access to the id via table
 typedef union {
     uint16_t std;
@@ -15,48 +22,40 @@ typedef struct {
     uint8_t ide_mask; // masking bits for RX
     uint8_t rtr_mask; // masking bits for RX
     uint8_t rbn_tag; // masking bit for RX
+    uint8_t rplv; // RPLV bit
 } mob_ctrl_t;
 
 // TODO: change these; ide_mask SHOULD matter
-#define default_rx_ctrl { 0, 0, 0, 0, 0 }
-#define default_tx_ctrl { 0, 0, 0, 0, 0 }
+#define default_rx_ctrl { 0, 0, 0, 0, 0, 0 }
+#define default_tx_ctrl { 0, 0, 0, 0, 0, 0 }
 
 typedef void (*can_rx_callback_t)(uint8_t*, uint8_t);
 typedef void (*can_tx_callback_t)(uint8_t*, uint8_t*);
 
 typedef struct {
+    // common
     uint8_t mob_num;
     uint8_t dlc;
-
     mob_id_tag_t id_tag;
+    mob_ctrl_t ctrl;
+    mob_type_t mob_type;
+
+    // rx specific
     mob_id_mask_t id_mask;
-    mob_ctrl_t ctrl;
-
     can_rx_callback_t rx_cb;
-} rx_mob_t;
 
-typedef struct {
-    uint8_t mob_num;
-    uint8_t dlc;
-
-    mob_id_tag_t id_tag;
-    mob_ctrl_t ctrl;
-
-    uint8_t data[8];
-
+    // tx specific
     can_tx_callback_t tx_data_cb;
-} tx_mob_t;
+    uint8_t data[8];
+} mob_t;
 
 void init_can(void);
 
-void init_rx_mob(rx_mob_t*);
-void pause_rx_mob(rx_mob_t*);
-void resume_rx_mob(rx_mob_t*);
+void init_rx_mob(mob_t*);
+void init_tx_mob(mob_t*);
+void init_auto_mob(mob_t*);
 
-void init_tx_mob(tx_mob_t*);
-void pause_tx_mob(tx_mob_t*);
-void resume_tx_mob(tx_mob_t*);
+void pause_mob(mob_t*);
+void resume_mob(mob_t*);
 
-uint8_t rx_mob_status(rx_mob_t*);
-uint8_t tx_mob_status(tx_mob_t*);
-
+uint8_t mob_status(mob_t*);

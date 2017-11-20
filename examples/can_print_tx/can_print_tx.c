@@ -4,7 +4,7 @@
 
 void tx_callback(uint8_t*, uint8_t*);
 
-tx_mob_t tx_mob = {
+mob_t tx_mob = {
     .mob_num = 0,
     .id_tag = { 0x0000 },
     .ctrl = default_tx_ctrl,
@@ -27,10 +27,10 @@ int main(void) {
     init_can();
     init_tx_mob(&tx_mob);
 
-    resume_tx_mob(&tx_mob);
+    resume_mob(&tx_mob);
 
     while (1) {
-        print("Status: %#02x\n", tx_mob_status(&tx_mob));
+        print("Status: %#02x\n", mob_status(&tx_mob));
         print("Tx error count: %d\n", CANTEC);
     }
 }

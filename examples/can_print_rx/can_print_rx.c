@@ -4,7 +4,7 @@
 
 void rx_callback(uint8_t*, uint8_t);
 
-rx_mob_t rx_mob = {
+mob_t rx_mob = {
     .mob_num = 0,
     .dlc = 7,
     .id_tag = { 0x0000 },
