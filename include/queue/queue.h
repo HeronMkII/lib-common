@@ -8,7 +8,11 @@ Author: Shimi Smith
 
 #define MAXSIZE 50
 
-typedef uint32_t Data;
+#define DATA_SIZE 8
+
+typedef struct Data{
+	uint8_t array[DATA_SIZE];
+} Data;
 
 typedef struct Node{
 	Data data;
