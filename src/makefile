@@ -6,7 +6,7 @@ $(LIBNAME)_DEP = $($(LIBNAME)_OBJ:.o=.d)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 $(LIBNAME): $($(LIBNAME)_OBJ)
-	$(AR) rc ../../lib/lib$(LIBNAME).a $($(LIBNAME)_OBJ)
+	$(AR) rcs ../../lib/lib$(LIBNAME).a $($(LIBNAME)_OBJ)
 	$(RANLIB) ../../lib/lib$(LIBNAME).a
 
 -include $($(LIBNAME)_DEP)

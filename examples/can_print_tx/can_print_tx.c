@@ -6,6 +6,7 @@ void tx_callback(uint8_t*, uint8_t*);
 
 mob_t tx_mob = {
     .mob_num = 0,
+    .mob_type = TX_MOB,
     .id_tag = { 0x0000 },
     .ctrl = default_tx_ctrl,
     .tx_data_cb = tx_callback

@@ -3,22 +3,21 @@
 
 mob_t* mob_array[6] = {0};
 
-void select_mob(uint8_t mob_num) {
-    print("Selected mob %d\n", mob_num);
+static inline void select_mob(uint8_t mob_num) {
     CANPAGE = mob_num << 4;
 }
 
-void set_id_tag(mob_id_tag_t id_tag) {
+static inline void set_id_tag(mob_id_tag_t id_tag) {
     CANIDT2 = id_tag.tab[0] << 5;
     CANIDT1 = (id_tag.tab[1] << 5) | (id_tag.tab[0] >> 3);
 }
 
-void set_id_mask(mob_id_mask_t id_mask) {
+static inline void set_id_mask(mob_id_mask_t id_mask) {
     CANIDM2 = id_mask.tab[0] << 5;
     CANIDM1 = (id_mask.tab[1] << 5) | (id_mask.tab[0] >> 3);
 }
 
-void set_ctrl_flags(mob_ctrl_t ctrl) {
+static inline void set_ctrl_flags(mob_ctrl_t ctrl) {
     if (ctrl.ide) CANCDMOB |= _BV(IDE); // this should never happen
     else CANCDMOB &= ~(_BV(IDE)); // set the IDE bit to 0, since we're using rev A
 
@@ -65,13 +64,14 @@ void init_can() {
     CANBT2 = 0x0C;
     CANBT3 = 0x37;
 
-    CANGIE |= _BV(ENIT) | _BV(ENTX) | _BV(ENRX);
+    CANGIE |= _BV(ENIT) | _BV(ENTX) | _BV(ENRX) | _BV(ENERR);
     // enable most CAN interrupts, execept the overrun timer, and general errors
 
-    // disable all mobs
+    // disable all mobs, clear all interrupt flags
     for (uint8_t i = 0; i < 6; i++) {
         select_mob(i);
         CANCDMOB = 0x00;
+        CANSTMOB = 0x00;
     }
 
     sei();
@@ -148,7 +148,21 @@ void init_tx_mob(mob_t* mob) {
 }
 
 void init_auto_mob(mob_t* mob) {
-    // TODO: implement me
+    select_mob(mob->mob_num);
+
+    set_id_tag(mob->id_tag);
+    set_id_mask(mob->id_mask);
+    set_ctrl_flags(mob->ctrl);
+
+    // TODO: this data might be stale
+    // ideally, you'd load the data just before the auto-reply was sent
+    load_data(mob);
+
+    CANGIE |= _BV(ENRX) | _BV(ENTX);
+    CANIE2 |= _BV(mob->mob_num);
+
+    mob_array[mob->mob_num] = mob;
+    pause_mob(mob);
 }
 
 void handle_rx_interrupt(mob_t* mob) {
@@ -192,12 +206,62 @@ void handle_tx_interrupt(mob_t* mob) {
 }
 
 void handle_auto_tx_interrupt(mob_t* mob) {
-    // TODO: implement me
+    print("Handling AUTO TX interrupt\n");
+
+    select_mob(mob->mob_num);
+
+    // TODO: Many of the variables, including IDTAG, dlc, etc
+    // are copied from the incoming remote frame; thus, they must all be
+    // reset and restored to their original values
+    // In particular, the RTR tag and RPLV bit must be reset to their
+    // original values
+    // as in the TX case, if there is no data left, pause the mob
+    // otherwise, load fresh data via tx callback
+
+    set_id_tag(mob->id_tag);
+    set_id_mask(mob->id_mask);
+    set_ctrl_flags(mob->ctrl);
+
+    load_data(mob);
+
+    // clear all interrupts
+    CANSTMOB = 0x00;
+
+    if (mob->dlc != 0) resume_mob(mob);
+    else pause_mob(mob);
 }
 
 uint8_t mob_status(mob_t* mob) {
     select_mob(mob->mob_num);
     return CANSTMOB;
+}
+
+uint8_t handle_err(mob_t* mob) {
+    select_mob(mob->mob_num);
+
+    uint8_t err = mob_status(mob) & 0x9f;
+
+    if (err != 0) {
+        if (err & _BV(DLCW)) {
+            print("ERR: Incoming message did not have expected DLC.\n");
+        } else if (err & _BV(BERR)) {
+            print("ERR: Bit error.\n");
+        } else if (err & _BV(SERR)) {
+            print("ERR: Five consecutive bits with same polarity.\n");
+        } else if (err & _BV(CERR)) {
+            print("ERR: CRC mismatch.\n");
+        } else if (err & _BV(FERR)) {
+            print("ERR: Form error.\n");
+        } else if (err & _BV(AERR)) {
+            print("ERR: No acknowledgement.\n");
+        }
+
+        // TODO: is this the best way to handle errors?
+        CANSTMOB &= ~(0x9f);
+        return 1;
+    }
+
+    return 0;
 }
 
 ISR(CAN_INT_vect){
@@ -209,22 +273,13 @@ ISR(CAN_INT_vect){
         else select_mob(i);
 
         uint8_t status = mob_status(mob);
-        uint8_t err = status & 0x9f;
+        print("Status: %#02x\n", status);
 
-        // TODO: have currently disabled many error interrupts; should enable
-        // them
-        print("Status: %#02x\n", CANSTMOB);
+        if (handle_err(mob)) continue;
 
-        if (err != 0) {
-            print("CAN error\n");
-            // TODO: shouldn't just clear the error and move on..
-            CANSTMOB &= ~(0x9f);
-            continue;
-        }
-
-        if (CANSTMOB & _BV(RXOK)) {
+        if (status & _BV(RXOK)) {
             handle_rx_interrupt(mob);
-        } else if (CANSTMOB & _BV(TXOK)) {
+        } else if (status & _BV(TXOK)) {
             switch (mob->mob_type) {
                 case TX_MOB:
                     handle_tx_interrupt(mob);
