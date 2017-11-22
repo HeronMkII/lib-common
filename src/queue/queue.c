@@ -36,6 +36,7 @@ int isEmpty(Queue *Q){
 void enqueue(Queue *Q, Data data){
 	if(!isFull(Q)){
 		Q->queueArray[Q->rear].data = data;
+
 		Q->rear = (Q->rear + 1) % MAXSIZE;
 		Q->currSize++;
 	}
@@ -43,10 +44,19 @@ void enqueue(Queue *Q, Data data){
 
 Data dequeue(Queue *Q){
 	if(!isEmpty(Q)){
-		Data data = Q->queueArray[Q->front].data;
+		Data data =  Q->queueArray[Q->front].data;
+
 		Q->front = (Q->front + 1) % MAXSIZE;
 		Q->currSize--;
 		return data;
 	}
-	return 0;
+
+	// loads 0s into the data
+	Data empty_data;
+	for(uint8_t i = 0; i < DATA_SIZE; i++){
+		empty_data.array[i] = 0;
+	}
+
+	return empty_data;
+	
 }
