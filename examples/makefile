@@ -1,11 +1,11 @@
 CC = avr-gcc
 INCLUDES = -I../../include
 LIB = -L../../lib -luart -lspi -lcan
-CFLAGS = -Wall -g -mmcu=atmega32m1 -Os -mcall-prologues
+CFLAGS = -std=gnu99 -Wall -g -mmcu=atmega32m1 -Os -mcall-prologues
 
 PGMR = stk500
 MCU = m32m1
-PORT = /dev/tty.usbmodem00187462
+PORT = COM3 #/dev/tty.usbmodem00187462
 
 $(PROG): $(PROG).o
 	$(CC) $(CFLAGS) -o $@.elf $^ $(LIB)

@@ -163,6 +163,7 @@ void init_auto_mob(mob_t* mob) {
 
     mob_array[mob->mob_num] = mob;
     pause_mob(mob);
+    print("Auto MOb initialized\n");
 }
 
 void handle_rx_interrupt(mob_t* mob) {
