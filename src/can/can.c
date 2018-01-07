@@ -7,7 +7,7 @@ static inline void select_mob(uint8_t mob_num) {
     CANPAGE = mob_num << 4;
 }
 
-void (mob_t* mob) {
+void dump_mob(mob_t* mob) {
     select_mob(mob->mob_num);
 
     print("----------------------------------------\n");
