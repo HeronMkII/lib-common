@@ -59,3 +59,4 @@ void pause_mob(mob_t*);
 void resume_mob(mob_t*);
 
 uint8_t mob_status(mob_t*);
+void dump_mob(mob_t*);
