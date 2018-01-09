@@ -1,62 +1,50 @@
 /*
-Author: Shimi Smith
+    AUTHORS: Shimi Smith, Siddharth Mahendraker
 
-This queue implementation doesn't use malloc or free to adhere to the cubesat coding rules
-
-EXAMPLE OF USE
---------------
-Queue q = initQueue();
-Queue *Q = &q;
-
-enqueue(Q, 1);
-
-printf("%d\n", dequeue(Q)); --> prints 1
-
+    A queue implementation which does not allocate memory to the heap.
 */
 
 #include <queue/queue.h>
 
-Queue initQueue(){
-	Queue Q;
-	Q.currSize = 0;
-	Q.front = 0;
-	Q.rear = 0;
-
-	return Q;
+void init_queue(queue_t queue) {
+    queue.size = 0;
+    queue.index = 0;
 }
 
-int isFull(Queue *Q){
-	return Q->currSize == MAXSIZE;
+uint8_t is_full(queue_t queue) {
+    return (queue.size == MAXSIZE);
 }
 
-int isEmpty(Queue *Q){
-	return Q->currSize == 0;
+uint8_t is_empty(queue_t queue) {
+    return (queue.size == 0);
 }
 
-void enqueue(Queue *Q, Data data){
-	if(!isFull(Q)){
-		Q->queueArray[Q->rear].data = data;
-
-		Q->rear = (Q->rear + 1) % MAXSIZE;
-		Q->currSize++;
-	}
+uint8_t enqueue(queue_t queue, uint8_t* data) {
+    if(is_full(queue)) {
+        return 1;
+    } else {
+        uint8_t index = queue.index;
+        queue_datum_t datum = queue.content[index];
+        for (uint8_t i = 0; i < DATA_SIZE; i++) {
+            (datum.data)[i] = data[i];
+        }
+        queue.index = index + 1;
+        queue.size += 1;
+        return 0;
+    }
 }
 
-Data dequeue(Queue *Q){
-	if(!isEmpty(Q)){
-		Data data =  Q->queueArray[Q->front].data;
-
-		Q->front = (Q->front + 1) % MAXSIZE;
-		Q->currSize--;
-		return data;
-	}
-
-	// loads 0s into the data
-	Data empty_data;
-	for(uint8_t i = 0; i < DATA_SIZE; i++){
-		empty_data.array[i] = 0;
-	}
-
-	return empty_data;
-	
+uint8_t dequeue(queue_t queue, uint8_t* data) {
+    if(is_empty(queue)) {
+        return 1;
+    } else {
+        uint8_t index = queue.index;
+        queue_datum_t datum = queue.content[index];
+        for (uint8_t i = 0; i < DATA_SIZE; i++) {
+            data[i] = (datum.data)[i];
+        }
+        queue.index = index - 1;
+        queue.size -= 1;
+        return 0;
+    }
 }

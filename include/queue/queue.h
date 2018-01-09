@@ -1,5 +1,5 @@
 /*
-Author: Shimi Smith
+    AUTHORS: Siddharth Mahendraker, Shimi Smith
 */
 
 #include <stdio.h>
@@ -7,26 +7,21 @@ Author: Shimi Smith
 #include <stdlib.h>
 
 #define MAXSIZE 50
-
 #define DATA_SIZE 8
 
-typedef struct Data{
-	uint8_t array[DATA_SIZE];
-} Data;
+typedef struct {
+    uint8_t data[DATA_SIZE];
+} queue_datum_t;
 
-typedef struct Node{
-	Data data;
-} Node;
+typedef struct {
+	uint8_t size;
+    uint8_t index;
+    queue_datum_t content[MAXSIZE];
+} queue_t;
 
-typedef struct Queue{
-	int currSize;
-	int front;
-	int rear;
-	Node queueArray[MAXSIZE];
-} Queue;
+void init_queue(queue_t);
+uint8_t is_full(queue_t);
+uint8_t is_empty(queue_t);
 
-Queue initQueue();
-int isFull(Queue *Q);
-int isEmpty(Queue *Q);
-void enqueue(Queue *Q, Data data);
-Data dequeue(Queue *Q);
+uint8_t enqueue(queue_t, uint8_t*);
+uint8_t dequeue(queue_t, uint8_t*);
