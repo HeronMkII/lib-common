@@ -75,12 +75,13 @@ static inline void set_ctrl_flags(mob_ctrl_t ctrl) {
 }
 
 void load_data(mob_t* mob) {
-    select_mob(mob->mob_num);
-
     // load data from callback
     (mob->tx_data_cb)(mob->data, &(mob->dlc));
 
+    select_mob(mob->mob_num);
     uint8_t len = mob->dlc;
+
+    CANCDMOB &= ~(0x0f);
     CANCDMOB |= len;
 
     CANPAGE &= ~(0x07); // reset data buffer index
