@@ -16,6 +16,7 @@ clean:
 	@$(MAKE) clean -C src/spi
 	@$(MAKE) clean -C src/can
 	@$(MAKE) clean -C src/timer
+	@$(MAKE) clean -C src/queue
 
 $(SUBDIRS):
 	@$(MAKE) -e -C $@
