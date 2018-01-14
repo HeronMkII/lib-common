@@ -56,6 +56,8 @@ void init_tx_mob(mob_t*);
 void init_auto_mob(mob_t*);
 
 void pause_mob(mob_t*);
+uint8_t is_paused(mob_t*);
+
 void resume_mob(mob_t*);
 
 uint8_t mob_status(mob_t*);

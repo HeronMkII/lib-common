@@ -2,6 +2,9 @@
 #include <uart/log.h>
 #include <can/can.h>
 
+#define F_CPU 8000000UL
+#include <util/delay.h>
+
 void tx_callback_1(uint8_t*, uint8_t*);
 void tx_callback_2(uint8_t*, uint8_t*);
 
@@ -11,7 +14,7 @@ mob_t tx_mob_1 = {
 	.mob_type = TX_MOB,
     .id_tag = { 0x0001 },
     .ctrl = default_tx_ctrl,
-    .tx_data_cb = tx_callback_1
+    .tx_data_cb = tx_callback_1,
 };
 
 mob_t tx_mob_2 = {
@@ -19,7 +22,7 @@ mob_t tx_mob_2 = {
 	.mob_type = TX_MOB,
     .id_tag = { 0x0002 },
     .ctrl = default_tx_ctrl,
-    .tx_data_cb = tx_callback_2
+    .tx_data_cb = tx_callback_2,
 };
 
 int main (void) {
@@ -31,9 +34,12 @@ int main (void) {
 	init_tx_mob(&tx_mob_1);
     init_tx_mob(&tx_mob_2);
 
-    resume_mob(&tx_mob_1);
-
-    while (1) {};
+    while (1) {
+        resume_mob(&tx_mob_1);
+        _delay_ms(100);
+        resume_mob(&tx_mob_2);
+        _delay_ms(100);
+    };
 }
 
 void tx_callback_1(uint8_t* data, uint8_t* len) {
@@ -43,7 +49,6 @@ void tx_callback_1(uint8_t* data, uint8_t* len) {
         *len = 1;
     } else {
         *len = 0;
-        resume_mob(&tx_mob_2);
     }
 
     val_1 += 1;
@@ -56,7 +61,7 @@ void tx_callback_2(uint8_t* data, uint8_t* len) {
         *len = 1;
     } else {
         *len = 0;
-        resume_mob(&tx_mob_1);
     }
+
     val_2 += 1;
 }
