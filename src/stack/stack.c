@@ -1,5 +1,5 @@
 /*
-    AUTHORS: Shimi Smith, Siddharth Mahendraker
+    AUTHORS: Shimi Smith, Siddharth Mahendraker, J. W. Sheridan
 
     A stack implementation which does not allocate memory to the heap.
 */

@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define MAX_SIZE 50
-#define DATA_SIZE 8
+#define MAX_STACK_SIZE 50
+#define STACK_DATA_SIZE 8
 
 typedef struct {
 	uint8_t size;
@@ -16,8 +16,8 @@ typedef struct {
 } stack_t;
 
 void init_stack(stack_t*);
-uint8_t is_full(stack_t*);
-uint8_t is_empty(stack_t*);
+uint8_t stack_full(stack_t*);
+uint8_t stack_empty(stack_t*);
 
 uint8_t enstack(stack_t*, uint8_t*);
 uint8_t destack(stack_t*, uint8_t*);
