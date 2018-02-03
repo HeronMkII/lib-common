@@ -3,6 +3,7 @@
 
     A queue implementation which does not allocate memory to the heap, and is not a stack.
 */
+
 #include <include/queue.h>
 
 void init_queue(queue_t* queue) {
@@ -28,9 +29,9 @@ uint8_t enqueue(queue_t* queue, uint8_t* data) {
         queue->index += 1;
         queue->size += 1;
         if(!queue->tail == 49){
-          queue->tail++;
+            queue->tail++;
         } else {
-          queue->tail = 0;
+            queue->tail = 0;
         }
         return 0;
     }
@@ -38,9 +39,9 @@ uint8_t enqueue(queue_t* queue, uint8_t* data) {
 uint8_t encircle(queue_t* queue, uint8_t* data) {
     if(queue_full(queue)) {
         if(queue->head == 49){
-          queue->head = 0;
+            queue->head = 0;
         } else {
-          queue->head += 1;
+            queue->head += 1;
         }
         return 1;
     } else {
@@ -51,9 +52,9 @@ uint8_t encircle(queue_t* queue, uint8_t* data) {
         queue->index += 1;
         queue->size += 1;
         if(!queue->tail == 49){
-          queue->tail++;
+            queue->tail++;
         } else {
-          queue->tail = 0;
+            queue->tail = 0;
         }
         return 0;
     }

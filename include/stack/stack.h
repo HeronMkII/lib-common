@@ -1,9 +1,11 @@
 /*
     AUTHORS: Siddharth Mahendraker, Shimi Smith, J. W. Sheridan
 */
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+
 #define MAX_STACK_SIZE 50
 #define STACK_DATA_SIZE 8
 

@@ -10,15 +10,12 @@ void init_stack(stack_t* stack) {
     stack->size = 0;
     stack->index = 0;
 }
-
 uint8_t is_full(stack_t* stack) {
     return (stack->size == MAX_SIZE);
 }
-
 uint8_t is_empty(stack_t* stack) {
     return (stack->size == 0);
 }
-
 uint8_t enstack(stack_t* stack, uint8_t* data) {
     if(is_full(stack)) {
         return 1;
@@ -32,7 +29,6 @@ uint8_t enstack(stack_t* stack, uint8_t* data) {
         return 0;
     }
 }
-
 uint8_t destack(stack_t* stack, uint8_t* data) {
     if(is_empty(stack)) {
         return 1;

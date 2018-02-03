@@ -1,2 +1,2 @@
-LIBNAME = stack
+LIBNAME = queue
 include ../makefile

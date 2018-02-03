@@ -20,6 +20,6 @@ typedef struct {
 void init_queue(queue_t*);
 uint8_t queue_full(queue_t*);
 uint8_t queue_empty(queue_t*);
-
+uint8_t enqueue(queue_t*, uint8_t*);
 uint8_t encircle(queue_t*, uint8_t*);
 uint8_t dequeue(queue_t*, uint8_t*);
