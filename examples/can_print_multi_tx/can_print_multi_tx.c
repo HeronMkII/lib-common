@@ -36,8 +36,11 @@ int main (void) {
 
     while (1) {
         resume_mob(&tx_mob_1);
+        while (!is_paused(&tx_mob_1)) {};
         _delay_ms(100);
+
         resume_mob(&tx_mob_2);
+        while (!is_paused(&tx_mob_2)) {};
         _delay_ms(100);
     };
 }
@@ -45,7 +48,7 @@ int main (void) {
 void tx_callback_1(uint8_t* data, uint8_t* len) {
     static uint32_t val_1 = 0;
     if (val_1 % 2 == 0) {
-        data[0] = 0x41;
+        data[0] = 0x41; // A
         *len = 1;
     } else {
         *len = 0;
@@ -57,7 +60,7 @@ void tx_callback_1(uint8_t* data, uint8_t* len) {
 void tx_callback_2(uint8_t* data, uint8_t* len) {
     static uint32_t val_2 = 0;
     if (val_2 % 2 == 0) {
-        data[0] = 0x42;
+        data[0] = 0x42; // B
         *len = 1;
     } else {
         *len = 0;

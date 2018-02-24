@@ -28,9 +28,10 @@ int main(void) {
     init_can();
     init_tx_mob(&tx_mob);
 
-    resume_mob(&tx_mob);
-
     while (1) {
+        resume_mob(&tx_mob);
+        while (!is_paused(&tx_mob)) {};
+
         print("Status: %#02x\n", mob_status(&tx_mob));
         print("Tx error count: %d\n", CANTEC);
     }
