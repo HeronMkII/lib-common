@@ -58,6 +58,7 @@ For science data
 OD and FL measurements are in separate fields
 
 TODO - standardize well numbering
+TODO - implement reading/triplicate number in transmission (1, 2, or 3)
 
 Bit 0: Always 0
 Bit 1: OD (0) or FL (1)
