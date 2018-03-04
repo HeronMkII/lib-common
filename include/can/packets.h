@@ -103,8 +103,10 @@ For one particular sensor measurement
 */
 
 /*
-4. MF Temperature
-TODO - is it the same as normal temperature?
+4. MF Temperature (thermistors)
+12 bit ADC reading -> zero padded
+(data placed into 12 least significant bits, aligned to the right of the 3 bytes)
+TODO - confirm the number of thermistors
 */
 
 /*
