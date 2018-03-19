@@ -1,6 +1,8 @@
 #include <can/can.h>
 #include <uart/log.h>
 
+#define ERR_MSG "ERR: %s.\n"
+
 mob_t* mob_array[6] = {0};
 
 static inline void select_mob(uint8_t mob_num) {
@@ -178,7 +180,7 @@ void init_auto_mob(mob_t* mob) {
 }
 
 void handle_rx_interrupt(mob_t* mob) {
-    print("Handling RX interrupt\n");
+    print("Handling %s interrupt\n", "RX");
 
     select_mob(mob->mob_num);
 
@@ -208,7 +210,7 @@ void handle_rx_interrupt(mob_t* mob) {
 }
 
 void handle_tx_interrupt(mob_t* mob) {
-    print("Handling TX interrupt\n");
+    print("Handling %s interrupt\n", "TX");
 
     /* TODO: Add some kind of burst mode, which looks like:
     // Try to load more data automatically
@@ -233,7 +235,7 @@ void handle_tx_interrupt(mob_t* mob) {
 }
 
 void handle_auto_tx_interrupt(mob_t* mob) {
-    print("Handling AUTO TX interrupt\n");
+    print("Handling %s interrupt\n", "AUTO TX");
 
     select_mob(mob->mob_num);
 
@@ -274,17 +276,23 @@ uint8_t handle_err(mob_t* mob) {
 
     if (err != 0) {
         if (err & _BV(DLCW)) {
-            print("ERR: Incoming message did not have expected DLC.\n");
+            print(ERR_MSG, "Bad DLC");
+            //print("ERR: Incoming message did not have expected DLC.\n");
         } else if (err & _BV(BERR)) {
-            print("ERR: Bit error.\n");
+            print(ERR_MSG, "Bit error");
+            //print("ERR: Bit error.\n");
         } else if (err & _BV(SERR)) {
-            print("ERR: Five consecutive bits with same polarity.\n");
+            print(ERR_MSG, "Bit stuffing error");
+            //print("ERR: Five consecutive bits with same polarity.\n");
         } else if (err & _BV(CERR)) {
-            print("ERR: CRC mismatch.\n");
+            print(ERR_MSG, "CRC mismatch");
+            //print("ERR: CRC mismatch.\n");
         } else if (err & _BV(FERR)) {
-            print("ERR: Form error.\n");
+            print(ERR_MSG, "Form error");
+            //print("ERR: Form error.\n");
         } else if (err & _BV(AERR)) {
-            print("ERR: No acknowledgement.\n");
+            print(ERR_MSG, "No ack");
+            //print("ERR: No acknowledgement.\n");
         }
 
         // TODO: is this the best way to handle errors?
