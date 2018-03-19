@@ -7,6 +7,43 @@ static inline void select_mob(uint8_t mob_num) {
     CANPAGE = mob_num << 4;
 }
 
+void dump_mob(mob_t* mob) {
+    select_mob(mob->mob_num);
+
+    print("----------------------------------------\n");
+    switch (mob->mob_type) {
+        case RX_MOB: print("RX MOB\n");
+            break;
+        case TX_MOB: print("TX MOB\n");
+            break;
+        case AUTO_MOB: print("AUTO MOB\n");
+            break;
+    }
+
+    print("MOb number: %d\n", mob->mob_num);
+    print("IDTAG: 0x%02x\n", mob->id_tag);
+    print("DLC: %d\n", mob->dlc);
+
+    print("MOb Data\n");
+
+    CANPAGE &= ~(0x07); // reset data buffer index
+
+    uint8_t data[8] = {0};
+    for (uint8_t j = 0; j < mob->dlc; j++) {
+        data[j] = CANMSG; // reading auto-increments the data buffer index
+    }
+
+    print("0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",data[0],data[1],
+        data[2], data[3], data[4], data[5], data[6], data[7]);
+
+    print("RTRTAG: %d\n", mob->ctrl.rtr);
+    print("RPLV: %d\n", mob->ctrl.rplv);
+    print("CANSTMOB: 0x%02x\n", CANSTMOB);
+    print("CANCDMOB: 0x%02x\n", CANCDMOB);
+    print("CANIDT4 : 0x%02x\n", CANIDT4);
+    print("----------------------------------------\n");
+}
+
 static inline void set_id_tag(mob_id_tag_t id_tag) {
     CANIDT2 = id_tag.tab[0] << 5;
     CANIDT1 = (id_tag.tab[1] << 5) | (id_tag.tab[0] >> 3);
@@ -37,13 +74,14 @@ static inline void set_ctrl_flags(mob_ctrl_t ctrl) {
     else CANCDMOB &= ~(_BV(RPLV));
 }
 
-void load_data(mob_t* mob) {
-    select_mob(mob->mob_num);
-
+uint8_t load_data(mob_t* mob) {
     // load data from callback
     (mob->tx_data_cb)(mob->data, &(mob->dlc));
 
+    select_mob(mob->mob_num);
     uint8_t len = mob->dlc;
+
+    CANCDMOB &= ~(0x0f);
     CANCDMOB |= len;
 
     CANPAGE &= ~(0x07); // reset data buffer index
@@ -51,7 +89,22 @@ void load_data(mob_t* mob) {
         CANMSG = (mob->data)[i]; // data buffer index auto-incremented
     }
 
-    print("data: %s len: %d\n", (char *) mob->data, mob->dlc);
+    if (len) {
+        print("Loaded data: %s len: %d\n", (char *) mob->data, mob->dlc);
+    }
+
+    return len;
+}
+
+uint8_t is_paused(mob_t* mob) {
+    select_mob(mob->mob_num);
+
+    // the MOb is paused iff the upper two bits of CANCDMOB are 0
+    if (CANCDMOB & 0xc0) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 void init_can() {
@@ -90,11 +143,15 @@ void pause_mob(mob_t* mob) {
     print("Mob %d paused\n", mob->mob_num);
 }
 
+
 void resume_mob(mob_t* mob) {
     select_mob(mob->mob_num);
 
     switch (mob->mob_type) {
         case TX_MOB:
+            if (load_data(mob) == 0) return;
+            // load data before resuming the MOb; if there is no new data
+            // do not resume the MOb
             CANCDMOB |= _BV(CONMOB0);
             CANCDMOB &= ~(_BV(CONMOB1));
             break;
@@ -126,7 +183,6 @@ void init_rx_mob(mob_t* mob) {
 
     resume_mob(mob); // enable mob
     print("RX mob initialized\n");
-    print("mob_num: %d dlc: %d\n", mob->mob_num, mob->dlc);
 }
 
 void init_tx_mob(mob_t* mob) {
@@ -134,8 +190,7 @@ void init_tx_mob(mob_t* mob) {
 
     set_id_tag(mob->id_tag);
     set_ctrl_flags(mob->ctrl);
-
-    load_data(mob);
+    mob->dlc = 0;
 
     CANGIE |= _BV(ENTX);
     CANIE2 |= _BV(mob->mob_num);
@@ -144,7 +199,6 @@ void init_tx_mob(mob_t* mob) {
     pause_mob(mob); // tx mobs must be resumed manually
 
     print("TX mob initialized\n");
-    print("mob_num: %d dlc: %d\n", mob->mob_num, mob->dlc);
 }
 
 void init_auto_mob(mob_t* mob) {
@@ -171,39 +225,68 @@ void handle_rx_interrupt(mob_t* mob) {
 
     select_mob(mob->mob_num);
 
+    // we must reset the ID and various flags because they
+    // have been copied over from the sender
+    set_id_tag(mob->id_tag);
+    set_id_mask(mob->id_mask);
+    set_ctrl_flags(mob->ctrl);
+
     uint8_t len = CANCDMOB & 0x0F;
     mob->dlc = (len >= 8) ? 8 : len;
-    // update dlc only; no need to update id/mask
 
     CANPAGE &= ~(0x07); // reset data buffer index
 
-    uint8_t data[8] = {0};
-    for (uint8_t j = 0; j < 8; j++) {
-        data[j] = CANMSG; // reading auto-increments the data buffer index
+    for (uint8_t j = 0; j < len; j++) {
+        (mob->data)[j] = CANMSG; // reading auto-increments the data buffer index
     }
 
-    (mob->rx_cb)(data, len); // execute callback
+    (mob->rx_cb)(mob->data, len); // execute callback
 
     CANSTMOB &= ~(_BV(RXOK));  // clear interrupt flag
 
-    resume_mob(mob);
+    if (mob->mob_type == TX_MOB) pause_mob(mob);
+    else resume_mob(mob);
+    // resume_mob(mob);
     // required because ENMOB is reset after RXOK goes high
 }
+
+/*
+
+    FIXME: In the new implementation, TX MObs must be resumed after every
+    successful TX. The problem with this approach is that the user may resume a
+    TX MOb *too soon*, before the CAN transceiver has a chance to send the
+    frame.
+
+    One solution involves using the is_paused function above:
+
+        resume_mob(&tx_mob);
+        // wait for TXOK before continuing
+        while(!is_paused(&tx_mob)) {};
+*/
 
 void handle_tx_interrupt(mob_t* mob) {
     print("Handling TX interrupt\n");
 
-    select_mob(mob->mob_num);
+    /* TODO: Add some kind of burst mode, which looks like:
+    // Try to load more data automatically
     load_data(mob);
-    // update dlc and load the next 8 bytes
-    // load the next 8 bytes to send
 
+    select_mob(mob->mob_num);
+    CANSTMOB &= ~(_BV(TXOK));  // clear interrupt flag
+
+    // if we successfully loaded more data, resume (but without calling
+    // load_data)
+
+    if (mob->dlc != 0) resume_mob(mob);
+    else pause_mob(mob);
+    */
+
+    select_mob(mob->mob_num);
     CANSTMOB &= ~(_BV(TXOK));  // clear interrupt flag
     // this also resets the mob, without clearing any of the data fields
     // this is why we must resume the mob if there is still data left to send
 
-    if (mob->dlc != 0) resume_mob(mob);
-    else pause_mob(mob);
+    pause_mob(mob);
 }
 
 void handle_auto_tx_interrupt(mob_t* mob) {
@@ -219,17 +302,21 @@ void handle_auto_tx_interrupt(mob_t* mob) {
     // as in the TX case, if there is no data left, pause the mob
     // otherwise, load fresh data via tx callback
 
-    set_id_tag(mob->id_tag);
-    set_id_mask(mob->id_mask);
-    set_ctrl_flags(mob->ctrl);
+    // TODO: maybe make this work like TX MObs?
 
     load_data(mob);
 
-    // clear all interrupts
-    CANSTMOB = 0x00;
+    // clear interrupt flag
+    CANSTMOB &= ~(_BV(TXOK));
 
+    // this should happen all at once
     if (mob->dlc != 0) resume_mob(mob);
     else pause_mob(mob);
+
+    // TODO: for some reason, we need to set these AFTER
+    set_id_tag(mob->id_tag);
+    set_id_mask(mob->id_mask);
+    set_ctrl_flags(mob->ctrl);
 }
 
 uint8_t mob_status(mob_t* mob) {
@@ -274,7 +361,7 @@ ISR(CAN_INT_vect){
         else select_mob(i);
 
         uint8_t status = mob_status(mob);
-        print("Status: %#02x\n", status);
+        print("Status: 0x%02x\n", status);
 
         if (handle_err(mob)) continue;
 
