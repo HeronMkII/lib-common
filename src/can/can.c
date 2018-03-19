@@ -7,43 +7,6 @@ static inline void select_mob(uint8_t mob_num) {
     CANPAGE = mob_num << 4;
 }
 
-void dump_mob(mob_t* mob) {
-    select_mob(mob->mob_num);
-
-    print("----------------------------------------\n");
-    switch (mob->mob_type) {
-        case RX_MOB: print("RX MOB\n");
-            break;
-        case TX_MOB: print("TX MOB\n");
-            break;
-        case AUTO_MOB: print("AUTO MOB\n");
-            break;
-    }
-
-    print("MOb number: %d\n", mob->mob_num);
-    print("IDTAG: 0x%02x\n", mob->id_tag);
-    print("DLC: %d\n", mob->dlc);
-
-    print("MOb Data\n");
-
-    CANPAGE &= ~(0x07); // reset data buffer index
-
-    uint8_t data[8] = {0};
-    for (uint8_t j = 0; j < mob->dlc; j++) {
-        data[j] = CANMSG; // reading auto-increments the data buffer index
-    }
-
-    print("0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",data[0],data[1],
-        data[2], data[3], data[4], data[5], data[6], data[7]);
-
-    print("RTRTAG: %d\n", mob->ctrl.rtr);
-    print("RPLV: %d\n", mob->ctrl.rplv);
-    print("CANSTMOB: 0x%02x\n", CANSTMOB);
-    print("CANCDMOB: 0x%02x\n", CANCDMOB);
-    print("CANIDT4 : 0x%02x\n", CANIDT4);
-    print("----------------------------------------\n");
-}
-
 static inline void set_id_tag(mob_id_tag_t id_tag) {
     CANIDT2 = id_tag.tab[0] << 5;
     CANIDT1 = (id_tag.tab[1] << 5) | (id_tag.tab[0] >> 3);
@@ -132,8 +95,6 @@ void init_can() {
     CANGCON |= _BV(ENASTB);
     while (!(CANGSTA & _BV(ENFG))) {}
     // enable CAN and wait for CAN to turn on before returning
-
-    print("CAN initialized\n");
 }
 
 void pause_mob(mob_t* mob) {
@@ -182,7 +143,6 @@ void init_rx_mob(mob_t* mob) {
     mob_array[mob->mob_num] = mob;
 
     resume_mob(mob); // enable mob
-    print("RX mob initialized\n");
 }
 
 void init_tx_mob(mob_t* mob) {
@@ -197,8 +157,6 @@ void init_tx_mob(mob_t* mob) {
 
     mob_array[mob->mob_num] = mob;
     pause_mob(mob); // tx mobs must be resumed manually
-
-    print("TX mob initialized\n");
 }
 
 void init_auto_mob(mob_t* mob) {
@@ -217,7 +175,6 @@ void init_auto_mob(mob_t* mob) {
 
     mob_array[mob->mob_num] = mob;
     pause_mob(mob);
-    print("Auto MOb initialized\n");
 }
 
 void handle_rx_interrupt(mob_t* mob) {
@@ -249,20 +206,6 @@ void handle_rx_interrupt(mob_t* mob) {
     // resume_mob(mob);
     // required because ENMOB is reset after RXOK goes high
 }
-
-/*
-
-    FIXME: In the new implementation, TX MObs must be resumed after every
-    successful TX. The problem with this approach is that the user may resume a
-    TX MOb *too soon*, before the CAN transceiver has a chance to send the
-    frame.
-
-    One solution involves using the is_paused function above:
-
-        resume_mob(&tx_mob);
-        // wait for TXOK before continuing
-        while(!is_paused(&tx_mob)) {};
-*/
 
 void handle_tx_interrupt(mob_t* mob) {
     print("Handling TX interrupt\n");
@@ -361,7 +304,7 @@ ISR(CAN_INT_vect){
         else select_mob(i);
 
         uint8_t status = mob_status(mob);
-        print("Status: 0x%02x\n", status);
+        print("Status: %#.2x\n", status);
 
         if (handle_err(mob)) continue;
 
