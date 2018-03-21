@@ -1,6 +1,7 @@
 SUBDIRS = $(addprefix src/,uart spi can timer queue)
+EXAMPLES = $(dir $(wildcard examples/*/.))
 
-.PHONY: all $(SUBDIRS) clean
+.PHONY: all $(SUBDIRS) clean examples
 
 export CC = avr-gcc
 export AR = avr-ar
@@ -20,3 +21,11 @@ clean:
 
 $(SUBDIRS):
 	@$(MAKE) -e -C $@
+
+examples:
+	@for dir in $(EXAMPLES) ; do \
+		cd $$dir ; \
+		make clean ; \
+		make ; \
+		cd ../.. ; \
+	done

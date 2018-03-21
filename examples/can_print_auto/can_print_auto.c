@@ -3,7 +3,6 @@
 #include <can/can.h>
 
 void tx_callback(uint8_t*, uint8_t*);
-void rx_callback(uint8_t*, uint8_t);
 
 mob_t auto_mob = {
     .mob_num = 0,
@@ -43,7 +42,6 @@ int main(void) {
   init_auto_mob(&auto_mob);
 
   resume_mob(&auto_mob);
-  dump_mob(&auto_mob);
 
   while (1) {}
 }
