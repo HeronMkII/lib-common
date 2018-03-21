@@ -326,6 +326,10 @@ ISR(CAN_INT_vect){
                 case AUTO_MOB:
                     handle_auto_tx_interrupt(mob);
                     break;
+                default:
+                    // should never get here
+                    handle_err(mob);
+                    break;
             }
         }
     }

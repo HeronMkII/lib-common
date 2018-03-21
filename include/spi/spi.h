@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <avr/cpufunc.h> // for _NOP()
+#include <string.h>
 
 // SPCR bits
 #define SPIE 7 // enable spi interrupts
@@ -16,12 +17,12 @@
 #define WCOL 6 // write collision flag
 #define SPI2X 0 // double speed bit
 
-typedef volatile uint8_t* PIN;
-typedef volatile uint8_t* PORT;
+typedef volatile uint8_t* pint_t;
+typedef volatile uint8_t* port_t;
 
 void init_spi(void);
 uint8_t send_spi(uint8_t);
 
-void init_cs(int, PORT);
-void set_cs_low(int, PORT);
-void set_cs_high(int, PORT);
+void init_cs(uint8_t, port_t);
+void set_cs_low(uint8_t, port_t);
+void set_cs_high(uint8_t, port_t);

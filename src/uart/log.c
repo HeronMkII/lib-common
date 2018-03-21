@@ -1,14 +1,16 @@
 #include <uart/log.h>
 
-char buf[LOG_BUFFER_SIZE];
+// TODO: should this be volatile
+uint8_t buf[LOG_BUFFER_SIZE];
+
 // UART must be initialized before calling print
 inline int print(char *str, ...) {
     va_list ptr;
     va_start(ptr, str);
 
-    int ret = vsprintf(buf, str, ptr);
+    int ret = vsprintf((char *)buf, str, ptr);
     va_end(ptr);
 
-    send_uart(buf);
+    send_uart(buf, strlen((char*)buf));
     return ret;
 }

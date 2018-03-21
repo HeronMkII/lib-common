@@ -1,10 +1,10 @@
 #include <uart/uart.h>
 #include <uart/log.h>
 
-#define MAX_RX_BUF_SIZE 100
+#define MAX_RX_BUF_SIZE 50
 
-uint8_t RX_BUF[MAX_RX_BUF_SIZE] = { 0 };
-uint8_t rx_buf_counter = 0;
+uint8_t uart_rx_buf[MAX_RX_BUF_SIZE];
+volatile uint8_t uart_rx_buf_counter;
 
 // default rx callback
 void _nop(uint8_t *c, uint8_t len) {}
@@ -46,8 +46,8 @@ void init_uart() {
     // reset RX buffer and counter
 }
 
-void send_uart(const uint8_t* msg) {
-    for (int i = 0; i < strlen(msg); i++) {
+void send_uart(const uint8_t* msg, int len) {
+    for (uint8_t i = 0; i < len; i++) {
         put_char(msg[i]);
     }
 }
@@ -57,9 +57,9 @@ void register_callback(global_rx_cb_t cb) {
 }
 
 void clear_rx_buffer() {
-    rx_buf_counter = 0;
-    for (int i = 0; i < MAX_RX_BUF_SIZE; i++) {
-        RX_BUF[i] = 0;
+    uart_rx_buf_counter = 0;
+    for (uint8_t i = 0; i < MAX_RX_BUF_SIZE; i++) {
+        uart_rx_buf[i] = 0;
     }
 }
 
@@ -67,12 +67,12 @@ ISR(LIN_TC_vect) {
   if (LINSIR & _BV(LRXOK)) {
     uint8_t c = get_char();
 
-    RX_BUF[rx_buf_counter] = c;
-    rx_buf_counter += 1;
+    uart_rx_buf[uart_rx_buf_counter] = c;
+    uart_rx_buf_counter += 1;
 
-    global_rx_cb(RX_BUF, rx_buf_counter);
+    global_rx_cb(uart_rx_buf, uart_rx_buf_counter);
 
-    if (rx_buf_counter == MAX_RX_BUF_SIZE) {
+    if (uart_rx_buf_counter == MAX_RX_BUF_SIZE) {
         clear_rx_buffer();
     }
   }

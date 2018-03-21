@@ -20,4 +20,4 @@ void clear_rx_buffer();
 
 void put_char(const uint8_t);
 void init_uart();
-void send_uart(const uint8_t*);
+void send_uart(const uint8_t*, int);

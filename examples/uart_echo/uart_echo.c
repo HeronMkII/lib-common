@@ -2,7 +2,7 @@
 
 void echo(uint8_t *buf, uint8_t len) {
     if (len == 10) {
-        for (int i = 0; i < len; i++)
+        for (uint8_t i = 0; i < len; i++)
             put_char(buf[i]);
         clear_rx_buffer();
     }
