@@ -24,16 +24,11 @@ so currently each transmission is 5 bytes.
 /*
 Byte 0: packet
 (housekeeping or science data)
-
-TODO - is the "REQ" indicating that it will start requesting data (so prepare),
-and the "SENSOR_REQ" requesting data for a specific sensor?
 */
 
 // PAY COMMAND IDS
-#define PAY_HK_REQ			0b10000001
-// #define PAY_HK_SENSOR_REQ	0b10000010
-#define PAY_SCI_REQ			0b10000011
-// #define PAY_SCI_SENSOR_REQ	0b10000100
+#define PAY_HK_REQ          0b10000001
+#define PAY_SCI_REQ         0b10000011
 
 
 /*
@@ -46,12 +41,12 @@ Indicates which sensor to poll
 
 // PAY SENSOR IDS
 // For housekeeping data
-#define PAY_TEMP_1			0b00000000
-#define PAY_PRES_1			0b00000001
-#define PAY_HUMID_1			0b00000010
-#define PAY_MF_TEMP_1		0b00000011
-#define PAY_MF_TEMP_2		0b00000100
-#define	PAY_MF_TEMP_3		0b00000101
+#define PAY_TEMP_1          0b00000000
+#define PAY_PRES_1          0b00000001
+#define PAY_HUMID_1         0b00000010
+#define PAY_MF_TEMP_1       0b00000011
+#define PAY_MF_TEMP_2       0b00000100
+#define PAY_MF_TEMP_3       0b00000101
 
 /*
 For science data
@@ -64,12 +59,12 @@ Bit 0: Always 0
 Bit 1: OD (0) or FL (1)
 Bits 2-7: Well index (0-32)
 */
-// #define PAY_WELL_OD_1		0b01000000
-// #define PAY_WELL_FL_1		0b11000000
-// #define PAY_WELL_OD_33		0b01100000
-// #define PAY_WELL_FL_33		0b11100000
-#define PAY_WELL_OD_BASE        0b00000000
-#define PAY_WELL_FL_BASE        0b01000000
+// #define PAY_WELL_OD_1    0b01000000
+// #define PAY_WELL_FL_1    0b11000000
+// #define PAY_WELL_OD_33   0b01100000
+// #define PAY_WELL_FL_33   0b11100000
+#define PAY_WELL_OD_BASE    0b00000000
+#define PAY_WELL_FL_BASE    0b01000000
 /*
 To specify the well number, add the zero-based index of the well to this value, e.g.
 Well 1 (first), OD: 0b00000000
