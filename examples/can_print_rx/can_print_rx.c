@@ -2,7 +2,7 @@
 #include <uart/log.h>
 #include <can/can.h>
 
-void rx_callback(uint8_t*, uint8_t);
+void rx_callback(const uint8_t*, uint8_t);
 
 mob_t rx_mob = {
     .mob_num = 0,
@@ -14,7 +14,7 @@ mob_t rx_mob = {
     .rx_cb = rx_callback
 };
 
-void rx_callback(uint8_t* data, uint8_t len) {
+void rx_callback(const uint8_t* data, uint8_t len) {
     print("TX received!\n");
     print("%s\n", (char *) data);
 }

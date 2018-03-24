@@ -29,7 +29,7 @@ typedef struct {
 #define default_rx_ctrl { 0, 0, 0, 0, 0, 0 }
 #define default_tx_ctrl { 0, 0, 0, 0, 0, 0 }
 
-typedef void (*can_rx_callback_t)(uint8_t*, uint8_t);
+typedef void (*can_rx_callback_t)(const uint8_t*, uint8_t);
 typedef void (*can_tx_callback_t)(uint8_t*, uint8_t*);
 
 typedef struct {
@@ -56,9 +56,7 @@ void init_tx_mob(mob_t*);
 void init_auto_mob(mob_t*);
 
 void pause_mob(mob_t*);
+void resume_mob(mob_t*);
 uint8_t is_paused(mob_t*);
 
-void resume_mob(mob_t*);
-
 uint8_t mob_status(mob_t*);
-void dump_mob(mob_t*);

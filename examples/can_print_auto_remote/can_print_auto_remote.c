@@ -3,7 +3,7 @@
 #include <can/can.h>
 
 void tx_callback(uint8_t*, uint8_t*);
-void rx_callback(uint8_t*, uint8_t);
+void rx_callback(const uint8_t*, uint8_t);
 
 mob_t tx_mob = {
     .mob_num = 0,
@@ -45,7 +45,7 @@ void tx_callback(uint8_t* data, uint8_t* len) {
    must have the rx_cb set.
 */
 
-void rx_callback(uint8_t* data, uint8_t len) {
+void rx_callback(const uint8_t* data, uint8_t len) {
     print("Data frame received!\n");
     print("%s\n", (char *) data);
 }

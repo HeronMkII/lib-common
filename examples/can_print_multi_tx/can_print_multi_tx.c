@@ -11,7 +11,7 @@ void tx_callback_2(uint8_t*, uint8_t*);
 // this is a tx mob used for testing
 mob_t tx_mob_1 = {
     .mob_num = 0,
-	.mob_type = TX_MOB,
+    .mob_type = TX_MOB,
     .id_tag = { 0x0001 },
     .ctrl = default_tx_ctrl,
     .tx_data_cb = tx_callback_1,
@@ -19,19 +19,19 @@ mob_t tx_mob_1 = {
 
 mob_t tx_mob_2 = {
     .mob_num = 1,
-	.mob_type = TX_MOB,
+    .mob_type = TX_MOB,
     .id_tag = { 0x0002 },
     .ctrl = default_tx_ctrl,
     .tx_data_cb = tx_callback_2,
 };
 
 int main (void) {
-	init_uart();
-	print("UART Initialized\n");
+    init_uart();
+    print("UART Initialized\n");
 
     init_can();
 
-	init_tx_mob(&tx_mob_1);
+    init_tx_mob(&tx_mob_1);
     init_tx_mob(&tx_mob_2);
 
     while (1) {

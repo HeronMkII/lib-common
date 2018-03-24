@@ -1,47 +1,12 @@
 #include <can/can.h>
 #include <uart/log.h>
 
+#define ERR_MSG "ERR: %s.\n"
+
 mob_t* mob_array[6] = {0};
 
 static inline void select_mob(uint8_t mob_num) {
     CANPAGE = mob_num << 4;
-}
-
-void dump_mob(mob_t* mob) {
-    select_mob(mob->mob_num);
-
-    print("----------------------------------------\n");
-    switch (mob->mob_type) {
-        case RX_MOB: print("RX MOB\n");
-            break;
-        case TX_MOB: print("TX MOB\n");
-            break;
-        case AUTO_MOB: print("AUTO MOB\n");
-            break;
-    }
-
-    print("MOb number: %d\n", mob->mob_num);
-    print("IDTAG: 0x%02x\n", mob->id_tag);
-    print("DLC: %d\n", mob->dlc);
-
-    print("MOb Data\n");
-
-    CANPAGE &= ~(0x07); // reset data buffer index
-
-    uint8_t data[8] = {0};
-    for (uint8_t j = 0; j < mob->dlc; j++) {
-        data[j] = CANMSG; // reading auto-increments the data buffer index
-    }
-
-    print("0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",data[0],data[1],
-        data[2], data[3], data[4], data[5], data[6], data[7]);
-
-    print("RTRTAG: %d\n", mob->ctrl.rtr);
-    print("RPLV: %d\n", mob->ctrl.rplv);
-    print("CANSTMOB: 0x%02x\n", CANSTMOB);
-    print("CANCDMOB: 0x%02x\n", CANCDMOB);
-    print("CANIDT4 : 0x%02x\n", CANIDT4);
-    print("----------------------------------------\n");
 }
 
 static inline void set_id_tag(mob_id_tag_t id_tag) {
@@ -132,8 +97,6 @@ void init_can() {
     CANGCON |= _BV(ENASTB);
     while (!(CANGSTA & _BV(ENFG))) {}
     // enable CAN and wait for CAN to turn on before returning
-
-    print("CAN initialized\n");
 }
 
 void pause_mob(mob_t* mob) {
@@ -182,7 +145,6 @@ void init_rx_mob(mob_t* mob) {
     mob_array[mob->mob_num] = mob;
 
     resume_mob(mob); // enable mob
-    print("RX mob initialized\n");
 }
 
 void init_tx_mob(mob_t* mob) {
@@ -197,8 +159,6 @@ void init_tx_mob(mob_t* mob) {
 
     mob_array[mob->mob_num] = mob;
     pause_mob(mob); // tx mobs must be resumed manually
-
-    print("TX mob initialized\n");
 }
 
 void init_auto_mob(mob_t* mob) {
@@ -217,11 +177,10 @@ void init_auto_mob(mob_t* mob) {
 
     mob_array[mob->mob_num] = mob;
     pause_mob(mob);
-    print("Auto MOb initialized\n");
 }
 
 void handle_rx_interrupt(mob_t* mob) {
-    print("Handling RX interrupt\n");
+    print("Handling %s interrupt\n", "RX");
 
     select_mob(mob->mob_num);
 
@@ -250,22 +209,8 @@ void handle_rx_interrupt(mob_t* mob) {
     // required because ENMOB is reset after RXOK goes high
 }
 
-/*
-
-    FIXME: In the new implementation, TX MObs must be resumed after every
-    successful TX. The problem with this approach is that the user may resume a
-    TX MOb *too soon*, before the CAN transceiver has a chance to send the
-    frame.
-
-    One solution involves using the is_paused function above:
-
-        resume_mob(&tx_mob);
-        // wait for TXOK before continuing
-        while(!is_paused(&tx_mob)) {};
-*/
-
 void handle_tx_interrupt(mob_t* mob) {
-    print("Handling TX interrupt\n");
+    print("Handling %s interrupt\n", "TX");
 
     /* TODO: Add some kind of burst mode, which looks like:
     // Try to load more data automatically
@@ -290,7 +235,7 @@ void handle_tx_interrupt(mob_t* mob) {
 }
 
 void handle_auto_tx_interrupt(mob_t* mob) {
-    print("Handling AUTO TX interrupt\n");
+    print("Handling %s interrupt\n", "AUTO TX");
 
     select_mob(mob->mob_num);
 
@@ -331,17 +276,23 @@ uint8_t handle_err(mob_t* mob) {
 
     if (err != 0) {
         if (err & _BV(DLCW)) {
-            print("ERR: Incoming message did not have expected DLC.\n");
+            print(ERR_MSG, "Bad DLC");
+            //print("ERR: Incoming message did not have expected DLC.\n");
         } else if (err & _BV(BERR)) {
-            print("ERR: Bit error.\n");
+            print(ERR_MSG, "Bit error");
+            //print("ERR: Bit error.\n");
         } else if (err & _BV(SERR)) {
-            print("ERR: Five consecutive bits with same polarity.\n");
+            print(ERR_MSG, "Bit stuffing error");
+            //print("ERR: Five consecutive bits with same polarity.\n");
         } else if (err & _BV(CERR)) {
-            print("ERR: CRC mismatch.\n");
+            print(ERR_MSG, "CRC mismatch");
+            //print("ERR: CRC mismatch.\n");
         } else if (err & _BV(FERR)) {
-            print("ERR: Form error.\n");
+            print(ERR_MSG, "Form error");
+            //print("ERR: Form error.\n");
         } else if (err & _BV(AERR)) {
-            print("ERR: No acknowledgement.\n");
+            print(ERR_MSG, "No ack");
+            //print("ERR: No acknowledgement.\n");
         }
 
         // TODO: is this the best way to handle errors?
@@ -361,7 +312,7 @@ ISR(CAN_INT_vect){
         else select_mob(i);
 
         uint8_t status = mob_status(mob);
-        print("Status: 0x%02x\n", status);
+        print("Status: %#.2x\n", status);
 
         if (handle_err(mob)) continue;
 
@@ -374,6 +325,10 @@ ISR(CAN_INT_vect){
                     break;
                 case AUTO_MOB:
                     handle_auto_tx_interrupt(mob);
+                    break;
+                default:
+                    // should never get here
+                    handle_err(mob);
                     break;
             }
         }
