@@ -1,4 +1,4 @@
-SUBDIRS = $(addprefix src/,uart spi can timer queue)
+SUBDIRS = $(addprefix src/,uart spi can timer queue stack)
 
 .PHONY: all $(SUBDIRS) clean
 
@@ -17,6 +17,7 @@ clean:
 	@$(MAKE) clean -C src/can
 	@$(MAKE) clean -C src/timer
 	@$(MAKE) clean -C src/queue
+	@$(MAKE) clean -C src/stack
 
 $(SUBDIRS):
 	@$(MAKE) -e -C $@
