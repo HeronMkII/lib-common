@@ -1,16 +1,12 @@
+PROG = uart_print_fp
 CC = avr-gcc
 INCLUDES = -I../../include
-LIB = -L../../lib -luart -lspi -lcan -lqueue -lstack
-CFLAGS = -std=gnu99 -Wall -g -mmcu=atmega32m1 -Os -mcall-prologues
+LIB = -L../../lib -luart -lprintf_flt -lm
+CFLAGS = -std=gnu99 -Wall -Wl,-u,vfprintf -g -mmcu=atmega32m1 -Os -mcall-prologues
 
 PGMR = stk500
 MCU = m32m1
-
-ifeq ($(OS),Windows_NT)
-    PORT = COM3
-else
-    PORT = /dev/tty.usbmodem00187462
-endif
+PORT = /dev/tty.usbmodem00187462
 
 $(PROG): $(PROG).o
 	$(CC) $(CFLAGS) -o $@.elf $^ $(LIB)

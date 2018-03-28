@@ -3,6 +3,6 @@
 
 #include "uart.h"
 
-#define LOG_BUFFER_SIZE 80
+#define LOG_BUF_SIZE 50
 
 int print(char *, ...);

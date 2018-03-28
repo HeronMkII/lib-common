@@ -7,7 +7,7 @@ void rx_callback(const uint8_t*, uint8_t);
 mob_t rx_mob = {
     .mob_num = 0,
     .mob_type = RX_MOB,
-    .dlc = 7,
+    .dlc = 1,
     .id_tag = { 0x0000 },
     .id_mask = { 0x0000 },
     .ctrl = default_rx_ctrl,

@@ -6,15 +6,15 @@
 #define MOSI PB1
 #define SS PD3
 
-void init_cs(int pin, PORT ddr) {
+void init_cs(uint8_t pin, port_t ddr) {
     *ddr |= _BV(pin);
 }
 
-void set_cs_low(int pin, PORT port) {
+void set_cs_low(uint8_t pin, port_t port) {
     *port &= ~(_BV(pin));
 }
 
-void set_cs_high(int pin, PORT port) {
+void set_cs_high(uint8_t pin, port_t port) {
     *port |= _BV(pin);
 }
 

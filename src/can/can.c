@@ -1,6 +1,8 @@
 #include <can/can.h>
 #include <uart/log.h>
 
+#define ERR_MSG "ERR: %s.\n"
+
 mob_t* mob_array[6] = {0};
 
 static inline void select_mob(uint8_t mob_num) {
@@ -37,13 +39,14 @@ static inline void set_ctrl_flags(mob_ctrl_t ctrl) {
     else CANCDMOB &= ~(_BV(RPLV));
 }
 
-void load_data(mob_t* mob) {
-    select_mob(mob->mob_num);
-
+uint8_t load_data(mob_t* mob) {
     // load data from callback
     (mob->tx_data_cb)(mob->data, &(mob->dlc));
 
+    select_mob(mob->mob_num);
     uint8_t len = mob->dlc;
+
+    CANCDMOB &= ~(0x0f);
     CANCDMOB |= len;
 
     CANPAGE &= ~(0x07); // reset data buffer index
@@ -51,7 +54,22 @@ void load_data(mob_t* mob) {
         CANMSG = (mob->data)[i]; // data buffer index auto-incremented
     }
 
-    print("data: %s len: %d\n", (char *) mob->data, mob->dlc);
+    if (len) {
+        print("Loaded data: %s len: %d\n", (char *) mob->data, mob->dlc);
+    }
+
+    return len;
+}
+
+uint8_t is_paused(mob_t* mob) {
+    select_mob(mob->mob_num);
+
+    // the MOb is paused iff the upper two bits of CANCDMOB are 0
+    if (CANCDMOB & 0xc0) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 void init_can() {
@@ -79,8 +97,6 @@ void init_can() {
     CANGCON |= _BV(ENASTB);
     while (!(CANGSTA & _BV(ENFG))) {}
     // enable CAN and wait for CAN to turn on before returning
-
-    print("CAN initialized\n");
 }
 
 void pause_mob(mob_t* mob) {
@@ -90,11 +106,15 @@ void pause_mob(mob_t* mob) {
     print("Mob %d paused\n", mob->mob_num);
 }
 
+
 void resume_mob(mob_t* mob) {
     select_mob(mob->mob_num);
 
     switch (mob->mob_type) {
         case TX_MOB:
+            if (load_data(mob) == 0) return;
+            // load data before resuming the MOb; if there is no new data
+            // do not resume the MOb
             CANCDMOB |= _BV(CONMOB0);
             CANCDMOB &= ~(_BV(CONMOB1));
             break;
@@ -125,8 +145,6 @@ void init_rx_mob(mob_t* mob) {
     mob_array[mob->mob_num] = mob;
 
     resume_mob(mob); // enable mob
-    print("RX mob initialized\n");
-    print("mob_num: %d dlc: %d\n", mob->mob_num, mob->dlc);
 }
 
 void init_tx_mob(mob_t* mob) {
@@ -134,17 +152,13 @@ void init_tx_mob(mob_t* mob) {
 
     set_id_tag(mob->id_tag);
     set_ctrl_flags(mob->ctrl);
-
-    load_data(mob);
+    mob->dlc = 0;
 
     CANGIE |= _BV(ENTX);
     CANIE2 |= _BV(mob->mob_num);
 
     mob_array[mob->mob_num] = mob;
     pause_mob(mob); // tx mobs must be resumed manually
-
-    print("TX mob initialized\n");
-    print("mob_num: %d dlc: %d\n", mob->mob_num, mob->dlc);
 }
 
 void init_auto_mob(mob_t* mob) {
@@ -163,51 +177,65 @@ void init_auto_mob(mob_t* mob) {
 
     mob_array[mob->mob_num] = mob;
     pause_mob(mob);
-    print("Auto MOb initialized\n");
 }
 
 void handle_rx_interrupt(mob_t* mob) {
-    print("Handling RX interrupt\n");
+    print("Handling %s interrupt\n", "RX");
 
     select_mob(mob->mob_num);
 
+    // we must reset the ID and various flags because they
+    // have been copied over from the sender
+    set_id_tag(mob->id_tag);
+    set_id_mask(mob->id_mask);
+    set_ctrl_flags(mob->ctrl);
+
     uint8_t len = CANCDMOB & 0x0F;
     mob->dlc = (len >= 8) ? 8 : len;
-    // update dlc only; no need to update id/mask
 
     CANPAGE &= ~(0x07); // reset data buffer index
 
-    uint8_t data[8] = {0};
-    for (uint8_t j = 0; j < 8; j++) {
-        data[j] = CANMSG; // reading auto-increments the data buffer index
+    for (uint8_t j = 0; j < len; j++) {
+        (mob->data)[j] = CANMSG; // reading auto-increments the data buffer index
     }
 
-    (mob->rx_cb)(data, len); // execute callback
+    (mob->rx_cb)(mob->data, len); // execute callback
 
     CANSTMOB &= ~(_BV(RXOK));  // clear interrupt flag
 
-    resume_mob(mob);
+    if (mob->mob_type == TX_MOB) pause_mob(mob);
+    else resume_mob(mob);
+    // resume_mob(mob);
     // required because ENMOB is reset after RXOK goes high
 }
 
 void handle_tx_interrupt(mob_t* mob) {
-    print("Handling TX interrupt\n");
+    print("Handling %s interrupt\n", "TX");
+
+    /* TODO: Add some kind of burst mode, which looks like:
+    // Try to load more data automatically
+    load_data(mob);
 
     select_mob(mob->mob_num);
-    load_data(mob);
-    // update dlc and load the next 8 bytes
-    // load the next 8 bytes to send
+    CANSTMOB &= ~(_BV(TXOK));  // clear interrupt flag
 
+    // if we successfully loaded more data, resume (but without calling
+    // load_data)
+
+    if (mob->dlc != 0) resume_mob(mob);
+    else pause_mob(mob);
+    */
+
+    select_mob(mob->mob_num);
     CANSTMOB &= ~(_BV(TXOK));  // clear interrupt flag
     // this also resets the mob, without clearing any of the data fields
     // this is why we must resume the mob if there is still data left to send
 
-    if (mob->dlc != 0) resume_mob(mob);
-    else pause_mob(mob);
+    pause_mob(mob);
 }
 
 void handle_auto_tx_interrupt(mob_t* mob) {
-    print("Handling AUTO TX interrupt\n");
+    print("Handling %s interrupt\n", "AUTO TX");
 
     select_mob(mob->mob_num);
 
@@ -219,17 +247,21 @@ void handle_auto_tx_interrupt(mob_t* mob) {
     // as in the TX case, if there is no data left, pause the mob
     // otherwise, load fresh data via tx callback
 
-    set_id_tag(mob->id_tag);
-    set_id_mask(mob->id_mask);
-    set_ctrl_flags(mob->ctrl);
+    // TODO: maybe make this work like TX MObs?
 
     load_data(mob);
 
-    // clear all interrupts
-    CANSTMOB = 0x00;
+    // clear interrupt flag
+    CANSTMOB &= ~(_BV(TXOK));
 
+    // this should happen all at once
     if (mob->dlc != 0) resume_mob(mob);
     else pause_mob(mob);
+
+    // TODO: for some reason, we need to set these AFTER
+    set_id_tag(mob->id_tag);
+    set_id_mask(mob->id_mask);
+    set_ctrl_flags(mob->ctrl);
 }
 
 uint8_t mob_status(mob_t* mob) {
@@ -244,17 +276,23 @@ uint8_t handle_err(mob_t* mob) {
 
     if (err != 0) {
         if (err & _BV(DLCW)) {
-            print("ERR: Incoming message did not have expected DLC.\n");
+            print(ERR_MSG, "Bad DLC");
+            //print("ERR: Incoming message did not have expected DLC.\n");
         } else if (err & _BV(BERR)) {
-            print("ERR: Bit error.\n");
+            print(ERR_MSG, "Bit error");
+            //print("ERR: Bit error.\n");
         } else if (err & _BV(SERR)) {
-            print("ERR: Five consecutive bits with same polarity.\n");
+            print(ERR_MSG, "Bit stuffing error");
+            //print("ERR: Five consecutive bits with same polarity.\n");
         } else if (err & _BV(CERR)) {
-            print("ERR: CRC mismatch.\n");
+            print(ERR_MSG, "CRC mismatch");
+            //print("ERR: CRC mismatch.\n");
         } else if (err & _BV(FERR)) {
-            print("ERR: Form error.\n");
+            print(ERR_MSG, "Form error");
+            //print("ERR: Form error.\n");
         } else if (err & _BV(AERR)) {
-            print("ERR: No acknowledgement.\n");
+            print(ERR_MSG, "No ack");
+            //print("ERR: No acknowledgement.\n");
         }
 
         // TODO: is this the best way to handle errors?
@@ -274,7 +312,7 @@ ISR(CAN_INT_vect){
         else select_mob(i);
 
         uint8_t status = mob_status(mob);
-        print("Status: %#02x\n", status);
+        print("Status: %#.2x\n", status);
 
         if (handle_err(mob)) continue;
 
@@ -287,6 +325,10 @@ ISR(CAN_INT_vect){
                     break;
                 case AUTO_MOB:
                     handle_auto_tx_interrupt(mob);
+                    break;
+                default:
+                    // should never get here
+                    handle_err(mob);
                     break;
             }
         }

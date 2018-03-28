@@ -1,13 +1,14 @@
 SUBDIRS = $(addprefix src/,uart spi can timer queue stack)
+EXAMPLES = $(dir $(wildcard examples/*/.))
 
-.PHONY: all $(SUBDIRS) clean
+.PHONY: all $(SUBDIRS) clean examples
 
 export CC = avr-gcc
 export AR = avr-ar
 export RANLIB = avr-ranlib
 export INCLUDES = -I../../include
 #export LDFLAGS = -L../../lib
-export CFLAGS = -std=gnu99 -g -mmcu=atmega32m1 -Os -mcall-prologues
+export CFLAGS = -Wall -std=gnu99 -g -mmcu=atmega32m1 -Os -mcall-prologues
 
 all: $(SUBDIRS)
 
@@ -21,3 +22,11 @@ clean:
 
 $(SUBDIRS):
 	@$(MAKE) -e -C $@
+
+examples:
+	@for dir in $(EXAMPLES) ; do \
+		cd $$dir ; \
+		make clean ; \
+		make ; \
+		cd ../.. ; \
+	done
