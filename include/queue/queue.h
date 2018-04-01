@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#define MAX_QUEUE_SIZE 50
+#define MAX_QUEUE_SIZE 10
 #define QUEUE_DATA_SIZE 8
 
 typedef struct {
