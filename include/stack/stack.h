@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#define MAX_STACK_SIZE 50
+#define MAX_STACK_SIZE 10
 #define STACK_DATA_SIZE 8
 
 typedef struct {
