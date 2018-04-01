@@ -1,7 +1,7 @@
 /*
     AUTHORS: J. W. Sheridan, Shimi Smith, Siddharth Mahendraker
 
-    A queue implementation which does not allocate memory to the heap, and is not a stack.
+    A queue implementation which does not allocate heap memory.
 */
 
 #include <queue/queue.h>
@@ -16,14 +16,17 @@ void init_queue(queue_t* queue) {
         }
     }
 }
-uint8_t queue_full(queue_t* queue) {
+
+uint8_t is_full(queue_t* queue) {
     return (queue->size == MAX_QUEUE_SIZE);
 }
-uint8_t queue_empty(queue_t* queue) {
+
+uint8_t is_empty(queue_t* queue) {
     return (queue->size == 0);
 }
+
 uint8_t enqueue(queue_t* queue, uint8_t* data) {
-    if(queue_full(queue)) {
+    if (is_full(queue)) {
         return 1;
     } else {
         uint8_t index = queue->tail;
@@ -31,7 +34,7 @@ uint8_t enqueue(queue_t* queue, uint8_t* data) {
             (queue->content)[index][i] = data[i];
         }
         queue->size += 1;
-        if(!(queue->tail == MAX_QUEUE_SIZE-1)){
+        if (!(queue->tail == MAX_QUEUE_SIZE-1)) {
             queue->tail++;
         } else {
             queue->tail = 0;
@@ -41,7 +44,7 @@ uint8_t enqueue(queue_t* queue, uint8_t* data) {
 }
 
 uint8_t dequeue(queue_t* queue, uint8_t* data) {
-    if(queue_empty(queue)) {
+    if (is_empty(queue)) {
         return 1;
     } else {
         uint8_t index = queue->head;
@@ -49,7 +52,7 @@ uint8_t dequeue(queue_t* queue, uint8_t* data) {
             data[i] = (queue->content)[index][i];
         }
         queue->size -= 1;
-        if(!(queue->head == MAX_QUEUE_SIZE-1)){
+        if (!(queue->head == MAX_QUEUE_SIZE-1)) {
             queue->head += 1;
         } else {
             queue->head = 0;

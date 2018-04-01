@@ -1,7 +1,7 @@
 /*
     AUTHORS: Shimi Smith, Siddharth Mahendraker, J. W. Sheridan
 
-    A stack implementation which does not allocate memory to the heap.
+    A stack implementation which does not allocate heap memory.
 */
 
 #include <stack/stack.h>
@@ -9,15 +9,23 @@
 void init_stack(stack_t* stack) {
     stack->size = 0;
     stack->index = 0;
+    for (uint8_t i = 0; i < MAX_STACK_SIZE; i++){
+        for (uint8_t j = 0; j < STACK_DATA_SIZE; j++){
+            stack->content[i][j] = 0x00;
+        }
+    }
 }
+
 uint8_t is_full(stack_t* stack) {
     return (stack->size == MAX_STACK_SIZE);
 }
+
 uint8_t is_empty(stack_t* stack) {
     return (stack->size == 0);
 }
-uint8_t enstack(stack_t* stack, uint8_t* data) {
-    if(is_full(stack)) {
+
+uint8_t push(stack_t* stack, uint8_t* data) {
+    if (is_full(stack)) {
         return 1;
     } else {
         uint8_t index = stack->index;
@@ -29,8 +37,9 @@ uint8_t enstack(stack_t* stack, uint8_t* data) {
         return 0;
     }
 }
-uint8_t destack(stack_t* stack, uint8_t* data) {
-    if(is_empty(stack)) {
+
+uint8_t pop(stack_t* stack, uint8_t* data) {
+    if (is_empty(stack)) {
         return 1;
     } else {
         stack->index -= 1;
