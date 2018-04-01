@@ -14,19 +14,19 @@ int main(void) {
 
     queue_t queue;
     init_queue(&queue);
-    print("Queue Initialized\n");
+    print("Queue initialized\n");
     print_queue_data(&queue);
 
     // Enqueue a bit of data
     uint8_t fail = enqueue(&queue, (uint8_t*)"Hello!");
-    if (!fail){
+    if (!fail) {
         print("Enqueue successful\n");
         print("Content: %s\n", queue.content[queue.head]);
         print_queue_data(&queue);
     }
 
     // Dequeue a bit of data
-    uint8_t data[QUEUE_DATA_SIZE] = {0};
+    uint8_t data[QUEUE_DATA_SIZE] = { 0 };
     fail = dequeue(&queue, data);
     if (!fail){
         print("Dequeue successful\n");
@@ -35,13 +35,13 @@ int main(void) {
     }
 
     // Test the queue to maximum size
-    uint8_t enqueue_data[QUEUE_DATA_SIZE] = {0};
+    uint8_t enqueue_data[QUEUE_DATA_SIZE] = { 0 };
     for (uint8_t i = 0; i < MAX_QUEUE_SIZE + 1; i++){
         enqueue_data[0] = i;
         fail = enqueue(&queue, enqueue_data);
         if (!fail){
             print("Enqueue successful\n");
-            print("Content: %d\n", i);
+            print("Content: %d\n", queue.content[i][0]);
             print_queue_data(&queue);
         } else {
             print("Enqueue failed\n");
