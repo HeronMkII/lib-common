@@ -33,11 +33,11 @@ TODO - standardize numbering system for constants
 
 
 // Housekeeping data (environmental sensors, e.g. temperature, humidity, pressure)
-#define PAY_HK_REQ          0b00000001
+#define PAY_HK_REQ          0b00000000
 // Science data (optical sensors)
-#define PAY_SCI_REQ         0b00000010
+#define PAY_SCI_REQ         0b00000001
 // Heater control (TODO)
-#define PAY_HEATER_REQ      0b00000100
+#define PAY_HEATER_REQ      0b00000010
 
 
 
@@ -45,22 +45,26 @@ TODO - standardize numbering system for constants
 // Byte 1: Field Number
 
 // Housekeeping
-#define PAY_TEMP_1          0b00000001
+
+// Working
+#define PAY_TEMP_1          0b00000000
+#define PAY_HUMID_1         0b00000001
+
+// TODO
 #define PAY_PRES_1          0b00000010
-#define PAY_HUMID_1         0b00000100
-#define PAY_MF_TEMP_1       0b00001000
-#define PAY_MF_TEMP_2       0b00010000
-#define PAY_MF_TEMP_3       0b00100000
+#define PAY_MF_TEMP_1       0b00000011
+#define PAY_MF_TEMP_2       0b00000100
+#define PAY_MF_TEMP_3       0b00000101
 
 // Science
 /*
-TODO - create well numbering system
-TODO - reading/triplicate number (1-3)
-TODO - OD/FL
+TODO - create well numbering system with fields starting at 0
+TODO - well number, OD/FL, triplicate number
 */
+
 // These are just for testing with the 2 optical sensors on the PAY sensor PCB
-#define PAY_SCI_TEMD        0b00000001
-#define PAY_SCI_SFH         0b00000010
+#define PAY_SCI_TEMD        0b00000000
+#define PAY_SCI_SFH         0b00000001
 
 
 
