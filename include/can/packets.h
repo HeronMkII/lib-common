@@ -1,94 +1,102 @@
 /*
 OBC-PAY CAN packet transmission format
 
-
 Each CAN transmission can have up to 8 bytes of data.
-For now, transmit all 8 bytes for simplicity and ignore the unused bytes.
+For now, we may want to transmit all 8 bytes for simplicity and ignore the unused bytes.
 
 
-Byte 0: Message Type (broad classification)
+Byte 0: Sending Board (which PCB is sending the message)
 
-Byte 1: Field Number (specifics for message type)
+Byte 1: Message Type (broad classification)
+
+Byte 2: Field Number (specifics for message type)
 - e.g. which sensor to poll
 - e.g. which heater to control
 
-Bytes 2-4: Data (for response only, when PAY sends a message to OBC)
-- If data is smaller than 24 bits, it is right-aligned to the least significant bits
+Bytes 3-5: Data (only when PAY sends a response message to OBC)
+- If the data is smaller than 24 bits, it is right-aligned to the least
+  significant bits with padding zeros added on the left
+  - e.g. 14-bit value   xxxxxx xxxxxxxx
+      -> 24-bit value   00000000 00xxxxxx xxxxxxxx
 
 
-Bytes 0-1 are sent both when the request is sent from OBC to PAY and when the
-response is sent from PAY to OBC. This is to identify which data is being
-transmitted.
+Bytes 0-2 are sent when the request is sent from OBC to PAY and when the
+response is sent from PAY to OBC. This is to match the request message with the
+response message.
 
-TODO - maybe add ACK bit when PAY responds to OBC, indicating the message was valid or not?
+TODO - maybe add an ACK (acknowledge) bit when PAY responds to OBC, indicating
+       whether the message was valid and understood?
 TODO - standardize numbering system for constants
-     - should numbering start at 0?
-     - one-hot encoding?
+TODO - create science measurement numbering system with fields starting at 0
+       (well number, OD/FL, triplicate)
 */
 
 
 
 
-// Byte 0: Message Type
+// Byte 0: Sending Board
+#define BOARD_OBC           0x00
+#define BOARD_PAY           0x01
+#define BOARD_EPS           0x02
 
+
+
+
+// Byte 1: Message Type
 
 // Housekeeping data (environmental sensors, e.g. temperature, humidity, pressure)
-#define PAY_HK_REQ          0b00000000
+#define PAY_HK_REQ          0x00
 // Science data (optical sensors)
-#define PAY_SCI_REQ         0b00000001
-// Heater control (TODO)
-#define PAY_HEATER_REQ      0b00000010
+#define PAY_SCI_REQ         0x01
+// TODO - Heater control
+#define PAY_HEATER_REQ      0x02
 
 
 
 
-// Byte 1: Field Number
+// Byte 2: Field Number
+
 
 // Housekeeping
 
-// Working
-#define PAY_TEMP_1          0b00000000
-#define PAY_HUMID_1         0b00000001
+// Temperature
+#define PAY_TEMP_1          0x00
+// Humidity
+#define PAY_HUMID_1         0x01
 
 // TODO
-#define PAY_PRES_1          0b00000010
-#define PAY_MF_TEMP_1       0b00000011
-#define PAY_MF_TEMP_2       0b00000100
-#define PAY_MF_TEMP_3       0b00000101
+#define PAY_PRES_1          0x02
+#define PAY_MF_TEMP_1       0x03
+#define PAY_MF_TEMP_2       0x04
+#define PAY_MF_TEMP_3       0x05
+
 
 // Science
-/*
-TODO - create well numbering system with fields starting at 0
-TODO - well number, OD/FL, triplicate number
-*/
 
-// These are just for testing with the 2 optical sensors on the PAY sensor PCB
-#define PAY_SCI_TEMD        0b00000000
-#define PAY_SCI_SFH         0b00000001
+// For testing with the 2 optical sensors currently on the PAY sensor PCB
+#define PAY_SCI_TEMD        0x00
+#define PAY_SCI_SFH         0x01
 
 
 
 
-// Bytes 2-4: Data
+// Bytes 3-5: Data
 
 /*
 Possible data types:
 
 1. Temperature
-- 14 bit sensor reading -> zero padded
-- Data in the 14 least significant bits, aligned to the right of the 3 bytes
+- 14 bit sensor reading
 
-2. Pressure - TODO
+2. Humidity
+- 14 bit sensor reading
+
+3. Pressure - TODO
 - 24 bit sensor reading
 - TODO - figure out how to account for temperature corrections
 
-3. Humidity
-- 14 bit sensor reading -> zero padded
-- Data in the 14 least significant bits, aligned to the right of the 3 bytes
-
 4. MF Temperature (thermistors) - TODO
-- 12 bit ADC reading -> zero padded
-- Data in the 12 least significant bits, aligned to the right of the 3 bytes
+- 12 bit ADC reading
 
 5. Well FL (fluorescence) or OD (optical density)
 - 24 bit ADC reading
