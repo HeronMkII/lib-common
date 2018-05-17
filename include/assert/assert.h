@@ -13,7 +13,7 @@
 
 extern bool __assert_print_on_pass;
 #ifdef ASSERT_PRINT_ON_PASS
-    assert_print_on_pass = true;
+    __assert_print_on_pass = true;
 #endif
 
 
