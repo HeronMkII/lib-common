@@ -1,0 +1,2 @@
+LIBNAME = assert
+include ../makefile
