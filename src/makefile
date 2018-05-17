@@ -18,4 +18,3 @@ $(LIBNAME): $($(LIBNAME)_OBJ)
 
 clean:
 	rm -f ../../build/$(LIBNAME)/*.*
-
