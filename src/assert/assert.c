@@ -8,7 +8,7 @@ uint32_t assert_num_failed = 0;
 
 void assert_print_results() {
     print("--------------\n");
-    print("ASSERT RESULTS: %d passed, %d failed\n", assert_num_passed, assert_num_failed);
+    print("ASSERT RESULTS: %lu passed, %lu failed\n", assert_num_passed, assert_num_failed);
 
     if (assert_num_failed > 0) {
         print("NOT WORKING\n");
