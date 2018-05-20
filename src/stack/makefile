@@ -1,0 +1,2 @@
+LIBNAME = stack
+include ../makefile

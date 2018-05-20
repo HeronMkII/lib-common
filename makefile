@@ -1,4 +1,4 @@
-SUBDIRS = $(addprefix src/,uart spi can timer queue assert)
+SUBDIRS = $(addprefix src/,uart spi can timer queue stack assert)
 EXAMPLES = $(dir $(wildcard examples/*/.))
 
 .PHONY: all $(SUBDIRS) clean examples
@@ -18,7 +18,8 @@ clean:
 	@$(MAKE) clean -C src/can
 	@$(MAKE) clean -C src/timer
 	@$(MAKE) clean -C src/queue
-	@$(MAKE) clean -C src/assert
+	@$(MAKE) clean -C src/stack
+  @$(MAKE) clean -C src/assert
 
 $(SUBDIRS):
 	@$(MAKE) -e -C $@
