@@ -18,9 +18,12 @@ Author: Shimi Smith
 
 typedef void (*Command)(void);
 
+void init_timer(uint8_t minutes, Command cmd);
+void set_vars(uint8_t minutes, Command cmd);
+
 // This struct holds important variables for the timer
-typedef struct Timer{
+typedef struct {
 	uint8_t ints;  // the number of interrupts that will occur to achieve the desired time
 	uint16_t count;  // the value of the timer counter after the desired time has ellapsed
 	Command cmd;  // The command to run once the desired time has passed
-}Timer;
+} timer_t;

@@ -5,7 +5,7 @@
 
 #include <timer/timer.h>
 
-static Timer timer;
+static timer_t timer;
 
 void set_vars(uint8_t minutes, Command cmd){
     uint32_t delay = minutes * 60L * 1000L;  // delay in ms
@@ -48,7 +48,7 @@ ISR(TIMER1_COMPA_vect){
     }
     else if(counter >= timer.ints + 1){  // the desired time has passed
         counter = 0;
-        OCR1A = 0xFFFF;
+        OCR1A = 0xFFFF;//reset OCR1A to orig
 
         (*(timer.cmd))();
 
