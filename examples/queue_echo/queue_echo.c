@@ -3,14 +3,14 @@
 #include <queue/queue.h>
 
 void print_queue_data(queue_t* queue){
-    print("Size: %d\n", queue->size);
-    print("Head: %d\n", queue->head);
-    print("Tail: %d\n\n", queue->tail);
+    print("Size: %u\n", queue->size);
+    print("Head: %u\n", queue->head);
+    print("Tail: %u\n\n", queue->tail);
 }
 
 int main(void) {
     init_uart();
-    print("UART initialized\n");
+    print("\n\nUART initialized\n");
 
     queue_t queue;
     init_queue(&queue);
@@ -41,11 +41,13 @@ int main(void) {
         fail = enqueue(&queue, enqueue_data);
         if (!fail){
             print("Enqueue successful\n");
-            print("Content: %d\n", queue.content[i][0]);
+            // Add 1 because an item was enqueued and dequeued before,
+            // so the head now starts at 1
+            print("Content: %u\n", queue.content[(i + 1) % MAX_QUEUE_SIZE][0]);
             print_queue_data(&queue);
         } else {
             print("Enqueue failed\n");
-            print("Content: %d\n", i);
+            print("Content: %u\n", i);
             print_queue_data(&queue);
         }
     }
@@ -55,7 +57,7 @@ int main(void) {
         uint8_t fail = dequeue(&queue, data);
         if (!fail){
             print("Dequeue successful\n");
-            print("Content: %d\n", data[0]);
+            print("Content: %u\n", data[0]);
             print_queue_data(&queue);
         } else {
             print("Dequeue failed\n");

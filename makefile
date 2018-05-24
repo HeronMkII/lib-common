@@ -19,7 +19,7 @@ clean:
 	@$(MAKE) clean -C src/timer
 	@$(MAKE) clean -C src/queue
 	@$(MAKE) clean -C src/stack
-  @$(MAKE) clean -C src/assert
+	@$(MAKE) clean -C src/assert
 
 $(SUBDIRS):
 	@$(MAKE) -e -C $@
