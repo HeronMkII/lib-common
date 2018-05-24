@@ -3,12 +3,12 @@
 #include <stack/stack.h>
 
 void print_stack_data(stack_t* stack){
-    print("Size: %d\n", stack->size);
+    print("Size: %u\n", stack->size);
 }
 
 int main(void) {
     init_uart();
-    print("UART initialized\n");
+    print("\n\nUART initialized\n");
 
     stack_t stack;
     init_stack(&stack);
@@ -39,7 +39,7 @@ int main(void) {
         fail = push(&stack, push_data);
         if (!fail) {
             print("Push successful\n");
-            print("Content: %d\n", stack.content[i][0]);
+            print("Content: %u\n", stack.content[i][0]);
             print_stack_data(&stack);
         } else {
             print("Push failed\n");
@@ -52,7 +52,7 @@ int main(void) {
         uint8_t fail = pop(&stack, data);
         if (!fail) {
             print("Pop successful\n");
-            print("Content: %d\n", data[0]);
+            print("Content: %u\n", data[0]);
             print_stack_data(&stack);
         } else {
             print("Dequeue failed\n");
