@@ -7,15 +7,14 @@
 
 // Assumes `init_uart()` has already been called
 
-// Macros that can optionally be defined before including `assert.h`:
-// ASSERT_DISABLE - remove ASSERT from the executable
-// ASSERT_PRINT_ON_PASS - print a message when an ASSERT passes
+// You can add `#define ASSERT_DISABLE` before `#include <assert/assert.h>`
+// to remove ASSERT from the executable
 
-extern bool __assert_print_on_pass;
-#ifdef ASSERT_PRINT_ON_PASS
-    __assert_print_on_pass = true;
-#endif
+// You can set `assert_print_on_pass = true`
+// to enable printing a message when an ASSERT passes
+// (false by default)
 
+extern bool assert_print_on_pass;
 
 
 #ifdef ASSERT_DISABLE
@@ -24,13 +23,13 @@ extern bool __assert_print_on_pass;
 #else
 #define ASSERT(condition) \
     if (condition) { \
-        if (__assert_print_on_pass) { \
-            print("ASSERT PASSED: %s, Line %d: %s\n", __FILE__, __LINE__, condition); \
+        if (assert_print_on_pass) { \
+            print("ASSERT PASSED: %s, Line %d\n", __FILE__, __LINE__); \
         } \
         assert_num_passed++; \
     } \
     else { \
-        print("ASSERT FAILED: %s, Line %d: %s\n", __FILE__, __LINE__, condition); \
+        print("ASSERT FAILED: %s, Line %d\n", __FILE__, __LINE__); \
         assert_num_failed++; \
     }
 

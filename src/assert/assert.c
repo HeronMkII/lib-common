@@ -1,7 +1,6 @@
 #include <assert/assert.h>
 
-// DO NOT USE outside of `assert.h`
-bool __assert_print_on_pass = false;
+bool assert_print_on_pass = false;
 
 uint32_t assert_num_passed = 0;
 uint32_t assert_num_failed = 0;
