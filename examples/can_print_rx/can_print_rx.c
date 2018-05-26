@@ -1,5 +1,4 @@
 #include <uart/uart.h>
-#include <uart/log.h>
 #include <can/can.h>
 
 void rx_callback(const uint8_t*, uint8_t);

@@ -1,5 +1,4 @@
 #include <uart/uart.h>
-#include <uart/log.h>
 #include <queue/queue.h>
 
 void print_queue_data(queue_t* queue){

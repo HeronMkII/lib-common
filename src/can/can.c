@@ -1,5 +1,5 @@
 #include <can/can.h>
-#include <uart/log.h>
+#include <uart/uart.h>
 
 #define ERR_MSG "ERR: %s.\n"
 

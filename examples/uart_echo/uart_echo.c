@@ -6,12 +6,16 @@
  * uploading new programs.
  */
 
-void echo(uint8_t *buf, uint8_t len) {
+// FIXME: When running this in line mode using CoolTerm, the 11th character
+// of any string is consistently dropped. When sending the characters with
+// a 3ms delay, this effect disappears.
+
+uint8_t echo(const uint8_t* buf, uint8_t len) {
     for (uint8_t i = 0; i < len; i++) {
         put_char(buf[i]);
     }
 
-    clear_rx_buffer();
+    return len;
 }
 
 int main(void) {
