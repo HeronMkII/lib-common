@@ -15,5 +15,5 @@ uint8_t pay_status = 0x00;
 
 int main() {
     ssm_id = 0b00;
-    init_heartbeat(); //undefined reference to init_heartbeat
+    init_heartbeat();
 }
