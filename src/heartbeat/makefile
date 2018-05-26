@@ -1,0 +1,2 @@
+LIBNAME = heartbeat
+include ../makefile
