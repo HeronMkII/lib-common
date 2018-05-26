@@ -1,6 +1,7 @@
 #ifndef TEST_H
 #define TEST_H
 
+#include <uart/uart.h>
 #include <avr/io.h>
 #include <stdint.h>
 
@@ -22,4 +23,4 @@ void run_tests(test_t**, uint8_t);
 
 void run_slave(void);
 
-#endif
+#endif // TEST_H
