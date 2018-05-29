@@ -37,7 +37,7 @@ void init_timer2(uint8_t minutes, Command cmd){
     sei(); // enable global interrupts
 }
 
-volatile uint32_t counter2 = 0;  // the number of interrupts that have occured
+volatile uint64_t counter2 = 0;  // the number of interrupts that have occured
 // This ISR occurs when TCNT0 is equal to OCR0A
 ISR(TIMER0_COMPA_vect){
 
@@ -48,7 +48,7 @@ ISR(TIMER0_COMPA_vect){
     }
     else if(counter2 >= timer2.ints + 1){  // the desired time has passed
         counter2 = 0;
-        OCR0A = 0xFFFF;
+        OCR0A = 0xFF;
 
         (*(timer2.cmd))();
 
