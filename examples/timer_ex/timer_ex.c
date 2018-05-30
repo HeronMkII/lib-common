@@ -15,11 +15,11 @@ int count2 = 0;//current timer 2 iteration
 
 void timer1_func(){
   count1 ++;
-  print("TMR1: %d",count1);
+  print("TMR1:%d, ",count1);
 }
 void timer2_func(){
   count2 ++;
-  print("TMR2: %d",count2);
+  print("TMR2:%d, ",count2);
 }
 
 int main() {
