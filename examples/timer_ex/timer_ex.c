@@ -27,7 +27,8 @@ int main() {
   print("UART initialized\n");
 
   init_timer(1, timer1_func);//increases count every 1 minute
-  init_timer2(1, timer2_func);
+  init_timer2(5, timer2_func);//increases count every 5 minutes
+  print("Timers started\n");
 
   while(1);
   return 0;
