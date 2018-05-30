@@ -48,7 +48,7 @@ ISR(TIMER1_COMPA_vect){
     }
     else if(counter >= timer.ints + 1){  // the desired time has passed
         counter = 0;
-        OCR1A = 0xFFFF;
+        OCR1A = 0xFFFF;//reset OCR1A to orig
 
         (*(timer.cmd))();
 

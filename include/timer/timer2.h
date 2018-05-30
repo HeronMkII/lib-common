@@ -18,10 +18,15 @@ handle more than 35 minutes (which is the same as Timer1).
 #define PRESCALER2 1024.0
 #define T2 ((PRESCALER2 / F_CPU) * 1000.0)  // timer clock period (ms) = 0.128
 #define MAX_TIME2 (T2 * 0xFF)  // the maximum time the 8 bit timer can hold until it overflows (ms)
+//32.64
 
 #define ROUND2 0.5  // used to round double to int
 
 typedef void (*Command)(void);
+
+//functions
+void set_vars2(uint8_t minutes, Command cmd);
+void init_timer2(uint8_t minutes, Command cmd);
 
 // This struct holds important variables for the timer
 typedef struct Timer2{
@@ -29,7 +34,3 @@ typedef struct Timer2{
 	uint16_t count;  // the value of the timer counter after the desired time has ellapsed
 	Command cmd;  // The command to run once the desired time has passed
 }Timer2;
-
-//functions
-void set_vars2(uint8_t minutes, Command cmd);
-void init_timer2(uint8_t minutes, Command cmd);
