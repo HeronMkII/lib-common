@@ -1,6 +1,6 @@
 CC = avr-gcc
 INCLUDES = -I../../include
-LIB = -L../../lib -luart -lspi -lcan -lqueue -lstack -lassert -ltimer
+LIB = -L../../lib -luart -lspi -lcan -lqueue -lstack -lassert
 CFLAGS = -std=gnu99 -Wall -g -mmcu=atmega32m1 -Os -mcall-prologues
 
 PGMR = stk500
@@ -10,7 +10,6 @@ ifeq ($(OS),Windows_NT)
     PORT = COM3
 else
     PORT = /dev/tty.usbmodem00187462
-		#PORT = /dev/tty.usbmodem00208212
 endif
 
 $(PROG): $(PROG).o
