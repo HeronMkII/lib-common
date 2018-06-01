@@ -1,8 +1,10 @@
-#!/bin/python
+from __future__ import print_function
+import sys
 
 import os
 import argparse
 import subprocess
+import time
 
 import serial
 
@@ -10,9 +12,33 @@ CC = "avr-gcc"
 CFLAGS = "-std=gnu99 -mmcu=atmega32m1 -Os -mcall-prologues"
 MCU = "m32m1"
 PROG = "stk500"
-
 INCLUDES = "-I./include/"
-LIB = "-L./lib/ -lspi -lcan -luart"
+LIB = "-L./lib/ -ltest"
+
+def compile(path):
+    cmd = " ".join([CC, CFLAGS, "-o " + path + "/main.o", "-c " + path +
+        "/main.c", INCLUDES])
+    subprocess.call(cmd, shell=True)
+
+def link(path):
+    cmd = " ".join([CC, CFLAGS, "-o " + path + "/test.elf", path + "/main.o",
+        LIB])
+    subprocess.call(cmd, shell=True)
+
+def obj_copy(path):
+    cmd = " ".join(["avr-objcopy", "-j .text", "-j .data", "-O ihex", path +
+        "/test.elf", path + "/test.hex"])
+    subprocess.call(cmd, shell=True)
+
+def upload(path, port):
+    cmd = " ".join(["avrdude", "-p", MCU, "-c", PROG, "-P", port, "-U flash:w:"
+        + path + "/test.hex"])
+    subprocess.call(cmd, shell=True)
+
+def capture_eeprom(path, port):
+    cmd = " ".join(["avrdude", "-p", MCU, "-c", PROG, "-P", port,
+        "-U eeprom:r:" + path + "/eeprom.bin:r"]);
+    subprocess.call(cmd, shell=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Test harness")
@@ -28,24 +54,28 @@ if __name__ == "__main__":
         if path == test_path:
             continue
 
-        # compile and link 32m1 program using avr-gcc
-        compile_cmd = " ".join([CC, CFLAGS, "-o " + path + "/main.o", "-c " + path + "/main.c", INCLUDES])
-        print(compile_cmd)
-        subprocess.call(compile_cmd, shell=True)
-        link_cmd = " ".join([CC, CFLAGS, "-o " + path + "/test.elf", path + "/main.o", LIB])
-        subprocess.call(link_cmd, shell=True)
-        # create an Intel hex executable
-        objcpy_cmd = " ".join(["avr-objcopy", "-j .text", "-j .data", "-O ihex",
-                path + "/test.elf", path + "/test.hex"])
-        subprocess.call(objcpy_cmd, shell=True)
-        # upload prog to connected 32m1 using avr-dude, capture output
-        upload_cmd = " ".join(["avrdude", "-p", MCU, "-c", PROG, "-P",
-                str(port), "-U flash:w:" + path + "/test.hex"])
-        subprocess.call(upload_cmd, shell=True)
+        compile(path)
+        link(path)
+        obj_copy(path)
+        upload(path, port)
 
-        # collect EEPROM memory contents
-        eeprom_fetch = " ".join(["avrdude", "-p", MCU, "-c", PROG, "-P",
-                str(port), "-U eeprom:r:" + path + "/eeprom.bin:r"]);
-        subprocess.call(eeprom_fetch, shell=True)
+        # hack to get the UART port from the regular port
+        (head, tail) = os.path.split(port)
+        tail = tail[:-1] + str(int(tail[-1]) + 2)
+        ser_port = os.path.join(head, tail)
 
-
+        ser = serial.Serial(ser_port, 9600)
+        yn = raw_input("Start? (y/n) ")
+        if yn == "y":
+            ser.write("COUNT\r\n");
+            num = int(ser.readline().strip())
+            for i in range(num):
+                ser.write("START\r\n");
+                while True:
+                    line = ser.readline()
+                    if line == "DONE\r\n":
+                        sys.stdout.write(line)
+                        break
+                    else:
+                        sys.stdout.write(line)
+        ser.close()
