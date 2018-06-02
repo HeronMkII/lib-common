@@ -44,7 +44,9 @@ int main() {
   ASSERT(pins == (_BV(SPE) + _BV(MSTR) + _BV(SPR1)));
 
   //check send SPI
-  send_spi(0x00);
+  //send_spi(0x00);
 
+  //print results of assert test
+  assert_print_results();
   return 0;
 }
