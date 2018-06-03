@@ -1,2 +1,2 @@
-PROG = timer_ex
+PROG = timer_print
 include ../makefile

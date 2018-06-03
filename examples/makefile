@@ -9,8 +9,8 @@ MCU = m32m1
 ifeq ($(OS),Windows_NT)
     PORT = COM3
 else
-    PORT = /dev/tty.usbmodem00187462
-	#PORT = /dev/tty.usbmodem00208212
+	#PORT = /dev/tty.usbmodem00187462
+	PORT = /dev/tty.usbmodem00208212
 endif
 
 $(PROG): $(PROG).o
