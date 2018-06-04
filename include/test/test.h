@@ -8,4 +8,6 @@ typedef struct {
     test_fn_t fn;
 } test_t;
 
+void assert_eq(uint8_t, uint8_t);
+
 void run_tests(test_t**, uint8_t);
