@@ -30,9 +30,9 @@ class TestHarness:
     def run(self):
         for suite in self.suites:
             print("WARNING: The UART TX pin on SCK must be disconnected " +
-                "before upload. Ensure the UART TX pin is disconnected " +
+                "before upload.\nEnsure the UART TX pin is disconnected " +
                 "before proceeding.")
-            ans = raw_input("Execute test suite \"%s\"? (y/n) " % suite.name)
+            ans = raw_input("Execute test suite '%s'? (y/n) " % suite.name)
             if ans == "y":
                 suite.compile()
                 suite.link()
@@ -47,36 +47,64 @@ class TestHarness:
                 self.serial.write("COUNT\r\n");
                 test_count = int(self.serial.readline().strip())
                 suite.update_test_count(test_count)
+                on_end = suite.on_end()
 
                 for _ in range(test_count):
                     self.serial.write("START\r\n")
-                    callback = suite.on_complete()
                     while True:
                         line = self.serial.readline()
                         if line == "DONE\r\n":
-                            sys.stdout.write(line)
-                            callback()
+                            print("Test complete")
                             print(self.sep)
                             break
+                        elif line[:9] == "TEST NAME":
+                            self.handle_test_name(line, suite)
                         elif line[:9] == "ASSERT EQ":
                             self.handle_assert_eq(line, suite)
+                        elif line[:11] == "ASSERT TRUE":
+                            self.handle_assert_true(line, suite)
                         else:
                             sys.stdout.write(line)
 
+                on_end()
+                print(self.sep)
                 self.serial.close()
 
     def handle_assert_eq(self, line, suite):
-        regex = r"ASSERT EQ (\d+) (\d+)\r\n"
-        match = re.search(regex, line);
+        regex = r"ASSERT EQ (\d+) (\d+) \((.+)\) \((.+)\)\r\n"
+        match = re.search(regex, line)
         a, b = int(match.group(1)), int(match.group(2))
         if a == b:
             suite.passed += 1
         else:
             suite.failed += 1
+            fn, line = str(match.group(3)), int(match.group(4))
+            print("In function '%s', line %d" % (fn, line))
+            print("    Error: ASSERT_EQ failed")
+
+    def handle_assert_true(self, line, suite):
+        regex = r"ASSERT TRUE (\d+) \((.+)\) \((.+)\)\r\n"
+        match = re.search(regex, line)
+        v = int(match.group(1))
+        if v != 0:
+            suite.passed += 1
+        else:
+            suite.failed += 1
+            fn, line = str(match.group(2)), int(match.group(3))
+            print("In function '%s', line %d" % (fn, line))
+            print("    Error: ASSERT_TRUE failed")
+
+    def handle_test_name(self, line, suite):
+        regex = r"TEST NAME (.+)\r\n"
+        match = re.search(regex, line)
+        name = str(match.group(1))
+        print("Test: %s" % name)
 
     def print_summary(self):
-        print("Summary: Total passed %d Total failed %d" % (self.total_passed,
-            self.total_failed))
+        total = self.total_passed + self.total_failed
+        print("Summary:")
+        print("    Total passed %d / %d" % (self.total_passed, total))
+        print("    Total failed %d / %d" % (self.total_failed, total))
 
 class TestSuite:
     # constants
@@ -96,14 +124,14 @@ class TestSuite:
         self.failed = 0
 
     def compile(self):
-        print("Compiling...")
+        print("    Compiling...")
         cmd = " ".join([self.cc, self.cflags,
             "-o " + self.path + "/main.o",
             "-c " + self.path + "/main.c", self.includes])
         subprocess.call(cmd, shell=True)
 
     def link(self):
-        print("Linking...")
+        print("    Linking...")
         cmd = " ".join([self.cc, self.cflags,
             "-o " + self.path + "/test.elf",
             self.path + "/main.o",
@@ -118,7 +146,7 @@ class TestSuite:
         subprocess.call(cmd, shell=True)
 
     def upload(self):
-        print("Uploading...")
+        print("    Uploading...")
         cmd = " ".join(["avrdude -qq",
             "-p", self.mcu,
             "-c", self.prog,
@@ -137,16 +165,18 @@ class TestSuite:
     def update_test_count(self, count):
         self.test_count = count
 
-    def on_complete(self):
+    def on_end(self):
         s = time.time()
-        def cb():
+        def fn():
+            total = self.passed + self.failed
             e = time.time()
-            print("Time elapsed: %.3f s" % (e - s))
-            print("Passed: %d" % self.passed)
-            print("Failed: %d" % self.failed)
+            print("Test suite '%s' complete" % self.name)
+            print("    Time elapsed: %.3f s" % (e - s))
+            print("    Passed: %d / %d" % (self.passed, total))
+            print("    Failed: %d / %d" % (self.failed, total))
             self.harness.total_passed += self.passed
             self.harness.total_failed += self.failed
-        return cb
+        return fn
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Test harness")

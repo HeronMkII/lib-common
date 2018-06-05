@@ -20,7 +20,6 @@ void fun2(void) {
 }
 
 int main() {
-    init_uart();
     run_tests(suite, TEST_NO);
     return 0;
 }

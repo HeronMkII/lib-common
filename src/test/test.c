@@ -1,8 +1,6 @@
 #include <test/test.h>
 #include <uart/uart.h>
 
-#define F_CPU 8000000UL
-#include <util/delay.h>
 #include <util/atomic.h>
 
 #define START_LEN 7
@@ -86,9 +84,7 @@ void run_tests(test_t** suite, uint8_t len) {
 }
 
 void run_test(test_t* test) {
-    print("TEST NAME: %s\r\n", test->name);
+    print("TEST NAME %s\r\n", test->name);
     (test->fn)();
-    _delay_ms(100);
     print("DONE\r\n");
 }
-
