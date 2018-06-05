@@ -1,10 +1,8 @@
 #ifndef HEARTBEAT_H
 #define HEARTBEAT_H
 
-//void init_heartbeat();
-//void assign_heartbeat_status();
-
-//CAN ids of each SSMs. Follow the convention of can_ids under lib-common
+// CAN ids of each SSMs.
+// Currently DOES NOT follow the convention of can_ids in lib-common master
 #define OBC_STATUS_RX_MOB_ID 0x001c
 #define OBC_STATUS_TX_MOB_ID 0x000b
 #define EPS_STATUS_RX_MOB_ID 0x001b
@@ -12,32 +10,39 @@
 #define PAY_STATUS_RX_MOB_ID 0x001a
 #define PAY_STATUS_TX_MOB_ID 0x000c
 
-#define DEADBEEF 0Xdeadbeef //4 bytes
+// Use DEADBEEF to keep track of fresh start or restart
+#define DEADBEEF 0xdeadbeef //4 bytes
 
-extern uint8_t obc_status; //global variables to store SSM status
+// Define SSM ids
+#define OBC 0x00
+#define EPS 0x02
+#define PAY 0x01
+
+// Store SSM status as global variables
+extern uint8_t obc_status;
 extern uint8_t eps_status;
 extern uint8_t pay_status;
 
-//purpose of having indirect access to status is for using error checking
+// Declare global pointers to generalized SSM status
+/*Purpose of having indirect access to status is for using error checking to
+reinforce the parent-child relationship among each SSM*/
 extern uint8_t* self_status;
 extern uint8_t* parent_status;
 extern uint8_t* child_status;
 
-extern uint8_t ssm_id; //will be changed by each SSM
-//obc {0x00} eps {10} pay {01}
+// Declare global variables for ssm_id and receiving_id
+// obc {0x00} eps {0x02} pay {0x01}
+extern uint8_t ssm_id;
 extern uint8_t receiving_id;
 
 extern mob_t status_rx_mob;
 extern mob_t status_tx_mob;
-//extern mob_id_tag_t id_tag;
 
-//functions
+// Declare fresh_start as global var. to keep track of fresh start and restart
+extern uint8_t fresh_start; // 1 when board has a fresh start, 0 otherwise
+
+// Declare heartbeat functions (Users only use the first 2)
 void init_heartbeat();
-void assign_heartbeat_status();
-void assign_status_message_objects();
 void heartbeat();
 
-void rx_callback(uint8_t*, uint8_t);
-void tx_callback(uint8_t*, uint8_t*);
-
-#endif
+#endif // HEARTBEAT_H
