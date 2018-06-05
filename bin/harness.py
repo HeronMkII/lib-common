@@ -6,6 +6,7 @@ import argparse
 import subprocess
 import time
 import re
+import select
 
 import serial
 
@@ -15,11 +16,12 @@ class TestHarness:
 
     def __init__(self, port):
         self.port = port
-        # hack to get the UART port from the programming port
-        (head, tail) = os.path.split(port)
-        tail = tail[:-1] + str(int(tail[-1]) + 2)
-        self.serial_port = os.path.join(head, tail)
-        self.serial = None
+        self.serial_port = []
+        for p in port:
+            (head, tail) = os.path.split(p)
+            tail = tail[:-1] + str(int(tail[-1]) + 2)
+            self.serial_port.append(os.path.join(head, tail))
+        self.serial = []
         self.suites = []
         self.total_passed = 0
         self.total_failed = 0
@@ -27,11 +29,16 @@ class TestHarness:
     def add_suite(self, suite):
         self.suites.append(suite)
 
+    def broadcast(self, cmd):
+        for ser in self.serial:
+            ser.write(cmd)
+
     def run(self):
+        # TODO: refactor this code
         for suite in self.suites:
-            print("WARNING: The UART TX pin on SCK must be disconnected " +
-                "before upload.\nEnsure the UART TX pin is disconnected " +
-                "before proceeding.")
+            print("WARNING: The UART TX pin(s) on SCK must be disconnected " +
+                "before upload.\nEnsure the UART TX pin on each board " +
+                "is disconnected before proceeding.")
             ans = raw_input("Execute test suite '%s'? (y/n) " % suite.name)
             if ans == "y":
                 suite.compile()
@@ -39,36 +46,52 @@ class TestHarness:
                 suite.obj_copy()
                 suite.upload()
 
-                raw_input("Connect the UART TX pin to SCK. (ok) ")
+                raw_input("Connect the UART TX pin(s) to SCK. (ok) ")
                 print(self.sep)
 
-                self.serial = serial.Serial(self.serial_port, self.baud_rate)
+                self.serial = [ serial.Serial(self.serial_port[i],
+                    self.baud_rate) for i in range(suite.boards) ]
 
-                self.serial.write("COUNT\r\n");
-                test_count = int(self.serial.readline().strip())
+                self.broadcast("COUNT\r\n");
+
+                test_count = int(self.serial[0].readline().strip())
                 suite.update_test_count(test_count)
                 on_end = suite.on_end()
 
                 for _ in range(test_count):
-                    self.serial.write("START\r\n")
+                    self.serial[0].write("START\r\n")
+                    looping = True
+                    time_cb = lambda *x: None # no op
                     while True:
-                        line = self.serial.readline()
-                        if line == "DONE\r\n":
-                            print("Test complete")
-                            print(self.sep)
+                        readable_sers, _, _ = select.select(self.serial, [], [])
+                        for i in range(suite.boards):
+                            if self.serial[i] in readable_sers:
+                                line = self.serial[i].readline()
+                                if line == "DONE\r\n":
+                                    time_cb()
+                                    print("Test complete")
+                                    print(self.sep)
+                                    looping = False
+                                    break
+                                elif line[:9] == "TEST NAME":
+                                    self.handle_test_name(line, suite)
+                                elif line[:4] == "TIME":
+                                    time_cb = self.handle_test_time(line, suite)
+                                elif line[:9] == "ASSERT EQ":
+                                    self.handle_assert_eq(line, suite)
+                                elif line[:11] == "ASSERT TRUE":
+                                    self.handle_assert_true(line, suite)
+                                else:
+                                    sys.stdout.write(line)
+                        if looping == False:
                             break
-                        elif line[:9] == "TEST NAME":
-                            self.handle_test_name(line, suite)
-                        elif line[:9] == "ASSERT EQ":
-                            self.handle_assert_eq(line, suite)
-                        elif line[:11] == "ASSERT TRUE":
-                            self.handle_assert_true(line, suite)
-                        else:
-                            sys.stdout.write(line)
 
                 on_end()
                 print(self.sep)
-                self.serial.close()
+                for ser in self.serial[1:]:
+                    ser.write("KILL\r\n")
+                for ser in self.serial:
+                    ser.close()
 
     def handle_assert_eq(self, line, suite):
         regex = r"ASSERT EQ (\d+) (\d+) \((.+)\) \((.+)\)\r\n"
@@ -100,6 +123,27 @@ class TestHarness:
         name = str(match.group(1))
         print("Test: %s" % name)
 
+    def handle_test_time(self, line, suite):
+        regex = r"TIME ([-+]?\d*\.\d+|\d+)\r\n"
+        match = re.search(regex, line)
+        expected = float(match.group(1))
+
+        if expected == 0:
+            return lambda *x: None
+
+        s = time.time()
+        def fn():
+            e = time.time()
+            elapsed = e - s
+            if abs(elapsed - expected) >= 10e-2:
+                suite.failed += 1
+                print("    Error: " +
+                    "expected test to complete in %.2f s, took %.2f s"
+                    % (expected, elapsed))
+            else:
+                suite.passed += 1
+        return fn
+
     def print_summary(self):
         total = self.total_passed + self.total_failed
         print("Summary:")
@@ -109,14 +153,15 @@ class TestHarness:
 class TestSuite:
     # constants
     cc = "avr-gcc"
-    cflags = "-std=gnu99 -mmcu=atmega32m1 -Os -mcall-prologues"
+    cflags = "-std=gnu99 -Wall -Wl,-u,vfprintf -mmcu=atmega32m1 -Os -mcall-prologues"
     mcu = "m32m1"
     prog = "stk500"
     includes = "-I./include/"
-    lib = "-L./lib/ -ltest"
+    lib = "-L./lib/ -ltest -lprintf_flt -lm"
 
-    def __init__(self, path, harness):
+    def __init__(self, path, boards, harness):
         self.path = path
+        self.boards = boards
         self.name = os.path.basename(path)
         self.harness = harness
         self.test_count = 0
@@ -125,42 +170,48 @@ class TestSuite:
 
     def compile(self):
         print("    Compiling...")
-        cmd = " ".join([self.cc, self.cflags,
-            "-o " + self.path + "/main.o",
-            "-c " + self.path + "/main.c", self.includes])
-        subprocess.call(cmd, shell=True)
+        for i in range(1, self.boards + 1):
+            cmd = " ".join([self.cc, self.cflags,
+                "-o " + self.path + "/main" + str(i) + ".o",
+                "-c " + self.path + "/main" + str(i) + ".c",
+                self.includes])
+            subprocess.call(cmd, shell=True)
 
     def link(self):
         print("    Linking...")
-        cmd = " ".join([self.cc, self.cflags,
-            "-o " + self.path + "/test.elf",
-            self.path + "/main.o",
-            self.lib])
-        subprocess.call(cmd, shell=True)
+        for i in range(1, self.boards + 1):
+            cmd = " ".join([self.cc, self.cflags,
+                "-o " + self.path + "/test" + str(i) + ".elf",
+                self.path + "/main" + str(i) + ".o",
+                self.lib])
+            subprocess.call(cmd, shell=True)
 
     def obj_copy(self):
-        cmd = " ".join(["avr-objcopy",
-            "-j .text", "-j .data",
-            "-O ihex", self.path + "/test.elf",
-            self.path + "/test.hex"])
-        subprocess.call(cmd, shell=True)
+        for i in range(1, self.boards + 1):
+            cmd = " ".join(["avr-objcopy",
+                "-j .text", "-j .data",
+                "-O ihex", self.path + "/test" + str(i) + ".elf",
+                self.path + "/test" + str(i) + ".hex"])
+            subprocess.call(cmd, shell=True)
 
     def upload(self):
         print("    Uploading...")
-        cmd = " ".join(["avrdude -qq",
-            "-p", self.mcu,
-            "-c", self.prog,
-            "-P", self.harness.port,
-            "-U flash:w:" + self.path + "/test.hex"])
-        subprocess.call(cmd, shell=True)
+        for i in range(1, self.boards + 1):
+            cmd = " ".join(["avrdude -qq",
+                "-p", self.mcu,
+                "-c", self.prog,
+                "-P", self.harness.port[i - 1],
+                "-U flash:w:" + self.path + "/test" + str(i) + ".hex"])
+            subprocess.call(cmd, shell=True)
 
     def capture_eeprom(self):
-        cmd = " ".join(["avrdude -qq",
-            "-p", self.mcu,
-            "-c", self.prog,
-            "-P", self.harness.port,
-            "-U eeprom:r:" + self.path + "/eeprom.bin:r"]);
-        subprocess.call(cmd, shell=True)
+        pass
+        #cmd = " ".join(["avrdude -qq",
+        #    "-p", self.mcu,
+        #    "-c", self.prog,
+        #    "-P", self.harness.port,
+        #    "-U eeprom:r:" + self.path + "/eeprom.bin:r"]);
+        #subprocess.call(cmd, shell=True)
 
     def update_test_count(self, count):
         self.test_count = count
@@ -180,7 +231,7 @@ class TestSuite:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Test harness")
-    parser.add_argument('-p', '--port', required=True)
+    parser.add_argument('-p', '--port', nargs='+', required=True)
     parser.add_argument('-d', '--test-dir', required=True)
 
     args = parser.parse_args()
@@ -189,11 +240,21 @@ if __name__ == "__main__":
     port = args.port
 
     harness = TestHarness(port)
-    for path, _, _ in os.walk(test_path):
+    for path, _, files in os.walk(test_path):
         if path == test_path:
             continue
-        suite = TestSuite(path, harness)
-        harness.add_suite(suite)
+        boards = 0
+        regex = r"main\d.c"
+        for f in files:
+            if re.search(regex, f):
+                boards += 1
+
+        if boards > len(port):
+            print("Skipping test suite '%s', requires %d more board(s)."
+                % (os.path.basename(path), boards - len(port)))
+        else:
+            suite = TestSuite(path, boards, harness)
+            harness.add_suite(suite)
 
     harness.run()
     harness.print_summary()
