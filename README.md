@@ -51,11 +51,10 @@ directory.
 
 To access these libraries in your code, you must include the appropriate header
 files in your program. For example, to access UART printing, you must include
-`uart/uart.h` and `uart/log.h` in your code.
+`uart/uart.h` in your code.
 
 ```
 #include <uart/uart.h>
-#include <uart/log.h>
 
 // later on
 
