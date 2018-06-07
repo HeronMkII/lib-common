@@ -2,3 +2,4 @@
 -Iinclude/queue
 -Iinclude/spi
 -Iinclude/uart
+-Iinclude/heartbeat
