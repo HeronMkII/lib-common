@@ -1,5 +1,4 @@
 #include <uart/uart.h>
-#include <uart/log.h>
 #include <stack/stack.h>
 
 void print_stack_data(stack_t* stack){

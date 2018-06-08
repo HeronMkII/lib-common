@@ -1,5 +1,4 @@
 #include <uart/uart.h>
-#include <uart/log.h>
 
 #define MAX_RX_BUF_SIZE 50
 
@@ -7,18 +6,21 @@ uint8_t uart_rx_buf[MAX_RX_BUF_SIZE];
 volatile uint8_t uart_rx_buf_counter;
 
 // default rx callback
-void _nop(uint8_t *c, uint8_t len) {}
+uint8_t _nop(const uint8_t *c, uint8_t len) { return 0; }
+global_rx_cb_t global_rx_cb = _nop;
 
-void put_char(const uint8_t c) {
-    int TIMEOUT = 65535;
+void put_char(uint8_t c) {
+    uint16_t TIMEOUT = 65535;
     while ((LINSIR & _BV(LBUSY)) && TIMEOUT--);
     LINDAT = c;
 }
 
-uint8_t get_char(){
+// Maybe change to uint8_t get_char(uint8_t*) and write value directly?
+// Frees up ret val for error handling
+void get_char(uint8_t* c){
     int TIMEOUT = 65535;
     while ((LINSIR & _BV(LBUSY)) && TIMEOUT--);
-    return LINDAT;
+    *c = LINDAT;
 }
 
 void init_uart() {
@@ -65,15 +67,27 @@ void clear_rx_buffer() {
 
 ISR(LIN_TC_vect) {
   if (LINSIR & _BV(LRXOK)) {
-    uint8_t c = get_char();
+    static uint8_t c;
+    get_char(&c);
 
     uart_rx_buf[uart_rx_buf_counter] = c;
     uart_rx_buf_counter += 1;
 
-    global_rx_cb(uart_rx_buf, uart_rx_buf_counter);
+    uint8_t rb = global_rx_cb(uart_rx_buf, uart_rx_buf_counter);
+
+    // shift everything leftward by the number of bytes read, if any
+    if (rb > 0) {
+        for (uint8_t i = 0; i < uart_rx_buf_counter - rb; i++) {
+            uart_rx_buf[i] = uart_rx_buf[i + rb];
+        }
+
+        uart_rx_buf_counter -= rb;
+    }
 
     if (uart_rx_buf_counter == MAX_RX_BUF_SIZE) {
         clear_rx_buffer();
     }
+
+    LINSIR &= ~(_BV(LRXOK)); // clear bit
   }
 }

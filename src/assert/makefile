@@ -1,2 +1,0 @@
-LIBNAME = assert
-include ../makefile

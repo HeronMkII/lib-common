@@ -21,7 +21,7 @@ being sent to the parent.
 // Assume init_uart() and init_can() have been called in SSM main program
 #include <avr/eeprom.h>
 #include <can/can.h>
-#include <uart/log.h>
+#include <uart/uart.h>
 #include <heartbeat/heartbeat.h>
 
 // EEPROM address assignment to store status of each SSM

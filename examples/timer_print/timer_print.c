@@ -6,7 +6,6 @@ minute or 5 minutes
 */
 
 #include <uart/uart.h>
-#include <uart/log.h>
 #include <timer/timer.h>
 
 int count1 = 0; //current timer 1 iteration

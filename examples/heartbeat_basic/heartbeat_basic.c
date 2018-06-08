@@ -12,7 +12,6 @@
 
 #include <uart/uart.h>
 #include <can/can.h>
-#include <uart/log.h>
 #include <heartbeat/heartbeat.h>
 
 // Extend the visibility of SSM status global variables to SSM main program

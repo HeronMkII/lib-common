@@ -1,7 +1,9 @@
+PROG = test_suite
+
 CC = avr-gcc
 INCLUDES = -I../../include
-LIB = -L../../lib -luart -lspi -lcan -lqueue -lstack -ltimer -lheartbeat
-CFLAGS = -std=gnu99 -Wall -g -mmcu=atmega32m1 -Os -mcall-prologues
+LIB = -L../../lib -ltest
+CFLAGS = -std=gnu99 -Wall -mmcu=atmega32m1 -Os -mcall-prologues
 
 PGMR = stk500
 MCU = m32m1
@@ -9,7 +11,6 @@ MCU = m32m1
 ifeq ($(OS),Windows_NT)
     PORT = COM3
 else
-	#PORT = /dev/tty.usbmodem00187462
 	PORT = /dev/tty.usbmodem00208212
 endif
 

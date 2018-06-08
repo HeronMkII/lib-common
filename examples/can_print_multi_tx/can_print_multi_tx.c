@@ -1,5 +1,4 @@
 #include <uart/uart.h>
-#include <uart/log.h>
 #include <can/can.h>
 
 #define F_CPU 8000000UL
