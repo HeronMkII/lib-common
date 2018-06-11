@@ -1,7 +1,7 @@
 #include <uart/uart.h>
 #include <queue/queue.h>
 
-void print_queue_data(queue_t* queue){
+void print_queue_data(queue_t* queue) {
     print("Size: %u\n", queue->size);
     print("Head: %u\n", queue->head);
     print("Tail: %u\n\n", queue->tail);
@@ -27,7 +27,7 @@ int main(void) {
     // Dequeue a bit of data
     uint8_t data[QUEUE_DATA_SIZE] = { 0 };
     fail = dequeue(&queue, data);
-    if (!fail){
+    if (!fail) {
         print("Dequeue successful\n");
         print("Content: %s\n", data);
         print_queue_data(&queue);
@@ -35,10 +35,10 @@ int main(void) {
 
     // Test the queue to maximum size
     uint8_t enqueue_data[QUEUE_DATA_SIZE] = { 0 };
-    for (uint8_t i = 0; i < MAX_QUEUE_SIZE + 1; i++){
+    for (uint8_t i = 0; i < MAX_QUEUE_SIZE + 1; i++) {
         enqueue_data[0] = i;
         fail = enqueue(&queue, enqueue_data);
-        if (!fail){
+        if (!fail) {
             print("Enqueue successful\n");
             // Add 1 because an item was enqueued and dequeued before,
             // so the head now starts at 1
@@ -52,9 +52,9 @@ int main(void) {
     }
 
     // Now dequeue the elements we added
-    for (uint8_t i = 0; i < MAX_QUEUE_SIZE + 1; i++){
+    for (uint8_t i = 0; i < MAX_QUEUE_SIZE + 1; i++) {
         uint8_t fail = dequeue(&queue, data);
-        if (!fail){
+        if (!fail) {
             print("Dequeue successful\n");
             print("Content: %u\n", data[0]);
             print_queue_data(&queue);

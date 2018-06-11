@@ -1,7 +1,7 @@
 #include <uart/uart.h>
 #include <stack/stack.h>
 
-void print_stack_data(stack_t* stack){
+void print_stack_data(stack_t* stack) {
     print("Size: %u\n", stack->size);
 }
 
@@ -33,7 +33,7 @@ int main(void) {
 
     // Test the stack to maximum size
     uint8_t push_data[STACK_DATA_SIZE] = { 0 };
-    for (uint8_t i = 0; i < MAX_STACK_SIZE + 1; i++){
+    for (uint8_t i = 0; i < MAX_STACK_SIZE + 1; i++) {
         push_data[0] = i;
         fail = push(&stack, push_data);
         if (!fail) {
@@ -47,7 +47,7 @@ int main(void) {
     }
 
     // Now pop the elements we added
-    for (uint8_t i = 0; i < MAX_STACK_SIZE + 1; i++){
+    for (uint8_t i = 0; i < MAX_STACK_SIZE + 1; i++) {
         uint8_t fail = pop(&stack, data);
         if (!fail) {
             print("Pop successful\n");

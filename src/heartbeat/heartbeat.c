@@ -84,7 +84,7 @@ mob_t status_tx_mob = {
 
 // Implement heartbeat functions
 void assign_heartbeat_status() {
-    switch(ssm_id) {
+    switch (ssm_id) {
         case OBC:
             SELF_STATUS_EEMEM = OBC_STATUS_EEMEM;
             self_status = &obc_status;
@@ -113,7 +113,7 @@ void assign_heartbeat_status() {
 }
 
 void assign_status_message_objects() {
-    switch(ssm_id) {
+    switch (ssm_id) {
         case OBC:
             status_rx_mob.mob_num = 1;
             status_rx_mob.id_tag.std = OBC_STATUS_RX_MOB_ID;

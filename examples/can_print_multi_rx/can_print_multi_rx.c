@@ -15,7 +15,7 @@ mob_t rx_mob = {
 
 void rx_callback(const uint8_t* data, uint8_t len) {
     print("TX received!\n");
-    print("%s\n", (char *) data);
+    print("%s\n", (char*) data);
 }
 
 int main(void) {

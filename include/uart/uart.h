@@ -27,7 +27,7 @@ void init_uart();
 void send_uart(const uint8_t*, int);
 
 // Printing
-int print(char *, ...);
-int uprintf(char *, ...);
+int print(char*, ...);
+int uprintf(char*, ...);
 
 #endif // UART_H

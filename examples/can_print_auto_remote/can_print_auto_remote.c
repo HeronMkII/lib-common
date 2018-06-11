@@ -46,7 +46,7 @@ void tx_callback(uint8_t* data, uint8_t* len) {
 
 void rx_callback(const uint8_t* data, uint8_t len) {
     print("Data frame received!\n");
-    print("%s\n", (char *) data);
+    print("%s\n", (char*) data);
 }
 
 int main(void) {

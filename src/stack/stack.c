@@ -9,8 +9,8 @@
 void init_stack(stack_t* stack) {
     stack->size = 0;
     stack->index = 0;
-    for (uint8_t i = 0; i < MAX_STACK_SIZE; i++){
-        for (uint8_t j = 0; j < STACK_DATA_SIZE; j++){
+    for (uint8_t i = 0; i < MAX_STACK_SIZE; i++) {
+        for (uint8_t j = 0; j < STACK_DATA_SIZE; j++) {
             stack->content[i][j] = 0x00;
         }
     }
