@@ -55,7 +55,7 @@ uint8_t load_data(mob_t* mob) {
     }
 
     if (len) {
-        print("Loaded data: %s len: %d\n", (char *) mob->data, mob->dlc);
+        print("Loaded data: %s len: %d\n", (char*) mob->data, mob->dlc);
     }
 
     return len;
@@ -303,7 +303,7 @@ uint8_t handle_err(mob_t* mob) {
     return 0;
 }
 
-ISR(CAN_INT_vect){
+ISR(CAN_INT_vect) {
     print("Interrupt received\n");
     for (uint8_t i = 0; i < 6; i++) {
         mob_t* mob = mob_array[i];

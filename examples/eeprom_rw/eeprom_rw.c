@@ -16,10 +16,9 @@
  */
 
 int main(void) {
-    uint8_t* addr = (uint8_t *)47;
+    uint8_t* addr = (uint8_t*)47;
     uint8_t data = 0xbb;
 
     eeprom_update_byte(addr, data);
     return 0;
 }
-

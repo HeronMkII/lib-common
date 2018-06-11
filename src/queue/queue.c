@@ -10,8 +10,8 @@ void init_queue(queue_t* queue) {
     queue->size = 0;
     queue->head = 0;
     queue->tail = 0;
-    for (uint8_t i = 0; i < MAX_QUEUE_SIZE; i++){
-        for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++){
+    for (uint8_t i = 0; i < MAX_QUEUE_SIZE; i++) {
+        for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
             queue->content[i][j] = 0x00;
         }
     }
