@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from __future__ import print_function
 import subprocess
 import argparse
@@ -16,18 +17,30 @@ except ImportError:
         "in the command line.")
     sys.exit(1)
 
+harness_desc = ("This test harness runs tests built using the libtest " +
+        "framework.")
+
 sep = 80*"-"
+
+def get_input(str):
+    if sys.version_info[0] < 3:
+        return raw_input(str)
+    else:
+        return input(str)
+
+def uart_offset():
+    if os.name == 'posix':
+        return 2
+    elif os.name == 'nt':
+        return -1
+
 
 class TestHarness:
     baud_rate = 9600
 
-    def __init__(self, port):
+    def __init__(self, port, serial_port):
         self.port = port
-        self.serial_port = []
-        for p in port:
-            (head, tail) = os.path.split(p)
-            tail = tail[:-1] + str(int(tail[-1]) + 2)
-            self.serial_port.append(os.path.join(head, tail))
+        self.serial_port = serial_port
         self.serial = []
         self.suites = []
         self.total_passed = 0
@@ -40,7 +53,7 @@ class TestHarness:
         print("WARNING: The UART TX pin(s) on SCK must be disconnected " +
             "before upload.\nEnsure the UART TX pin on each board " +
             "is disconnected before proceeding.")
-        ans = raw_input("Run test suite '%s'? (y/n) " % suite.name)
+        ans = get_input("Run test suite '%s'? (y/n) " % suite.name)
         if ans == "y":
             return True
         elif ans == "n":
@@ -50,7 +63,7 @@ class TestHarness:
 
     def recv_count(self, suite):
         # TODO: seperate this into two functions?
-        ok = raw_input("Connect the UART TX pin(s) to SCK. (ok) ")
+        ok = get_input("Connect the UART TX pin(s) to SCK. (ok) ")
         if ok == "ok":
             print(sep)
             self.serial = [ serial.Serial(self.serial_port[i], self.baud_rate)
@@ -276,16 +289,30 @@ class Test:
             print("    Error: ASSERT_TRUE failed")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Test harness")
-    parser.add_argument('-p', '--port', nargs='+', required=True)
-    parser.add_argument('-d', '--test-dir', required=True)
+    parser = argparse.ArgumentParser(description=harness_desc)
+    parser.add_argument('-p', '--prog', nargs='+', required=True,
+            metavar=('port1', 'port2'),
+            help='list of programming ports')
+    parser.add_argument('-u', '--uart', nargs='+', required=False,
+            metavar=('uart1', 'uart2'), default=[],
+            help='list of UART ports')
+    parser.add_argument('-d', '--test-dir', required=True,
+            metavar='test_dir',
+            help='directory in which to search for tests')
 
     args = parser.parse_args()
 
     test_path = args.test_dir
-    port = args.port
+    port = args.prog
+    uart = args.uart
 
-    harness = TestHarness(port)
+    if len(uart) == 0:
+        for p in port:
+            (head, tail) = os.path.split(p)
+            tail = tail[:-1] + str(int(tail[-1]) + uart_offset())
+            uart.append(os.path.join(head, tail))
+
+    harness = TestHarness(port, uart)
     for path, _, files in os.walk(test_path):
         if path == test_path:
             continue
