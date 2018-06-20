@@ -1,5 +1,5 @@
 #include <uart/uart.h>
-#include <uart/log.h>
+//#include <uart/log.h>
 #include <spi/spi.h>
 #include <assert/assert.h>
 

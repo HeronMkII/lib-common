@@ -20,6 +20,8 @@ void fun2(void) {
 }
 
 int main() {
+    init_uart();
+    print("Please work");
     run_tests(suite, TEST_NO);
     return 0;
 }

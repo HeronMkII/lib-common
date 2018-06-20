@@ -31,6 +31,7 @@ test_t t4 = { .name = "Print debug info", .fn = debug_test };
 test_t* suite[4] = { &t1, &t2, &t3, &t4 };
 
 int main() {
+    init_uart();
     run_tests(suite, 4);
     return 0;
 }
