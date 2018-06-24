@@ -69,18 +69,18 @@ class TestHarness:
             self.serial = [ serial.Serial(self.serial_port[i], self.baud_rate)
                 for i in range(suite.boards) ]
             for ser in self.serial:
-                ser.write("COUNT\r\n")
+                ser.write(b"COUNT\r\n")
             count = int(self.serial[0].readline().strip())
             return count
         else:
             return self.recv_count(suite)
 
     def send_start(self):
-        self.serial[0].write("START\r\n")
+        self.serial[0].write(b"START\r\n")
 
     def send_end(self):
         for ser in self.serial[1:]:
-            ser.write("KILL\r\n")
+            ser.write(b"KILL\r\n")
         for ser in self.serial:
             ser.close()
         self.serial = []
@@ -107,7 +107,7 @@ class TestSuite:
     mcu = "m32m1"
     prog = "stk500"
     includes = "-I./include/"
-    lib = "-L./lib/ -ltest -lprintf_flt -lm"
+    lib = "-L./lib/ -ltest -lprintf_flt -lm -luart -lspi -lcan -ltimer -lqueue -lstack -lheartbeat"
 
     def __init__(self, path, boards, harness):
         self.path = path
