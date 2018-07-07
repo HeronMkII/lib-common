@@ -1,13 +1,13 @@
 CC = avr-gcc
 INCLUDES = -I../../include
-LIB = -L../../lib -lprintf_flt -lm -ladc -luart -lspi -lcan -lqueue -lstack -ltimer -lheartbeat -lconversions
+LIB = -L../../lib -lprintf_flt -lm -ladc -luart -lspi -lcan -lqueue -lstack -ltimer -lheartbeat -lconversions -lpex
 CFLAGS = -std=gnu99 -Wall -Wl,-u,vfprintf -g -mmcu=atmega32m1 -Os -mcall-prologues
 
 PGMR = stk500
 MCU = m32m1
 
 ifeq ($(OS),Windows_NT)
-    PORT = COM3
+	PORT = COM3
 else
 	PORT = $(shell find /dev -name 'tty.usbmodem[0-9]*' | sort | head -n1)
 endif

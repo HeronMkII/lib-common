@@ -1,4 +1,4 @@
-SUBDIRS = $(addprefix src/,uart spi can timer queue stack heartbeat test conversions adc)
+SUBDIRS = $(addprefix src/,uart spi can timer queue stack heartbeat test conversions adc pex)
 EXAMPLES = $(dir $(wildcard examples/*/.))
 
 .PHONY: all $(SUBDIRS) clean examples tests help
@@ -26,6 +26,7 @@ clean:
 	@$(MAKE) clean -C src/stack
 	@$(MAKE) clean -C src/heartbeat
 	@$(MAKE) clean -C src/test
+	@$(MAKE) clean -C src/pex
 
 $(SUBDIRS):
 	@$(MAKE) -e -C $@
