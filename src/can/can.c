@@ -54,10 +54,6 @@ uint8_t load_data(mob_t* mob) {
         CANMSG = (mob->data)[i]; // data buffer index auto-incremented
     }
 
-    if (len) {
-        print("Loaded data: %s len: %d\n", (char*) mob->data, mob->dlc);
-    }
-
     return len;
 }
 
@@ -103,7 +99,6 @@ void pause_mob(mob_t* mob) {
     select_mob(mob->mob_num);
 
     CANCDMOB &= ~(_BV(CONMOB0) | _BV(CONMOB1));
-    print("Mob %d paused\n", mob->mob_num);
 }
 
 
@@ -124,8 +119,6 @@ void resume_mob(mob_t* mob) {
             CANCDMOB &= ~(_BV(CONMOB0));
             break;
     }
-
-    print("Mob %d resumed\n", mob->mob_num);
 }
 
 void init_rx_mob(mob_t* mob) {
@@ -180,8 +173,6 @@ void init_auto_mob(mob_t* mob) {
 }
 
 void handle_rx_interrupt(mob_t* mob) {
-    print("Handling %s interrupt\n", "RX");
-
     select_mob(mob->mob_num);
 
     // we must reset the ID and various flags because they
@@ -210,8 +201,6 @@ void handle_rx_interrupt(mob_t* mob) {
 }
 
 void handle_tx_interrupt(mob_t* mob) {
-    print("Handling %s interrupt\n", "TX");
-
     /* TODO: Add some kind of burst mode, which looks like:
     // Try to load more data automatically
     load_data(mob);
@@ -235,8 +224,6 @@ void handle_tx_interrupt(mob_t* mob) {
 }
 
 void handle_auto_tx_interrupt(mob_t* mob) {
-    print("Handling %s interrupt\n", "AUTO TX");
-
     select_mob(mob->mob_num);
 
     // TODO: Many of the variables, including IDTAG, dlc, etc
@@ -277,22 +264,16 @@ uint8_t handle_err(mob_t* mob) {
     if (err != 0) {
         if (err & _BV(DLCW)) {
             print(ERR_MSG, "Bad DLC");
-            //print("ERR: Incoming message did not have expected DLC.\n");
         } else if (err & _BV(BERR)) {
             print(ERR_MSG, "Bit error");
-            //print("ERR: Bit error.\n");
         } else if (err & _BV(SERR)) {
             print(ERR_MSG, "Bit stuffing error");
-            //print("ERR: Five consecutive bits with same polarity.\n");
         } else if (err & _BV(CERR)) {
             print(ERR_MSG, "CRC mismatch");
-            //print("ERR: CRC mismatch.\n");
         } else if (err & _BV(FERR)) {
             print(ERR_MSG, "Form error");
-            //print("ERR: Form error.\n");
         } else if (err & _BV(AERR)) {
             print(ERR_MSG, "No ack");
-            //print("ERR: No acknowledgement.\n");
         }
 
         // TODO: is this the best way to handle errors?
@@ -304,7 +285,6 @@ uint8_t handle_err(mob_t* mob) {
 }
 
 ISR(CAN_INT_vect) {
-    print("Interrupt received\n");
     for (uint8_t i = 0; i < 6; i++) {
         mob_t* mob = mob_array[i];
 
@@ -312,7 +292,6 @@ ISR(CAN_INT_vect) {
         else select_mob(i);
 
         uint8_t status = mob_status(mob);
-        print("Status: %#.2x\n", status);
 
         if (handle_err(mob)) continue;
 

@@ -1,10 +1,13 @@
+#ifndef QUEUE_H
+#define QUEUE_H
+
 /*
     AUTHORS: J. W. Sheridan, Siddharth Mahendraker, Shimi Smith
 */
 
 #include <stdint.h>
 
-#define MAX_QUEUE_SIZE 10
+#define MAX_QUEUE_SIZE 5
 #define QUEUE_DATA_SIZE 8
 
 typedef struct {
@@ -19,3 +22,5 @@ uint8_t is_full(queue_t*);
 uint8_t is_empty(queue_t*);
 uint8_t enqueue(queue_t*, uint8_t*);
 uint8_t dequeue(queue_t*, uint8_t*);
+
+#endif

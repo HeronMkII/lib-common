@@ -1,3 +1,6 @@
+#ifndef TIMER_H
+#define TIMER_H
+
 /*
 Authors: Shimi Smith, Matthew Silverman
 
@@ -41,3 +44,4 @@ typedef struct {
     // The command to run once the desired time has passed
 } timer_t;
 
+#endif

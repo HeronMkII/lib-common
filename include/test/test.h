@@ -1,3 +1,6 @@
+#ifndef TEST_H
+#define TEST_H
+
 #include <avr/io.h>
 #include <stdint.h>
 
@@ -18,3 +21,5 @@ typedef struct {
 void run_tests(test_t**, uint8_t);
 
 void run_slave(void);
+
+#endif

@@ -1,3 +1,6 @@
+#ifndef SPI_H
+#define SPI_H
+
 #include <avr/io.h>
 #include <avr/cpufunc.h> // for _NOP()
 #include <string.h>
@@ -26,3 +29,5 @@ uint8_t send_spi(uint8_t);
 void init_cs(uint8_t, port_t);
 void set_cs_low(uint8_t, port_t);
 void set_cs_high(uint8_t, port_t);
+
+#endif
