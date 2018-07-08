@@ -1,5 +1,5 @@
 /*
-A collection of miscellanous utilities (useful constants and functions)
+A collection of miscellanous utilities (useful constants, includes, and functions)
 between subsystems.
 */
 
