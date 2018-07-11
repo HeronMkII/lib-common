@@ -1,0 +1,2 @@
+LIBNAME = watchdog
+include ../makefile
