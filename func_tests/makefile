@@ -1,6 +1,6 @@
 CC = avr-gcc
 INCLUDES = -I../../include
-LIB = -L../../lib -lprintf_flt -lm -ladc -luart -lspi -lcan -lqueue -lstack -ltimer -lheartbeat -lconversions -lpex
+LIB = -L../../lib -lprintf_flt -lm -ladc -luart -lspi -lcan -lqueue -lstack -ltimer -lheartbeat -lconversions -lpex -ldac
 CFLAGS = -std=gnu99 -Wall -Wl,-u,vfprintf -g -mmcu=atmega32m1 -Os -mcall-prologues
 
 PGMR = stk500
