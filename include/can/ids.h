@@ -1,16 +1,9 @@
+#ifndef CAN_IDS_H
+#define CAN_IDS_H
+
 /*
-    FILENAME:           can_ids.h
-    DEPENDENCIES:       none
-
-    DESCRIPTION:        Defines global definitions for use with CAN
-    AUTHORS:            Dylan Vogel, Ali Haydaroglu
-    DATE MODIFIED:      2018-01-12
-    NOTE:
-
-    REVISION HISTORY:
-
-    2018-01-12:         DV: Fixed bugs, wrotes out binary strting under hex string
-    2018-01-08:         DV: Added initial command IDs and PAY sensor IDs
+DESCRIPTION: Defines global definitions for use with CAN
+AUTHORS: Dylan Vogel, Ali Haydaroglu
 */
 
 // GLOBAL RX MASK
@@ -63,12 +56,6 @@
 #define EPS_DATA_TX_MOB_ID      { 0x0104 }
 // 0b0 001 0000 0100
 
-// EPS COMMAND IDS
-#define EPS_HK_REQ              0b00000001
-#define EPS_HK_SENSOR_REQ       0b00000010
-
-
-// EPS SENSOR IDS
 
 /*
 ################################################################################
@@ -87,3 +74,5 @@
 // 0b 0 010 0100 0001
 #define PAY_DATA_TX_MOB_ID      { 0x0102 }
 // 0b 0 001 0000 0010
+
+#endif
