@@ -24,3 +24,11 @@ inline int uprintf(char* str, ...) {
     send_uart(print_buf, strlen((char*)print_buf));
     return ret;
 }
+
+void print_bytes(uint8_t* data, uint8_t len) {
+    for (uint8_t i = 0; i < len; i++) {
+        print("0x%.2x ", data[i]);
+    }
+
+    print("\n");
+}
