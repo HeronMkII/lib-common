@@ -1,3 +1,6 @@
+#ifndef CAN_H
+#define CAN_H
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
@@ -60,3 +63,5 @@ void resume_mob(mob_t*);
 uint8_t is_paused(mob_t*);
 
 uint8_t mob_status(mob_t*);
+
+#endif

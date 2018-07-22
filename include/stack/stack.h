@@ -1,3 +1,6 @@
+#ifndef STACK_H
+#define STACK_H
+
 /*
     AUTHORS: Siddharth Mahendraker, Shimi Smith, J. W. Sheridan
 */
@@ -18,3 +21,5 @@ uint8_t is_full(stack_t*);
 uint8_t is_empty(stack_t*);
 uint8_t push(stack_t*, uint8_t*);
 uint8_t pop(stack_t*, uint8_t*);
+
+#endif
