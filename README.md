@@ -1,12 +1,24 @@
 # lib-common
 
 Lib-common contains a common set of libraries to be used across all subsystems.
-Lib-common currently provides libraries supporting UART, CAN and SPI.
+
+Lib-common currently provides support for:
+
+* UART
+* SPI
+* CAN
+* Heartbeat (error recovery)
+* Timers
+* Heap-free data structures
+    * Queues
+    * Stacks
 
 # Prerequisites
 
 Before using this library you must install git, make, and the AVR-GCC
-toolchain.
+toolchain. See the documentation
+[here](https://utat-space-systems.gitbooks.io/heron-mk-ii/) for further
+instructions.
 
 # Installing and updating this library from another project
 
