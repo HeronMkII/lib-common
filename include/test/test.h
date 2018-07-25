@@ -11,6 +11,9 @@
 #define ASSERT_TRUE(v) (print("ASSERT TRUE %d (%s) (%d)\r\n",\
     (v), __FUNCTION__, __LINE__))
 
+#define ASSERT_FALSE(v) (print("ASSERT FALSE %d (%s) (%d)\r\n",\
+    (v), __FUNCTION__, __LINE__))
+
 typedef void(*test_fn_t)(void);
 
 typedef struct {
