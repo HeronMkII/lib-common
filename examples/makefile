@@ -7,10 +7,9 @@ PGMR = stk500
 MCU = m32m1
 
 ifeq ($(OS),Windows_NT)
-    PORT = COM3
+	PORT = COM3
 else
-	#PORT = /dev/tty.usbmodem00187462
-	PORT = /dev/tty.usbmodem00208212
+	PORT = $(shell find /dev -name 'tty.usbmodem[0-9]*' | sort | head -n1)
 endif
 
 $(PROG): $(PROG).o
