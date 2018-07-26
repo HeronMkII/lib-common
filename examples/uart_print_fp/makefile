@@ -6,7 +6,7 @@ CFLAGS = -std=gnu99 -Wall -Wl,-u,vfprintf -g -mmcu=atmega32m1 -Os -mcall-prologu
 
 PGMR = stk500
 MCU = m32m1
-PORT = /dev/tty.usbmodem00187462
+PORT = $(shell find /dev -name 'tty.usbmodem[0-9]*' | sort | head -n1)
 
 $(PROG): $(PROG).o
 	$(CC) $(CFLAGS) -o $@.elf $^ $(LIB)
