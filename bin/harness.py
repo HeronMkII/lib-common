@@ -234,6 +234,8 @@ class Test:
             self.handle_assert_eq(line)
         elif line[:11] == "ASSERT TRUE":
             self.handle_assert_true(line)
+        elif line[:12] == "ASSERT FALSE":
+            self.handle_assert_false(line)
         else:
             sys.stdout.write(line)
 
@@ -287,6 +289,18 @@ class Test:
             fn, line = str(match.group(2)), int(match.group(3))
             print("In function '%s', line %d" % (fn, line))
             print("    Error: ASSERT_TRUE failed")
+
+    def handle_assert_false(self, line):
+        regex = r"ASSERT FALSE (\d+) \((.+)\) \((.+)\)\r\n"
+        match = re.search(regex, line)
+        v = int(match.group(1))
+        if v == 0:
+            self.assert_passed += 1
+        else:
+            self.assert_failed += 1
+            fn, line = str(match.group(2)), int(match.group(3))
+            print("In function '%s', line %d" % (fn, line))
+            print("    Error: ASSERT_FALSE failed")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=harness_desc)
