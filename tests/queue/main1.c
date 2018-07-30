@@ -33,8 +33,8 @@ void init_queue_test() {
 
 // This should be executed first
 void enqueue_simple() {
-    uint8_t fail = enqueue(&queue, r);
-    ASSERT_FALSE(fail);
+    uint8_t succ = enqueue(&queue, r);
+    ASSERT_TRUE(succ);
 
     ASSERT_EQ(queue.head, 0);
     ASSERT_EQ(queue.tail, 1);
@@ -43,8 +43,8 @@ void enqueue_simple() {
         ASSERT_EQ(queue.content[0][j], r[j]);
     }
 
-    fail = enqueue(&queue, s);
-    ASSERT_FALSE(fail);
+    succ = enqueue(&queue, s);
+    ASSERT_TRUE(succ);
 
     ASSERT_EQ(queue.head, 0);
     ASSERT_EQ(queue.tail, 2);
@@ -58,8 +58,8 @@ void enqueue_simple() {
 void dequeue_simple() {
     uint8_t data[QUEUE_DATA_SIZE] = { 0 };
 
-    uint8_t fail = dequeue(&queue, data);
-    ASSERT_FALSE(fail);
+    uint8_t succ = dequeue(&queue, data);
+    ASSERT_TRUE(succ);
 
     ASSERT_EQ(queue.head, 1);
     ASSERT_EQ(queue.tail, 2);
@@ -72,8 +72,8 @@ void dequeue_simple() {
         ASSERT_EQ(queue.content[0][j], 0);
     }
 
-    fail = dequeue(&queue, data);
-    ASSERT_FALSE(fail);
+    succ = dequeue(&queue, data);
+    ASSERT_TRUE(succ);
 
     ASSERT_EQ(queue.head, 2);
     ASSERT_EQ(queue.tail, 2);
@@ -86,8 +86,8 @@ void dequeue_simple() {
         ASSERT_EQ(queue.content[1][j], 0);
     }
 
-    fail = dequeue(&queue, data);
-    ASSERT_TRUE(fail);
+    succ = dequeue(&queue, data);
+    ASSERT_FALSE(succ);
 }
 
 void is_empty_test() {
@@ -108,8 +108,8 @@ void is_full_test() {
         enqueue(&queue, w[i]);
     }
 
-    uint8_t fail = enqueue(&queue, r);
-    ASSERT_TRUE(fail);
+    uint8_t succ = enqueue(&queue, r);
+    ASSERT_FALSE(succ);
 
     uint8_t full = queue_full(&queue);
     ASSERT_TRUE(full);
@@ -125,8 +125,8 @@ void mixed_test() {
         ASSERT_EQ(queue.content[0][j], 0);
     }
 
-    uint8_t fail = enqueue(&queue, r);
-    ASSERT_FALSE(fail);
+    uint8_t succ = enqueue(&queue, r);
+    ASSERT_TRUE(succ);
 
     uint8_t full = queue_full(&queue);
     ASSERT_TRUE(full);
@@ -147,8 +147,8 @@ void mixed_test() {
     ASSERT_EQ(queue.head, MAX_QUEUE_SIZE);
     ASSERT_EQ(queue.tail, MAX_QUEUE_SIZE);
 
-    fail = enqueue(&queue, r);
-    ASSERT_FALSE(fail);
+    succ = enqueue(&queue, r);
+    ASSERT_TRUE(succ);
 
     ASSERT_EQ(queue.head, 0);
     ASSERT_EQ(queue.tail, 1);

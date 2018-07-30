@@ -1,6 +1,11 @@
 #include <test/test.h>
 #include <stack/stack.h>
 
+#if MAX_STACK_SIZE != 5
+#undef MAX_STACK_SIZE
+#define MAX_STACK_SIZE 5
+#endif
+
 stack_t stack;
 
 uint8_t r[] = { 0xfe, 0x25, 0xe3, 0x1d, 0x73, 0xff, 0x00, 0xa7 };
@@ -26,8 +31,8 @@ void init_stack_test() {
 }
 
 void push_simple() {
-    uint8_t fail = push(&stack, r);
-    ASSERT_FALSE(fail);
+    uint8_t succ = push(&stack, r);
+    ASSERT_TRUE(succ);
 
     ASSERT_EQ(stack.index, 1);
 
@@ -35,8 +40,8 @@ void push_simple() {
         ASSERT_EQ(stack.content[0][j], r[j]);
     }
 
-    fail = push(&stack, s);
-    ASSERT_FALSE(fail);
+    succ = push(&stack, s);
+    ASSERT_TRUE(succ);
 
     ASSERT_EQ(stack.index, 2);
 
@@ -48,8 +53,8 @@ void push_simple() {
 void pop_simple() {
     uint8_t data[STACK_DATA_SIZE] = { 0 };
 
-    uint8_t fail = pop(&stack, data);
-    ASSERT_FALSE(fail);
+    uint8_t succ = pop(&stack, data);
+    ASSERT_TRUE(succ);
 
     ASSERT_EQ(stack.index, 1);
 
@@ -61,8 +66,8 @@ void pop_simple() {
         ASSERT_EQ(stack.content[1][j], 0);
     }
 
-    fail = pop(&stack, data);
-    ASSERT_FALSE(fail);
+    succ = pop(&stack, data);
+    ASSERT_TRUE(succ);
 
     ASSERT_EQ(stack.index, 0);
 
@@ -74,8 +79,8 @@ void pop_simple() {
         ASSERT_EQ(stack.content[0][j], 0);
     }
 
-    fail = pop(&stack, data);
-    ASSERT_TRUE(fail);
+    succ = pop(&stack, data);
+    ASSERT_FALSE(succ);
 }
 
 void is_empty_test() {
@@ -96,8 +101,8 @@ void is_full_test() {
         push(&stack, w[i]);
     }
 
-    uint8_t fail = push(&stack, r);
-    ASSERT_TRUE(fail);
+    uint8_t succ = push(&stack, r);
+    ASSERT_FALSE(succ);
 
     uint8_t full = stack_full(&stack);
     ASSERT_TRUE(full);
@@ -113,8 +118,8 @@ void mixed_test() {
         ASSERT_EQ(stack.content[MAX_STACK_SIZE - 1][j], 0);
     }
 
-    uint8_t fail = push(&stack, r);
-    ASSERT_FALSE(fail);
+    uint8_t succ = push(&stack, r);
+    ASSERT_TRUE(succ);
 
     uint8_t full = stack_full(&stack);
     ASSERT_TRUE(full);
@@ -138,8 +143,8 @@ void mixed_test() {
 
     ASSERT_EQ(stack.index, 0);
 
-    fail = push(&stack, r);
-    ASSERT_FALSE(fail);
+    succ = push(&stack, r);
+    ASSERT_TRUE(succ);
 
     ASSERT_EQ(stack.index, 1);
 }
