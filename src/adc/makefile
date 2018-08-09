@@ -1,0 +1,2 @@
+LIBNAME = adc
+include ../makefile

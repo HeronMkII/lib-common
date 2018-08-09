@@ -23,6 +23,12 @@
 typedef volatile uint8_t* pint_t;
 typedef volatile uint8_t* port_t;
 
+typedef struct {
+    port_t port;
+    port_t ddr;
+    uint8_t pin;
+} pin_info_t;
+
 void init_spi(void);
 uint8_t send_spi(uint8_t);
 
