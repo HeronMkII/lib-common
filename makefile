@@ -18,15 +18,9 @@ endif
 all: $(SUBDIRS)
 
 clean:
-	@$(MAKE) clean -C src/uart
-	@$(MAKE) clean -C src/spi
-	@$(MAKE) clean -C src/can
-	@$(MAKE) clean -C src/timer
-	@$(MAKE) clean -C src/queue
-	@$(MAKE) clean -C src/stack
-	@$(MAKE) clean -C src/heartbeat
-	@$(MAKE) clean -C src/test
-	@$(MAKE) clean -C src/pex
+	@for dir in $(SUBDIRS) ; do \
+		$(MAKE) clean -C $$dir ; \
+	done
 
 $(SUBDIRS):
 	@$(MAKE) -e -C $@
