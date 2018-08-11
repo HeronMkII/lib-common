@@ -1,0 +1,2 @@
+LIBNAME = pex
+include ../makefile
