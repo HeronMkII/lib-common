@@ -176,17 +176,24 @@ class TestSuite:
 
             s = time.time()
 
+            # Non-master input is not supported on Windows. Thus Windows does
+            # not support multi-board testing.
             for test in self.tests:
                 self.harness.send_start()
                 while not test.is_done():
-                    readable, _, _ = select.select(self.harness.serial,
-                        [], [])
-                    for i in range(self.boards):
-                        if self.harness.serial[i] in readable:
-                            line = self.harness.serial[i].readline()
-                            test.handle_line(line)
+                    if os.name == 'posix':
+                        readable, _, _ = select.select(self.harness.serial,
+                            [], [])
+                        for i in range(self.boards):
+                            if self.harness.serial[i] in readable:
+                                line = self.harness.serial[i].readline()
+                                test.handle_line(line)
+                    elif os.name == 'nt':
+                        line = self.harness.serial[0].readline()
+                        test.handle_line(line)
 
             e = time.time()
+
             passed = len(filter(lambda x: x.passed(), self.tests))
             failed = len(self.tests) - passed
             total = passed + failed
@@ -336,7 +343,10 @@ if __name__ == "__main__":
             if re.search(regex, f):
                 boards += 1
 
-        if boards > len(port):
+        if (boards > 1) and (os.name == "nt"):
+            print(("Skipping test suite '%s', Windows does not support " +
+                "multi-board testing.") % os.path.basename(path))
+        elif boards > len(port):
             print("Skipping test suite '%s', requires %d more board(s)."
                 % (os.path.basename(path), boards - len(port)))
         else:
