@@ -1,6 +1,7 @@
 #ifndef PEX_EPS_H
 #define PEX_EPS_H
 
+// CS and RST pins on the EPS microcontroller
 #define PEX_CS_PIN_EPS      PB5
 #define PEX_CS_PORT_EPS     PORTB
 #define PEX_CS_DDR_EPS      DDRB
