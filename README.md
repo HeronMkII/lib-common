@@ -1,12 +1,29 @@
 # lib-common
 
 Lib-common contains a common set of libraries to be used across all subsystems.
-Lib-common currently provides libraries supporting UART, CAN and SPI.
+
+Lib-common currently (as of Oct. 1, 2018) provides support for:
+
+* UART
+* SPI
+* CAN
+* Heartbeat (error recovery)
+* Timers
+* Heap-free data structures
+    * Queues
+    * Stacks
+* ADC (Analog to Digital Converter, ADS7952)
+* DAC (Digital to Analog Converter, DAC7562)
+* PEX (Port Expander, MCP23S17)
+* Data conversions from their "raw" form to usable measurements
+* Test harness for assertion-based testing
 
 # Prerequisites
 
 Before using this library you must install git, make, and the AVR-GCC
-toolchain.
+toolchain. See the documentation
+[here](https://utat-ss.readthedocs.io/en/master/getting-started/install.html) for further
+instructions.
 
 # Installing and updating this library from another project
 
@@ -45,7 +62,7 @@ must also rebuild this library every time you update lib-common.
 
 # How to use this library
 
-Lib-common provides three static libraries, `libuart.a`, `libspi.a`, and
+Lib-common provides static libraries such as `libuart.a`, `libspi.a`, and
 `libcan.a`. The header files for each library can be found in the `include`
 directory.
 
@@ -108,8 +125,7 @@ This library will be used by all subsystems. If you push changes onto the
 master branch, you could inadvertently break other people's code.
 
 Thus, all changes to this library **MUST** come in the form of a pull request.
-Otherwise, your commits will be reverted. Before your pull request is accepted,
-it must be checked by another team member.
+Before your pull request is accepted, it must be checked by another team member.
 
 To create a pull request, you must create a new branch of the project before
 you make changes:
