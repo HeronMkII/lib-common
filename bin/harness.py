@@ -107,7 +107,7 @@ class TestSuite:
     mcu = "m32m1"
     prog = "stk500"
     includes = "-I./include/"
-    lib = "-L./lib/ -ltest -lprintf_flt -lm -luart -lspi -lcan -ltimer -lqueue -lstack -lheartbeat"
+    lib = "-L./lib/ -ltest -lprintf_flt -lm -luart -lspi -lcan -ltimer -lqueue -lstack -lheartbeat -lwatchdog"
 
     def __init__(self, path, boards, harness):
         self.path = path
