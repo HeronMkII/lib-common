@@ -1,6 +1,7 @@
 /*
 SPI (Serial Peripheral Interface) library
 
+
 Clock polarity and phase:
 See https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#Clock_polarity_and_phase
 
@@ -15,6 +16,11 @@ Mode    CPOL    CPHA
 1       0       1
 2       1       0
 3       1       1
+
+
+Clock speed:
+
+The default is F_osc / 64. This is expected when code calls send_spi() without changing the clock speed. If a device uses a different frequency, it must change the frequency, send its messages(s), then change the frequency bcak immediately after.
 */
 
 #include <spi/spi.h>
@@ -98,7 +104,7 @@ void reset_spi_cpol_cpha(void) {
 }
 
 /*
-Sets the SPI mode (corresponds to CPOL and CPHA).
+Sets the SPI data mode (corresponds to CPOL and CPHA).
 mode - 0, 1, 2, or 3 (see table at top of file), otherwise does nothing
 */
 void set_spi_mode(uint8_t mode) {
@@ -112,4 +118,69 @@ void set_spi_mode(uint8_t mode) {
         set_spi_cpol_cpha(1, 1);
     }
     // else, don't change the mode
+}
+
+/*
+Sets the value of the SPI2X, SPR1, and SPR0 register bits.
+spi2x - 0 or 1
+spr1 - 0 or 1
+spr0 - 0 or 1
+*/
+void set_spi_spi2x_spr1_spr0(uint8_t spi2x, uint8_t spr1, uint8_t spr0) {
+    if (spi2x == 0) {
+        SPSR &= ~_BV(SPI2X);
+    } else if (spi2x == 1) {
+        SPSR |= _BV(SPI2X);
+    }
+
+    if (spr1 == 0) {
+        SPCR &= ~_BV(SPR1);
+    } else if (spr1 == 1) {
+        SPCR |= _BV(SPR1);
+    }
+
+    if (spr0 == 0) {
+        SPCR &= ~_BV(SPR0);
+    } else if (spr0 == 1) {
+        SPCR |= _BV(SPR0);
+    }
+}
+
+/*
+Sets the SPI clock frequency as specified.
+freq - frequency setting (proportional to microcontroller oscillator clock frequency)
+*/
+void set_spi_clk_freq(spi_clk_freq_t freq) {
+    switch (freq) {
+        case SPI_FOSC_4:
+            set_spi_spi2x_spr1_spr0(0, 0, 0);
+            break;
+        case SPI_FOSC_16:
+            set_spi_spi2x_spr1_spr0(0, 0, 1);
+            break;
+        case SPI_FOSC_64:
+            set_spi_spi2x_spr1_spr0(0, 1, 0);
+            break;
+        case SPI_FOSC_128:
+            set_spi_spi2x_spr1_spr0(0, 1, 1);
+            break;
+        case SPI_FOSC_2:
+            set_spi_spi2x_spr1_spr0(1, 0, 0);
+            break;
+        case SPI_FOSC_8:
+            set_spi_spi2x_spr1_spr0(1, 0, 1);
+            break;
+        case SPI_FOSC_32:
+            set_spi_spi2x_spr1_spr0(1, 1, 0);
+            break;
+        default:
+            break;
+    }
+}
+
+/*
+Sets the SPI clock frequency to the default (F_osc / 64).
+*/
+void reset_spi_clk_freq(void) {
+    set_spi_clk_freq(SPI_FOSC_64);
 }
