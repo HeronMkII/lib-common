@@ -52,7 +52,7 @@ typedef enum {
     // Don't include FOSC_64 again
 } spi_clk_freq_t;
 
-void init_cs(uint8_t, port_t);
+void init_cs(uint8_t, ddr_t);
 void set_cs_low(uint8_t, port_t);
 void set_cs_high(uint8_t, port_t);
 
@@ -65,6 +65,7 @@ uint32_t send_spi_3bytes(uint32_t data);
 void set_spi_cpol_cpha(uint8_t cpol, uint8_t cpha);
 void reset_spi_cpol_cpha(void);
 void set_spi_mode(uint8_t mode);
+void reset_spi_mode(void);
 
 // SPI clock frequency
 void set_spi_spi2x_spr1_spr0(uint8_t spi2x, uint8_t spr1, uint8_t spr0);

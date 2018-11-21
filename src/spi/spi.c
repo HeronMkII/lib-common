@@ -77,6 +77,8 @@ uint8_t send_spi(uint8_t data) {
 /*
 Sends and receives 2 bytes (16 bits) of SPI data.
 Most significant (left-most) 8 bits first, least significant (right-most) 8 bits last.
+data - 16 bits of data to send
+Returns - 16 bits of data received
 */
 uint16_t send_spi_2bytes(uint16_t data) {
     uint16_t received = 0;
@@ -92,6 +94,8 @@ uint16_t send_spi_2bytes(uint16_t data) {
 Sends and receives 3 bytes (24 bits) of SPI data.
 Most significant (left-most) 8 bits first, least significant (right-most) 8 bits last.
 This function ignores the most significant 8 bits of `data`, and the return value always has the most significant 8 bits as 0s.
+data - 24 bits of data to send
+Returns - 24 bits of data received
 */
 uint32_t send_spi_3bytes(uint32_t data) {
     uint32_t received = 0;
@@ -105,6 +109,7 @@ uint32_t send_spi_3bytes(uint32_t data) {
 
     return received;
 }
+
 
 /*
 Sets the CPOL and CPHA values for SPI.
@@ -150,6 +155,14 @@ void set_spi_mode(uint8_t mode) {
     }
     // else, don't change the mode
 }
+
+/*
+Resets the SPI mode to mode 0.
+*/
+void reset_spi_mode(void) {
+    reset_spi_cpol_cpha();
+}
+
 
 /*
 Sets the value of the SPI2X, SPR1, and SPR0 register bits (p.220-222).
