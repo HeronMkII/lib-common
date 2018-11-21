@@ -10,25 +10,25 @@
 #define F_IO 1000000UL // 1 MHz after CKDIV8
 #define BAUD_RATE 9600UL
 #define BIT_SAMPLES 4UL
-#define PRINT_BUF_SIZE 50
 
-//#define UART_TX PD3
-//#define UART_RX PD4
+// UART TXD is pin PD3
+// UART RXD is pin PD4
 
-// UART
-typedef uint8_t(*global_rx_cb_t)(const uint8_t*, uint8_t);
 
-void get_char(uint8_t*);
-void register_callback(global_rx_cb_t);
-void clear_rx_buffer();
+// UART RX callback function signature
+typedef uint8_t(*uart_rx_cb_t)(const uint8_t*, uint8_t);
 
+// UART RX/TX (from uart.c)
 void put_char(uint8_t);
-void init_uart();
-void send_uart(const uint8_t*, int);
+void get_char(uint8_t*);
+void init_uart(void);
+void send_uart(const uint8_t*, uint8_t);
+void set_uart_rx_cb(uart_rx_cb_t);
+void register_callback(uart_rx_cb_t);
+void clear_rx_buffer(void);
 
-// Printing
-int print(char*, ...);
-int uprintf(char*, ...);
+// Printing (from log.c)
+int16_t print(char*, ...);
 void print_bytes(uint8_t*, uint8_t);
 
 #endif // UART_H
