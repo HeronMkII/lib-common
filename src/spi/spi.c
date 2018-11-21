@@ -74,6 +74,37 @@ uint8_t send_spi(uint8_t data) {
     return SPDR;
 }
 
+/*
+Sends and receives 2 bytes (16 bits) of SPI data.
+Most significant (left-most) 8 bits first, least significant (right-most) 8 bits last.
+*/
+uint16_t send_spi_2bytes(uint16_t data) {
+    uint16_t received = 0;
+    received = send_spi((data >> 8) & 0xFF);
+
+    received = received << 8;
+    received = received | send_spi(data & 0xFF);
+
+    return received;
+}
+
+/*
+Sends and receives 3 bytes (24 bits) of SPI data.
+Most significant (left-most) 8 bits first, least significant (right-most) 8 bits last.
+This function ignores the most significant 8 bits of `data`, and the return value always has the most significant 8 bits as 0s.
+*/
+uint32_t send_spi_3bytes(uint32_t data) {
+    uint32_t received = 0;
+    received = send_spi((data >> 16) & 0xFF);
+
+    received = received << 8;
+    received = received | send_spi((data >> 8) & 0xFF);
+
+    received = received << 8;
+    received = received | send_spi(data & 0xFF);
+
+    return received;
+}
 
 /*
 Sets the CPOL and CPHA values for SPI.
@@ -121,7 +152,7 @@ void set_spi_mode(uint8_t mode) {
 }
 
 /*
-Sets the value of the SPI2X, SPR1, and SPR0 register bits.
+Sets the value of the SPI2X, SPR1, and SPR0 register bits (p.220-222).
 spi2x - 0 or 1
 spr1 - 0 or 1
 spr0 - 0 or 1
@@ -147,7 +178,7 @@ void set_spi_spi2x_spr1_spr0(uint8_t spi2x, uint8_t spr1, uint8_t spr0) {
 }
 
 /*
-Sets the SPI clock frequency as specified.
+Sets the SPI clock frequency as specified (p.221).
 freq - frequency setting (proportional to microcontroller oscillator clock frequency)
 */
 void set_spi_clk_freq(spi_clk_freq_t freq) {
