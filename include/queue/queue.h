@@ -1,4 +1,4 @@
-#ifndef QUEUE_H
+#ifndef QUEUE_H // (checker to prevent doubly including header file)
 #define QUEUE_H
 
 /*
@@ -12,9 +12,9 @@
 #define QUEUE_DATA_SIZE 8
 
 typedef struct {
-    uint8_t head;
-    uint8_t tail;
-    uint8_t content[MAX_QUEUE_SIZE][QUEUE_DATA_SIZE];
+    uint8_t head; // starting address of queue
+    uint8_t tail; // end of queue
+    uint8_t content[MAX_QUEUE_SIZE][QUEUE_DATA_SIZE]; // static array dimensions
 } queue_t;
 // NOTE: tail - head is always equal to the queue's size
 
