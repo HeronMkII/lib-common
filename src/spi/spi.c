@@ -31,20 +31,22 @@ The default is F_osc / 64. This is expected when code calls send_spi() without c
 #define MOSI    PB1
 #define SS      PD3
 
-
-// Initializes a pin as an output pin for a CS line to control a SPI device.
+/*
+Initializes a pin as an output pin for a CS line to control a SPI device.
+(high output by default)
+*/
 void init_cs(uint8_t pin, ddr_t ddr) {
-    *ddr |= _BV(pin);
+    init_output_pin(pin, ddr, PIN_HIGH);
 }
 
-// Sets an output pin's value to be low.
+// Sets a CS pin's value to be low.
 void set_cs_low(uint8_t pin, port_t port) {
-    *port &= ~_BV(pin);
+    set_pin_low(pin, port);
 }
 
-// Sets an output pin's value to be high.
+// Sets a CS pin's value to be high.
 void set_cs_high(uint8_t pin, port_t port) {
-    *port |= _BV(pin);
+    set_pin_high(pin, port);
 }
 
 
@@ -82,10 +84,10 @@ Returns - 16 bits of data received
 */
 uint16_t send_spi_2bytes(uint16_t data) {
     uint16_t received = 0;
-    received = send_spi((data >> 8) & 0xFF);
+    received |= send_spi((data >> 8) & 0xFF);
 
-    received = received << 8;
-    received = received | send_spi(data & 0xFF);
+    received <<= 8;
+    received |= send_spi(data & 0xFF);
 
     return received;
 }
@@ -99,13 +101,13 @@ Returns - 24 bits of data received
 */
 uint32_t send_spi_3bytes(uint32_t data) {
     uint32_t received = 0;
-    received = send_spi((data >> 16) & 0xFF);
+    received |= send_spi((data >> 16) & 0xFF);
 
-    received = received << 8;
-    received = received | send_spi((data >> 8) & 0xFF);
+    received <<= 8;
+    received |= send_spi((data >> 8) & 0xFF);
 
-    received = received << 8;
-    received = received | send_spi(data & 0xFF);
+    received <<= 8;
+    received |= send_spi(data & 0xFF);
 
     return received;
 }
@@ -122,14 +124,12 @@ void set_spi_cpol_cpha(uint8_t cpol, uint8_t cpha) {
     } else if (cpol == 1) {
         SPCR |= _BV(CPOL);
     }
-    // else, don't change CPOL
 
     if (cpha == 0) {
         SPCR &= ~_BV(CPHA);
     } else if (cpha == 1) {
         SPCR |= _BV(CPHA);
     }
-    // else, don't change CPHA
 }
 
 /*
@@ -153,7 +153,6 @@ void set_spi_mode(uint8_t mode) {
     } else if (mode == 3) {
         set_spi_cpol_cpha(1, 1);
     }
-    // else, don't change the mode
 }
 
 /*

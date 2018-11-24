@@ -1,4 +1,4 @@
-SUBDIRS = $(addprefix src/,uart spi can timer queue stack heartbeat test conversions adc pex dac watchdog)
+SUBDIRS = $(addprefix src/,uart spi can timer queue stack heartbeat test conversions adc pex dac watchdog utilities)
 EXAMPLES = $(dir $(wildcard examples/*/.))
 
 .PHONY: all $(SUBDIRS) clean examples tests help

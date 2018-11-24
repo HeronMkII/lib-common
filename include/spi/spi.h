@@ -5,6 +5,8 @@
 #include <avr/cpufunc.h> // for _NOP()
 #include <string.h>
 
+#include <utilities/utilities.h>
+
 // SPCR bits
 #define SPIE    7 // enable spi interrupts
 #define SPE     6 // enable spi
@@ -19,18 +21,6 @@
 #define SPIF    7 // SPI interrupt flag; set to 1 when SPI transfer completes
 #define WCOL    6 // write collision flag
 #define SPI2X   0 // double speed bit
-
-// Memory-mapped registers for PORTx and DDRx
-// Volatile because the register hardware can change without the program knowing
-typedef volatile uint8_t* port_t;
-typedef volatile uint8_t* ddr_t;
-
-// Groups the variables needed to manipulate (read/write) a pin
-typedef struct {
-    port_t port;
-    ddr_t ddr;
-    uint8_t pin;
-} pin_info_t;
 
 // Possible settings for SPI clock frequency (p. 221)
 // F_osc (oscillator/clock frequency) is 8 MHz
@@ -52,12 +42,12 @@ typedef enum {
     // Don't include FOSC_64 again
 } spi_clk_freq_t;
 
-void init_cs(uint8_t, ddr_t);
-void set_cs_low(uint8_t, port_t);
-void set_cs_high(uint8_t, port_t);
+void init_cs(uint8_t pin, ddr_t ddr);
+void set_cs_low(uint8_t pin, port_t port);
+void set_cs_high(uint8_t pin, port_t port);
 
 void init_spi(void);
-uint8_t send_spi(uint8_t);
+uint8_t send_spi(uint8_t data);
 uint16_t send_spi_2bytes(uint16_t data);
 uint32_t send_spi_3bytes(uint32_t data);
 
