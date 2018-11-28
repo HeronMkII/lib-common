@@ -10,7 +10,10 @@ export INCLUDES = -I../../include
 export CFLAGS = -Wall -std=gnu99 -g -mmcu=atmega32m1 -Os -mcall-prologues
 
 ifeq ($(OS),Windows_NT)
-	PORT = COM3
+	# One programmer should give 2 ports (either COM3 and COM4 or COM5 and COM6)
+	# Programming port is the higher number (COM4 or COM6)
+	# Use powershell, list port names, get the second number in the list
+	PORT = $(shell powershell "[System.IO.Ports.SerialPort]::getportnames() | select -First 2 | select -Last 1")
 	# Windows uses `python` for either Python 2 or 3
 	PYTHON = python
 else
