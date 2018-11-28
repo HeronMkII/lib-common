@@ -11,8 +11,12 @@ export CFLAGS = -Wall -std=gnu99 -g -mmcu=atmega32m1 -Os -mcall-prologues
 
 ifeq ($(OS),Windows_NT)
 	PORT = COM3
+	# Windows uses `python` for either Python 2 or 3
+	PYTHON = python
 else
 	PORT = $(shell find /dev -name 'tty.usbmodem[0-9]*' | sort | head -n1)
+	# macOS/Linux use `python3` to explicitly use Python 3
+	PYTHON = python3
 endif
 
 all: $(SUBDIRS)
@@ -34,7 +38,7 @@ examples:
 	done
 
 tests:
-	./bin/harness.py -p $(PORT) -d tests
+	$(PYTHON) ./bin/harness.py -p $(PORT) -d tests
 
 help:
 	@echo "usage: make [all | clean | examples | tests | help]"
