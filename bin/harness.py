@@ -366,10 +366,12 @@ if __name__ == "__main__":
         print("You are using Python 2. Please update to Python 3 and try again.")
         sys.exit(1)
     elif sys.version_info[0] == 3:
-        print("You are running Python 3")
+        print("You are running Python 3.")
     else:
         print("Unknown error. Exiting....")
         sys.exit(1)
+
+    print("Disconnect CoolTerm so the port is available for testing.")
 
     # It is necessary for the user to specify the programming port and appropriate directory
     # In most cases, this should be the tests directory
