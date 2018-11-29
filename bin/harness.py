@@ -1,4 +1,9 @@
-#!/usr/bin/env python
+# Use the following command to run the harness from the lib-common local directory:
+# python ./bin/harness.py -p <Programming port> -u <UART port> -d tests
+
+# When the uart port (-u option) is not specified, the program guesses using uart_offset()
+# On Mac, port numbers can be found by using the command 'ls /dev/tty.*' in terminal
+
 from __future__ import print_function
 import subprocess
 import argparse
@@ -17,17 +22,15 @@ except ImportError:
         "in the command line.")
     sys.exit(1)
 
-harness_desc = ("This test harness runs tests built using the libtest " +
+harness_description = ("This test harness runs tests built using the libtest " +
         "framework.")
 
 sep = 80*"-"
 
-def get_input(str):
-    if sys.version_info[0] < 3:
-        return raw_input(str)
-    else:
-        return input(str)
-
+# This function assumes an offset between the programming and uart ports of 2 for
+# mac or linux devices (posix)(i.e. uart is 2 more than programming port), or -1 for windows (nt)
+# devices. Mac USB serial ports should be of the form /dev/tty.usbmodem00xxxxxx,
+# while windows ports have the form COMx.
 def uart_offset():
     if os.name == 'posix':
         return 2
@@ -36,8 +39,10 @@ def uart_offset():
 
 
 class TestHarness:
+    # Baud Rate specified by 32m1 data sheet
     baud_rate = 9600
 
+    # port and serial_port are passed in as port, uart (see code at bottom)
     def __init__(self, port, serial_port):
         self.port = port
         self.serial_port = serial_port
@@ -45,15 +50,18 @@ class TestHarness:
         self.suites = []
         self.total_passed = 0
         self.total_failed = 0
+        self.timeout = 10
 
+    # Adds suites to suite class variable in TestHarness object
     def add_suite(self, suite):
         self.suites.append(suite)
 
+    # Asks user for permission to run test suite (wait for correct shell input to continue)
     def has_permission(self, suite):
         print("WARNING: The UART TX pin(s) on SCK must be disconnected " +
             "before upload.\nEnsure the UART TX pin on each board " +
             "is disconnected before proceeding.")
-        ans = get_input("Run test suite '%s'? (y/n) " % suite.name)
+        ans = input("Run test suite '%s'? (y/n) " % suite.name)
         if ans == "y":
             return True
         elif ans == "n":
@@ -61,23 +69,35 @@ class TestHarness:
         else:
             return self.has_permission(suite)
 
+    # returns count from harness
+    # checks for appropriate input (ok)
     def recv_count(self, suite):
-        # TODO: seperate this into two functions?
-        ok = get_input("Connect the UART TX pin(s) to SCK. (ok) ")
+        ok = input("Connect the UART TX pin(s) to SCK. (ok) ")
         if ok == "ok":
+            # prints '-' 80 times
             print(sep)
-            self.serial = [ serial.Serial(self.serial_port[i], self.baud_rate)
-                for i in range(suite.boards) ]
+            # Assigns serial ports to self.serial and specifies baud rate
+            # Added timeout member, see if this resolves blocking and freezing issues
+            # Figure out how to prevent this from failing and crashing program (if it does)
+            self.serial = [serial.Serial(self.serial_port[i], self.baud_rate, timeout = self.timeout)
+                for i in range(suite.boards)]
+            # Write data to each port
             for ser in self.serial:
                 ser.write(b"COUNT\r\n")
-            count = int(self.serial[0].readline().strip())
+            # strip method removes white space when called with no parameters
+            # readline reads an entire line from self.serial[0] (self.serial_port[i])
+            # and a trailing '\n' (new line) is kept in the string (but removed by strip method)
+            count = int(self.serial[0].readline().strip().decode('utf-8',errors='ignore'))
+
             return count
         else:
             return self.recv_count(suite)
 
+    # Writes 'START' to serial port
     def send_start(self):
         self.serial[0].write(b"START\r\n")
 
+    # Closes serial ports when tests are complete
     def send_end(self):
         for ser in self.serial[1:]:
             ser.write(b"KILL\r\n")
@@ -85,14 +105,17 @@ class TestHarness:
             ser.close()
         self.serial = []
 
-    def run(self):
+    # Runs tests for each suite member
+    def run_harness(self):
         for suite in self.suites:
-            suite.run()
+            suite.run_suite()
 
+    # Update total tests passed and failed
     def update_stats(self, passed, failed):
         self.total_passed += passed
         self.total_failed += failed
 
+    # Prints results
     def print_summary(self):
         total = self.total_passed + self.total_failed
         if total > 0:
@@ -101,7 +124,7 @@ class TestHarness:
             print("    Total failed: %d / %d" % (self.total_failed, total))
 
 class TestSuite:
-    # constants
+    # Specifies compiler, flags, and libraries to include. Similar options are found in makefiles.
     cc = "avr-gcc"
     cflags = "-std=gnu99 -Wall -Wl,-u,vfprintf -mmcu=atmega32m1 -Os -mcall-prologues"
     mcu = "m32m1"
@@ -118,15 +141,19 @@ class TestSuite:
         self.passed = 0
         self.failed = 0
 
+    # Compiles code for each board
     def compile(self):
         print("    Compiling...")
         for i in range(1, self.boards + 1):
+            # Joins output (.o) files and .c files for each board, separated by a space
             cmd = " ".join([self.cc, self.cflags,
                 "-o " + self.path + "/main" + str(i) + ".o",
                 "-c " + self.path + "/main" + str(i) + ".c",
                 self.includes])
+            # Calls cmd using shell
             subprocess.call(cmd, shell=True)
 
+    # Links code for each board (joins .elf, .o files)
     def link(self):
         print("    Linking...")
         for i in range(1, self.boards + 1):
@@ -136,6 +163,9 @@ class TestSuite:
                 self.lib])
             subprocess.call(cmd, shell=True)
 
+    # Copies code from one object to another
+    # The -j option copies only specified named section from input file
+    # -O specifies a hex file as output, with the path shown below
     def obj_copy(self):
         for i in range(1, self.boards + 1):
             cmd = " ".join(["avr-objcopy",
@@ -144,6 +174,7 @@ class TestSuite:
                 self.path + "/test" + str(i) + ".hex"])
             subprocess.call(cmd, shell=True)
 
+    # Uploads code using options specified at top of class
     def upload(self):
         print("    Uploading...")
         for i in range(1, self.boards + 1):
@@ -154,26 +185,20 @@ class TestSuite:
                 "-U flash:w:" + self.path + "/test" + str(i) + ".hex"])
             subprocess.call(cmd, shell=True)
 
-    def capture_eeprom(self):
-        pass
-        #cmd = " ".join(["avrdude -qq",
-        #    "-p", self.mcu,
-        #    "-c", self.prog,
-        #    "-P", self.harness.port,
-        #    "-U eeprom:r:" + self.path + "/eeprom.bin:r"])
-        #subprocess.call(cmd, shell=True)
-
-    def run(self):
+    def run_suite(self):
+        # Upon getting permission from user, compile, link, copy and upload code to 32m1
         if self.harness.has_permission(self):
             self.compile()
             self.link()
             self.obj_copy()
             self.upload()
 
+            # Gets count of tests to be run, then appends it
             count = self.harness.recv_count(self)
             for _ in range(count):
                 self.tests.append(Test())
 
+            # Returns current time (i.e. start time)
             s = time.time()
 
             # Non-master input is not supported on Windows. Thus Windows does
@@ -182,19 +207,24 @@ class TestSuite:
                 self.harness.send_start()
                 while not test.is_done():
                     if os.name == 'posix':
+                        # wait until serial port is ready for reading, or until timeout occurs
                         readable, _, _ = select.select(self.harness.serial,
                             [], [])
                         for i in range(self.boards):
                             if self.harness.serial[i] in readable:
-                                line = self.harness.serial[i].readline()
+                                # reads line from port
+                                # ignores errors, or else unexpected results can occur
+                                # In the majority of cases, encoding errors do not affect the test running,
+                                # so we can (mostly) safely ignore them
+                                line = self.harness.serial[i].readline().decode("utf-8", errors='ignore')
                                 test.handle_line(line)
                     elif os.name == 'nt':
-                        line = self.harness.serial[0].readline()
+                        line = self.harness.serial[0].readline().decode("utf-8", errors='ignore')
                         test.handle_line(line)
 
             e = time.time()
 
-            passed = len(filter(lambda x: x.passed(), self.tests))
+            passed = len(list(filter(lambda x: x.passed(), self.tests)))
             failed = len(self.tests) - passed
             total = passed + failed
 
@@ -204,7 +234,9 @@ class TestSuite:
             print("    Failed: %d / %d" % (failed, total))
             print(sep)
 
+            # Update global test passes and failures
             self.harness.update_stats(passed, failed)
+            # Closes serial port
             self.harness.send_end()
 
 class Test:
@@ -215,6 +247,7 @@ class Test:
         self.time_cb = lambda *x: None
         self.done = False
 
+    # Checks to see if test is done (would be set by handle_line)
     def is_done(self):
         return self.done
 
@@ -233,6 +266,7 @@ class Test:
             else:
                 print("Test complete - Passed")
             print(sep)
+        # Handle different cases based on input read
         elif line[:9] == "TEST NAME":
             self.handle_name(line)
         elif line[:4] == "TIME":
@@ -244,8 +278,10 @@ class Test:
         elif line[:12] == "ASSERT FALSE":
             self.handle_assert_false(line)
         else:
+            # Execute line in code if no other conditions are true
             sys.stdout.write(line)
 
+    # Searches for match anywhere in string and returns first subgroup
     def handle_name(self, line):
         regex = r"TEST NAME (.+)\r\n"
         match = re.search(regex, line)
@@ -253,12 +289,19 @@ class Test:
         self.name = name
         print("Test: %s" % name)
 
+    # Calculate elapsed time, if necessary
     def handle_time(self, line):
         regex = r"TIME ([-+]?\d*\.\d+|\d+)\r\n"
         match = re.search(regex, line)
-        expected = float(match.group(1))
-        if expected == 0:
+        # In some cases, random data is output here, use try/except
+        # to ensure that the test harness does not error out
+        try:
+            expected = float(match.group(1))
+            if expected == 0:
+                return
+        except:
             return
+        # Assert failure if outside of acceptable timer range
         else:
             s = time.time()
             def fn():
@@ -273,6 +316,8 @@ class Test:
                     self.assert_passed += 1
             self.time_cb = fn
 
+    # Extracts line and passes if both sides are equivalent
+    # Prints out error message if it fails
     def handle_assert_eq(self, line):
         regex = r"ASSERT EQ (\d+) (\d+) \((.+)\) \((.+)\)\r\n"
         match = re.search(regex, line)
@@ -285,6 +330,8 @@ class Test:
             print("In function '%s', line %d" % (fn, line))
             print("    Error: ASSERT_EQ failed")
 
+    # Extracts line and passes if it evaluates to true
+    # Prints out error message if it fails
     def handle_assert_true(self, line):
         regex = r"ASSERT TRUE (\d+) \((.+)\) \((.+)\)\r\n"
         match = re.search(regex, line)
@@ -297,6 +344,7 @@ class Test:
             print("In function '%s', line %d" % (fn, line))
             print("    Error: ASSERT_TRUE failed")
 
+    # Extracts line and passes if it evaluates to false, else fails and prints error
     def handle_assert_false(self, line):
         regex = r"ASSERT FALSE (\d+) \((.+)\) \((.+)\)\r\n"
         match = re.search(regex, line)
@@ -309,8 +357,30 @@ class Test:
             print("In function '%s', line %d" % (fn, line))
             print("    Error: ASSERT_FALSE failed")
 
+# 'if __name__ == "__main__"' means that these statements will only be executed when run as the main module
+# i.e. only runs when called via shell (i.e. terminal, command prompt), not when imported separately
+# It has nothing to do with the test file mainx.c naming convention
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=harness_desc)
+    # Detects if correct python version is being run
+    if sys.version_info[0] == 2:
+        print("You are using Python 2. Please update to Python 3 and try again.")
+        sys.exit(1)
+    elif sys.version_info[0] == 3:
+        print("You are running Python 3.")
+    else:
+        print("Unknown error. Exiting....")
+        sys.exit(1)
+
+    print("Disconnect CoolTerm so the port is available for testing.")
+
+    # It is necessary for the user to specify the programming port and appropriate directory
+    # In most cases, this should be the tests directory
+    # The uart port only needs to be specified when it is not able to be inferred from the
+    # uart_offset() method
+    parser = argparse.ArgumentParser(description=harness_description)
+    # Method arguments include (in order), expected shell text, name of that argument (used below),
+    # nargs specifies the number of arguments, with '+' inserting arguments of that type into a list
+    # required is self-explanatory, metavar assigns a displayed name to each argument when using the help argument
     parser.add_argument('-p', '--prog', nargs='+', required=True,
             metavar=('port1', 'port2'),
             help='list of programming ports')
@@ -321,19 +391,27 @@ if __name__ == "__main__":
             metavar='test_dir',
             help='directory in which to search for tests')
 
+    # Converts strings to objects, which are then assigned to variables below
     args = parser.parse_args()
-
     test_path = args.test_dir
     port = args.prog
     uart = args.uart
 
+    # If there is no uart argument, add port using uart offset
+    # This is done by removing the last digit and adding uart_offset()
+    # Then, it adds it to the uart variable (list)
+    # However, this will not work for cases when port ends in 8 or 9
     if len(uart) == 0:
         for p in port:
             (head, tail) = os.path.split(p)
             tail = tail[:-1] + str(int(tail[-1]) + uart_offset())
             uart.append(os.path.join(head, tail))
 
+    # Creates TestHarness object
     harness = TestHarness(port, uart)
+    # Generates file names in directory specified by test_path (above)
+    # Number of boards is initialized at 0, then incremented when os.walk finds
+    # mainx.c file
     for path, _, files in os.walk(test_path):
         if path == test_path:
             continue
@@ -342,7 +420,8 @@ if __name__ == "__main__":
         for f in files:
             if re.search(regex, f):
                 boards += 1
-
+        # Does not add more boards if on windows system or if there are not
+        # enough programming ports
         if (boards > 1) and (os.name == "nt"):
             print(("Skipping test suite '%s', Windows does not support " +
                 "multi-board testing.") % os.path.basename(path))
@@ -350,10 +429,13 @@ if __name__ == "__main__":
             print("Skipping test suite '%s', requires %d more board(s)."
                 % (os.path.basename(path), boards - len(port)))
         else:
+            # Instantiates TestSuite object with appropriate boards, file path, and harness defined above
+            # Adds newly-created suite to harness
             suite = TestSuite(path, boards, harness)
             harness.add_suite(suite)
 
-    harness.run()
+    # Runs harness, then prints summary after conclusion of tests
+    harness.run_harness()
     harness.print_summary()
 
     if harness.total_failed > 0:

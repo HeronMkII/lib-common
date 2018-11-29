@@ -10,9 +10,16 @@ export INCLUDES = -I../../include
 export CFLAGS = -Wall -std=gnu99 -g -mmcu=atmega32m1 -Os -mcall-prologues
 
 ifeq ($(OS),Windows_NT)
-	PORT = COM3
+	# One programmer should give 2 ports (either COM3 and COM4 or COM5 and COM6)
+	# Programming port is the higher number (COM4 or COM6)
+	# Use powershell, list port names, get the second number in the list
+	PORT = $(shell powershell "[System.IO.Ports.SerialPort]::getportnames() | select -First 2 | select -Last 1")
+	# Windows uses `python` for either Python 2 or 3
+	PYTHON = python
 else
 	PORT = $(shell find /dev -name 'tty.usbmodem[0-9]*' | sort | head -n1)
+	# macOS/Linux use `python3` to explicitly use Python 3
+	PYTHON = python3
 endif
 
 all: $(SUBDIRS)
@@ -34,7 +41,7 @@ examples:
 	done
 
 tests:
-	./bin/harness.py -p $(PORT) -d tests
+	$(PYTHON) ./bin/harness.py -p $(PORT) -d tests
 
 help:
 	@echo "usage: make [all | clean | examples | tests | help]"
