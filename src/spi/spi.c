@@ -20,7 +20,7 @@ Mode    CPOL    CPHA
 
 Clock speed:
 
-The default is F_osc / 64. This is expected when code calls send_spi() without changing the clock speed. If a device uses a different frequency, it must change the frequency, send its messages(s), then change the frequency bcak immediately after.
+The default is F_osc / 64. This is expected when code calls send_spi() without changing the clock speed. If a device uses a different frequency, it must change the frequency, send its messages(s), then change the frequency back immediately after.
 
 TODO - test more thoroughly - multi-byte sends/receives, modes, clock frequencies
 */
@@ -146,14 +146,21 @@ Sets the SPI data mode (corresponds to CPOL and CPHA).
 mode - 0, 1, 2, or 3 (see table at top of file), otherwise does nothing
 */
 void set_spi_mode(uint8_t mode) {
-    if (mode == 0) {
-        set_spi_cpol_cpha(0, 0);
-    } else if (mode == 1) {
-        set_spi_cpol_cpha(0, 1);
-    } else if (mode == 2) {
-        set_spi_cpol_cpha(1, 0);
-    } else if (mode == 3) {
-        set_spi_cpol_cpha(1, 1);
+    switch (mode) {
+        case 0:
+            set_spi_cpol_cpha(0, 0);
+            break;
+        case 1:
+            set_spi_cpol_cpha(0, 1);
+            break;
+        case 2:
+            set_spi_cpol_cpha(1, 0);
+            break;
+        case 3:
+            set_spi_cpol_cpha(1, 1);
+            break;
+        default:
+            break;
     }
 }
 
