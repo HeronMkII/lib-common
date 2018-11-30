@@ -18,19 +18,16 @@ typedef volatile uint8_t* ddr_t;
 
 // Groups the variables needed to manipulate (read/write) a pin
 typedef struct {
-    port_t port;
-    ddr_t ddr;
-    uint8_t pin;
+    port_t port;    // PORTx register - data values
+    ddr_t ddr;      // DDRx (data direction register) - input/output directions
+    uint8_t pin;    // Pin number (index)
 } pin_info_t;
 
-// Possible values for an output pin
-typedef enum {
-    PIN_LOW = 0,
-    PIN_HIGH = 1
-} pin_val_t;
-
-void init_output_pin(uint8_t pin, ddr_t ddr, pin_val_t default_val);
+void init_output_pin(uint8_t pin, ddr_t ddr, uint8_t init_val);
 void set_pin_low(uint8_t pin, port_t port);
 void set_pin_high(uint8_t pin, port_t port);
+
+void init_input_pin(uint8_t pin, ddr_t ddr);
+uint8_t get_pin_val(uint8_t pin, port_t port);
 
 #endif // UTILITIES_H

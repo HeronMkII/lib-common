@@ -21,6 +21,8 @@ Mode    CPOL    CPHA
 Clock speed:
 
 The default is F_osc / 64. This is expected when code calls send_spi() without changing the clock speed. If a device uses a different frequency, it must change the frequency, send its messages(s), then change the frequency bcak immediately after.
+
+TODO - test more thoroughly - multi-byte sends/receives, modes, clock frequencies
 */
 
 #include <spi/spi.h>
@@ -36,7 +38,7 @@ Initializes a pin as an output pin for a CS line to control a SPI device.
 (high output by default)
 */
 void init_cs(uint8_t pin, ddr_t ddr) {
-    init_output_pin(pin, ddr, PIN_HIGH);
+    init_output_pin(pin, ddr, 1);
 }
 
 // Sets a CS pin's value to be low.
