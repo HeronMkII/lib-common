@@ -1,7 +1,7 @@
-SUBDIRS = $(addprefix src/,uart spi can timer queue stack heartbeat test conversions adc pex dac watchdog utilities)
+SUBDIRS = $(addprefix src/,adc can conversions dac heartbeat pex queue spi stack test timer uart utilities watchdog)
 EXAMPLES = $(dir $(wildcard examples/*/.))
 
-.PHONY: all $(SUBDIRS) clean examples tests help
+.PHONY: all $(SUBDIRS) clean examples harness help
 
 export CC = avr-gcc
 export AR = avr-ar
@@ -9,6 +9,7 @@ export RANLIB = avr-ranlib
 export INCLUDES = -I../../include
 export CFLAGS = -Wall -std=gnu99 -g -mmcu=atmega32m1 -Os -mcall-prologues
 
+# Automatically detect the programmer port and set the PYTHON variable
 ifeq ($(OS),Windows_NT)
 	# One programmer should give 2 ports (either COM3 and COM4 or COM5 and COM6)
 	# Programming port is the higher number (COM4 or COM6)
@@ -40,16 +41,16 @@ examples:
 		cd ../.. ; \
 	done
 
-tests:
-	$(PYTHON) ./bin/harness.py -p $(PORT) -d tests
+harness:
+	$(PYTHON) ./bin/harness.py -p $(PORT) -d harness_tests
 
 help:
-	@echo "usage: make [all | clean | examples | tests | help]"
+	@echo "usage: make [all | clean | examples | harness | help]"
 	@echo ""
 	@echo "Running make without any arguments is equivalent to running make all."
 	@echo ""
 	@echo "all            build the lib-common library"
 	@echo "clean          clear the build/ directory and all subdirectories"
 	@echo "examples       build all examples (see the examples/makefile)"
-	@echo "tests          run the test harness"
+	@echo "harness          run the test harness"
 	@echo "help           display this help message"
