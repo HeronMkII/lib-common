@@ -1,18 +1,19 @@
 #ifndef STACK_H
 #define STACK_H
 
-/*
-    AUTHORS: Siddharth Mahendraker, Shimi Smith, J. W. Sheridan
-*/
-
 #include <stdint.h>
 #include <stdlib.h> // for NULL
 
+// Maximum number of elements each stack can store
 #define MAX_STACK_SIZE 5
+// Number of bytes per element
 #define STACK_DATA_SIZE 8
 
+// Stack type
 typedef struct {
+    // Ending index of stack, points to next index to populate
     uint8_t index;
+    // Stack data, static array dimensions
     uint8_t content[MAX_STACK_SIZE][STACK_DATA_SIZE];
 } stack_t;
 // NOTE: index is always equal to the stack's size
