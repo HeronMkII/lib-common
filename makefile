@@ -1,7 +1,10 @@
-SUBDIRS = $(addprefix src/,adc can conversions dac heartbeat pex queue spi stack test timer uart utilities watchdog)
+# All libraries (subdirectories) in lib-common
+# Need to put uart first because other libraries depend on it (otherwise get error of "No rule to make target...")
+SUBDIRS = $(addprefix src/,uart adc can conversions dac heartbeat pex queue spi stack test timer utilities watchdog)
 EXAMPLES = $(dir $(wildcard examples/*/.))
+MANUAL_TESTS = $(dir $(wildcard manual_tests/*/.))
 
-.PHONY: all $(SUBDIRS) clean examples harness help
+.PHONY: all $(SUBDIRS) clean examples harness help manual_tests
 
 export CC = avr-gcc
 export AR = avr-ar
@@ -45,12 +48,21 @@ harness:
 	$(PYTHON) ./bin/harness.py -p $(PORT) -d harness_tests
 
 help:
-	@echo "usage: make [all | clean | examples | harness | help]"
+	@echo "usage: make [all | clean | examples | harness | help | manual_tests]"
 	@echo ""
 	@echo "Running make without any arguments is equivalent to running make all."
 	@echo ""
 	@echo "all            build the lib-common library"
 	@echo "clean          clear the build/ directory and all subdirectories"
 	@echo "examples       build all examples (see the examples/makefile)"
-	@echo "harness          run the test harness"
+	@echo "harness        run the test harness"
 	@echo "help           display this help message"
+	@echo "manual_tests   build all manual tests (see the manual_tests/makefile)"
+
+manual_tests:
+	@for dir in $(MANUAL_TESTS) ; do \
+		cd $$dir ; \
+		make clean ; \
+		make ; \
+		cd ../.. ; \
+	done
