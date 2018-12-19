@@ -47,16 +47,24 @@ void get_char(uint8_t* c) {
 void init_uart(void) {
     LINCR = _BV(LSWRES); // reset UART
 
-    int16_t LDIV = (F_IO / (BAUD_RATE * BIT_SAMPLES)) - 1;
+    // Scaling of clk_io frequency
+    // Value to assign to 16-bit LINBRR register (p. 298)
+    // Calculated from formula on p.282
+    // TODO - this should actually be (... - 1) from the datsheet, but using
+    // (... - 2) gives less character errors - find a solution
+    int16_t LDIV = (F_IO / (BAUD_RATE * BIT_SAMPLES)) - 2;
     // this number is not necessarily integer; if the number is too far from
     // being an integer, too much error will accumulate and UART will output
     // garbage
 
-
+    // Set LINBRR 16-bit register to LDIV (clock scaling) value
     // TODO - should these two lines be atomic?
-    LINBRRH = (uint8_t) LDIV >> 8;
+    LINBRRH = (uint8_t) (LDIV >> 8);
     LINBRRL = (uint8_t) LDIV;
 
+    // Set number of samples per bit (p. 297)
+    // TODO - is the register not readable/writable?
+    // the default value is 32, so this might not actually be changing anything
     LINBTR = BIT_SAMPLES;
 
     LINCR = _BV(LENA) | _BV(LCMD2) | _BV(LCMD1) | _BV(LCMD0);
@@ -94,12 +102,6 @@ number of characters it has "processed", which will then be removed from the uar
 */
 void set_uart_rx_cb(uart_rx_cb_t cb) {
     global_rx_cb = cb;
-}
-
-// TODO - remove this function
-// Keeping it for now so code doesn't break
-void register_callback(uart_rx_cb_t cb) {
-    set_uart_rx_cb(cb);
 }
 
 // Clears the RX buffer (sets all values in the arraay to 0 and sets counter to 0)
