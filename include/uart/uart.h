@@ -8,12 +8,13 @@
 #include <stdio.h>
 
 // With the current fuse settings (FF D7 FF), the CKDIV8 bit is not programmed.
-// It seems like there is no clock divison for clk_io (8 MHz).
+// It seems like there is no clock divison for clk_io (therefore 8 MHz).
 // TODO - should it be 1 MHz after CKDIV8?
 // clk_io frequency (p. 17, 48, 54, 143, 280, 282, 298)
 #define F_IO 8000000UL
 
 // Baud rate (number of samples per second)
+// This needs to match the baud rate for the transceiver/CoolTerm
 // p. 282, 298
 #define BAUD_RATE 9600UL
 
