@@ -56,7 +56,7 @@ uint8_t test_count_cb(const uint8_t* data, uint8_t len) {
 
     if (flag == 1) {
         print("%d\r\n", test_num);
-        register_callback(test_start_cb);
+        set_uart_rx_cb(test_start_cb);
     }
 
     clear_rx_buffer();
@@ -67,7 +67,7 @@ void run_tests(test_t** suite, uint8_t len) {
     init_uart();
     test_suite = suite;
     test_num = len;
-    register_callback(test_count_cb);
+    set_uart_rx_cb(test_count_cb);
 
     __attribute__((unused)) uint8_t curr_cpy;
     // GCC magic to make the compiler shut up
@@ -113,6 +113,6 @@ uint8_t slave_kill_cb(const uint8_t* data, uint8_t len) {
 void run_slave() {
     init_uart();
     curr_test = -1;
-    register_callback(slave_kill_cb);
+    set_uart_rx_cb(slave_kill_cb);
     while (curr_test != 0) {};
 }
