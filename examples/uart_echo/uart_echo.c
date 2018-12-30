@@ -6,19 +6,30 @@
  * uploading new programs.
  */
 
-// FIXME: When running this in line mode using CoolTerm, the 11th character
-// of any string is consistently dropped. When sending the characters with
-// a 3ms delay, this effect disappears.
+/*
+When running this in line mode using CoolTerm (sending an entire message at once
+using the Connection > Send String... dialog), every 11th character of any
+string is consistently dropped (i.e. 11 characters work, 1 dropped, next 11
+characters work, 1 dropped, and so on). When sending the characters with a 3ms
+delay (going to Options > Transmit and checking the "Use transmit character
+delay" box at the top), this effect disappears.
 
-// UPDATE (2018-12-19): By changing the LDIV formula in init_uart() from
-// (... - 1) to (... - 2), this effect occurs for every 17th or 18th character instead
-// of every 11th. This a temporary improvement, but still needs to be
-// investigated. Perhaps the UART RX and TX are conflicting and received data is
-// being lost in the buffer?
+Update (2018-12-30):
+The current best explanation of this is that whenever the callback function in
+this example received a single character, it sends it back. There are common
+resources shared between UART RX and TX (e.g. the data register and the busy
+bit), so sometimes they conflict. Every 11 characters, the alternating between
+receiving a character and sending a character causes a timing problem so one
+character fails. This can be fixed by defining the callback function in a way
+that it waits for some sort of line termination (e.g. '\r' or '\n'), then sends
+all the characters back at once.
+Alternatively, this could have been because it took a long time to shift all the
+characters in the UART buffer left every time a character was removed.
+*/
 
 uint8_t echo(const uint8_t* buf, uint8_t len) {
     for (uint8_t i = 0; i < len; i++) {
-        put_char(buf[i]);
+        put_uart_char(buf[i]);
     }
 
     return len;

@@ -37,7 +37,7 @@ uint8_t test_start_cb(const uint8_t* data, uint8_t len) {
         curr_test += 1;
         return START_LEN;
     } else {
-        clear_rx_buffer();
+        clear_uart_rx_buf();
         return 0;
     }
 }
@@ -59,7 +59,7 @@ uint8_t test_count_cb(const uint8_t* data, uint8_t len) {
         set_uart_rx_cb(test_start_cb);
     }
 
-    clear_rx_buffer();
+    clear_uart_rx_buf();
     return 0;
 }
 
@@ -105,7 +105,7 @@ uint8_t slave_kill_cb(const uint8_t* data, uint8_t len) {
         curr_test = 0;
         return KILL_LEN;
     } else {
-        clear_rx_buffer();
+        clear_uart_rx_buf();
         return 0;
     }
 }
