@@ -6,6 +6,8 @@ UART (TX and RX) library.
 UART is a protocol that allows devices to send data to each
 other one byte at a time (usually represented as one character in a
 user-friendly terminal).
+
+TODO - fix 115200 baud rate - not working
 */
 
 #include <uart/uart.h>
