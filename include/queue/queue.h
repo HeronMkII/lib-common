@@ -20,10 +20,12 @@ typedef struct {
 } queue_t;
 // NOTE: tail - head is always equal to the queue's size
 
-void init_queue(queue_t*);
-uint8_t queue_full(queue_t*);
-uint8_t queue_empty(queue_t*);
-uint8_t enqueue(queue_t*, const uint8_t*);
-uint8_t dequeue(queue_t*, uint8_t*);
+void init_queue(queue_t* queue);
+uint8_t queue_full(queue_t* queue);
+uint8_t queue_empty(queue_t* queue);
+void shift_queue_left(queue_t* queue);
+uint8_t enqueue(queue_t* queue, const uint8_t* data);
+uint8_t peek_queue(queue_t* queue, uint8_t* data);
+uint8_t dequeue(queue_t* queue, uint8_t* data);
 
 #endif // QUEUE_H

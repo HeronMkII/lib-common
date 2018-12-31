@@ -55,7 +55,7 @@ Shifts all the elements in queue left (to start at index 0)
 
 @param queue_t* queue - queue to operate on
 */
-void shift_left(queue_t* queue) {
+void shift_queue_left(queue_t* queue) {
     for (uint8_t i = queue->head; i < queue->tail; i++) {
         for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
             queue->content[i - (queue->head)][j] = queue->content[i][j];
@@ -79,7 +79,7 @@ uint8_t enqueue(queue_t* queue, const uint8_t* data) {
         return 0;
     } else {
         if (queue->tail == MAX_QUEUE_SIZE) {
-            shift_left(queue);
+            shift_queue_left(queue);
         }
         uint8_t index = queue->tail;
         for (uint8_t i = 0; i < QUEUE_DATA_SIZE; i++) {
@@ -91,7 +91,28 @@ uint8_t enqueue(queue_t* queue, const uint8_t* data) {
 }
 
 /*
-Removes the first element of the queue
+Peeks (gets) the first element of the queue without removing it
+
+@param queue_t* queue - queue to peek an element from
+@param uint8_t* data - pointer to 8-byte array that this function will populate
+@return 1 if data is valid from queue, 0 otherwise
+*/
+uint8_t peek_queue(queue_t* queue, uint8_t* data) {
+    if (queue_empty(queue)) {
+        return 0;
+    }
+
+    if (data != NULL) {
+        for (uint8_t i = 0; i < QUEUE_DATA_SIZE; i++) {
+            data[i] = queue->content[queue->head][i];
+        }
+    }
+
+    return 1;
+}
+
+/*
+Removes and returns the first element of the queue
 
 @param queue_t* queue - queue to remove an element from
 @param uint8_t* data - pointer to 8-byte array that this function will populate
@@ -100,15 +121,16 @@ Removes the first element of the queue
 uint8_t dequeue(queue_t* queue, uint8_t* data) {
     if (queue_empty(queue)) {
         return 0;
-    } else {
-        uint8_t index = queue->head;
-        for (uint8_t i = 0; i < QUEUE_DATA_SIZE; i++) {
-            if (data != NULL) {
-                data[i] = (queue->content)[index][i];
-            }
-            (queue->content)[index][i] = 0x00;
-        }
-        queue->head += 1;
-        return 1;
     }
+
+    // Get the element
+    peek_queue(queue, data);
+
+    // Remove the element
+    for (uint8_t i = 0; i < QUEUE_DATA_SIZE; i++) {
+        queue->content[queue->head][i] = 0x00;
+    }
+    queue->head += 1;
+
+    return 1;
 }

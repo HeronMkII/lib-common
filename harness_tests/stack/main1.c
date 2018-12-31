@@ -30,8 +30,8 @@ void init_stack_test() {
     }
 }
 
-void push_simple() {
-    uint8_t succ = push(&stack, r);
+void push_stack_simple() {
+    uint8_t succ = push_stack(&stack, r);
     ASSERT_TRUE(succ);
 
     ASSERT_EQ(stack.index, 1);
@@ -40,7 +40,7 @@ void push_simple() {
         ASSERT_EQ(stack.content[0][j], r[j]);
     }
 
-    succ = push(&stack, s);
+    succ = push_stack(&stack, s);
     ASSERT_TRUE(succ);
 
     ASSERT_EQ(stack.index, 2);
@@ -50,10 +50,27 @@ void push_simple() {
     }
 }
 
-void pop_simple() {
+void peek_stack_simple() {
     uint8_t data[STACK_DATA_SIZE] = { 0 };
 
-    uint8_t succ = pop(&stack, data);
+    uint8_t succ = peek_stack(&stack, data);
+    ASSERT_TRUE(succ);
+
+    ASSERT_EQ(stack.index, 2);
+
+    for (uint8_t j = 0; j < STACK_DATA_SIZE; j++) {
+        ASSERT_EQ(data[j], s[j]);
+    }
+
+    for (uint8_t j = 0; j < STACK_DATA_SIZE; j++) {
+        ASSERT_EQ(stack.content[1][j], s[j]);
+    }
+}
+
+void pop_stack_simple() {
+    uint8_t data[STACK_DATA_SIZE] = { 0 };
+
+    uint8_t succ = pop_stack(&stack, data);
     ASSERT_TRUE(succ);
 
     ASSERT_EQ(stack.index, 1);
@@ -66,7 +83,7 @@ void pop_simple() {
         ASSERT_EQ(stack.content[1][j], 0);
     }
 
-    succ = pop(&stack, data);
+    succ = pop_stack(&stack, data);
     ASSERT_TRUE(succ);
 
     ASSERT_EQ(stack.index, 0);
@@ -79,7 +96,7 @@ void pop_simple() {
         ASSERT_EQ(stack.content[0][j], 0);
     }
 
-    succ = pop(&stack, data);
+    succ = pop_stack(&stack, data);
     ASSERT_FALSE(succ);
 }
 
@@ -87,21 +104,21 @@ void is_empty_test() {
     uint8_t empty = stack_empty(&stack);
     ASSERT_TRUE(empty);
 
-    push(&stack, r);
+    push_stack(&stack, r);
     empty = stack_empty(&stack);
     ASSERT_FALSE(empty);
 
-    pop(&stack, NULL); // throw away the popped item
+    pop_stack(&stack, NULL); // throw away the popped item
     empty = stack_empty(&stack);
     ASSERT_TRUE(empty);
 }
 
 void is_full_test() {
     for (uint8_t i = 0; i < 5; i++) {
-        push(&stack, w[i]);
+        push_stack(&stack, w[i]);
     }
 
-    uint8_t succ = push(&stack, r);
+    uint8_t succ = push_stack(&stack, r);
     ASSERT_FALSE(succ);
 
     uint8_t full = stack_full(&stack);
@@ -109,7 +126,7 @@ void is_full_test() {
 }
 
 void mixed_test() {
-    pop(&stack, NULL);
+    pop_stack(&stack, NULL);
 
     uint8_t empty = stack_empty(&stack);
     ASSERT_FALSE(empty);
@@ -118,7 +135,7 @@ void mixed_test() {
         ASSERT_EQ(stack.content[MAX_STACK_SIZE - 1][j], 0);
     }
 
-    uint8_t succ = push(&stack, r);
+    uint8_t succ = push_stack(&stack, r);
     ASSERT_TRUE(succ);
 
     uint8_t full = stack_full(&stack);
@@ -135,7 +152,7 @@ void mixed_test() {
     }
 
     for (uint8_t i = 0; i < MAX_STACK_SIZE; i++) {
-        pop(&stack, NULL);
+        pop_stack(&stack, NULL);
     }
 
     empty = stack_empty(&stack);
@@ -143,22 +160,23 @@ void mixed_test() {
 
     ASSERT_EQ(stack.index, 0);
 
-    succ = push(&stack, r);
+    succ = push_stack(&stack, r);
     ASSERT_TRUE(succ);
 
     ASSERT_EQ(stack.index, 1);
 }
 
 test_t t1 = { .name = "init_stack", .fn = init_stack_test };
-test_t t2 = { .name = "simple push", .fn = push_simple };
-test_t t3 = { .name = "simple pop", .fn = pop_simple };
-test_t t4 = { .name = "stack_empty", .fn = is_empty_test };
-test_t t5 = { .name = "stack_full", .fn = is_full_test };
-test_t t6 = { .name = "mixed push/pop", .fn = mixed_test };
+test_t t2 = { .name = "simple push_stack", .fn = push_stack_simple };
+test_t t3 = { .name = "simple peek_stack", .fn = peek_stack_simple };
+test_t t4 = { .name = "simple pop_stack", .fn = pop_stack_simple };
+test_t t5 = { .name = "stack_empty", .fn = is_empty_test };
+test_t t6 = { .name = "stack_full", .fn = is_full_test };
+test_t t7 = { .name = "mixed push_stack/pop_stack", .fn = mixed_test };
 
-test_t* suite[6] = { &t1, &t2, &t3, &t4, &t5, &t6 };
+test_t* suite[7] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7 };
 
 int main() {
-    run_tests(suite, 6);
+    run_tests(suite, 7);
     return 0;
 }
