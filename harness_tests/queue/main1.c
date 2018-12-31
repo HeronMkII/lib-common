@@ -55,6 +55,25 @@ void enqueue_simple() {
 }
 
 // This should be executed second
+void peek_queue_simple() {
+    uint8_t data[QUEUE_DATA_SIZE] = { 0 };
+
+    uint8_t succ = peek_queue(&queue, data);
+    ASSERT_TRUE(succ);
+
+    ASSERT_EQ(queue.head, 0);
+    ASSERT_EQ(queue.tail, 2);
+
+    for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
+        ASSERT_EQ(data[j], r[j]);
+    }
+
+    for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
+        ASSERT_EQ(queue.content[0][j], r[j]);
+    }
+}
+
+// This should be executed third
 void dequeue_simple() {
     uint8_t data[QUEUE_DATA_SIZE] = { 0 };
 
@@ -156,14 +175,15 @@ void mixed_test() {
 
 test_t t1 = { .name = "init_queue", .fn = init_queue_test };
 test_t t2 = { .name = "simple enqueue", .fn = enqueue_simple };
-test_t t3 = { .name = "simple dequeue", .fn = dequeue_simple };
-test_t t4 = { .name = "queue_empty", .fn = is_empty_test };
-test_t t5 = { .name = "queue_full", .fn = is_full_test };
-test_t t6 = { .name = "mixed enqueue/dequeue", .fn = mixed_test };
+test_t t3 = { .name = "simple peek queue", .fn = peek_queue_simple };
+test_t t4 = { .name = "simple dequeue", .fn = dequeue_simple };
+test_t t5 = { .name = "queue_empty", .fn = is_empty_test };
+test_t t6 = { .name = "queue_full", .fn = is_full_test };
+test_t t7 = { .name = "mixed enqueue/dequeue", .fn = mixed_test };
 
-test_t* suite[6] = { &t1, &t2, &t3, &t4, &t5, &t6 };
+test_t* suite[7] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7 };
 
 int main() {
-    run_tests(suite, 6);
+    run_tests(suite, 7);
     return 0;
 }
