@@ -1,6 +1,7 @@
 /*
 SPI (Serial Peripheral Interface) library
 
+32M1 datasheet: https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-8209-8-bit%20AVR%20ATmega16M1-32M1-64M1_Datasheet.pdf
 
 Clock polarity and phase:
 See https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#Clock_polarity_and_phase
@@ -22,7 +23,7 @@ Clock speed:
 
 The default is F_osc / 64. This is expected when code calls send_spi() without changing the clock speed. If a device uses a different frequency, it must change the frequency, send its messages(s), then change the frequency back immediately after.
 
-TODO - test more thoroughly - multi-byte sends/receives, modes, clock frequencies
+TODO - test more thoroughly - modes and clock frequencies
 */
 
 #include <spi/spi.h>
@@ -76,42 +77,6 @@ uint8_t send_spi(uint8_t data) {
     while (!(SPSR & _BV(SPIF)) && timeout--);
     // Return the received data (contents of the data register)
     return SPDR;
-}
-
-/*
-Sends and receives 2 bytes (16 bits) of SPI data.
-Most significant (left-most) 8 bits first, least significant (right-most) 8 bits last.
-data - 16 bits of data to send
-Returns - 16 bits of data received
-*/
-uint16_t send_spi_2bytes(uint16_t data) {
-    uint16_t received = 0;
-    received |= send_spi((data >> 8) & 0xFF);
-
-    received <<= 8;
-    received |= send_spi(data & 0xFF);
-
-    return received;
-}
-
-/*
-Sends and receives 3 bytes (24 bits) of SPI data.
-Most significant (left-most) 8 bits first, least significant (right-most) 8 bits last.
-This function ignores the most significant 8 bits of `data`, and the return value always has the most significant 8 bits as 0s.
-data - 24 bits of data to send
-Returns - 24 bits of data received
-*/
-uint32_t send_spi_3bytes(uint32_t data) {
-    uint32_t received = 0;
-    received |= send_spi((data >> 16) & 0xFF);
-
-    received <<= 8;
-    received |= send_spi((data >> 8) & 0xFF);
-
-    received <<= 8;
-    received |= send_spi(data & 0xFF);
-
-    return received;
 }
 
 
@@ -168,17 +133,18 @@ void set_spi_mode(uint8_t mode) {
 Resets the SPI mode to mode 0.
 */
 void reset_spi_mode(void) {
-    reset_spi_cpol_cpha();
+    set_spi_mode(0);
 }
 
 
 /*
-Sets the value of the SPI2X, SPR1, and SPR0 register bits (p.220-222).
+Sets the value of the SPI2X, SPR1, and SPR0 register bits that control the SPI
+clock (p.220-222).
 spi2x - 0 or 1
 spr1 - 0 or 1
 spr0 - 0 or 1
 */
-void set_spi_spi2x_spr1_spr0(uint8_t spi2x, uint8_t spr1, uint8_t spr0) {
+void set_spi_clk_bits(uint8_t spi2x, uint8_t spr1, uint8_t spr0) {
     if (spi2x == 0) {
         SPSR &= ~_BV(SPI2X);
     } else if (spi2x == 1) {
@@ -205,25 +171,25 @@ freq - frequency setting (proportional to microcontroller oscillator clock frequ
 void set_spi_clk_freq(spi_clk_freq_t freq) {
     switch (freq) {
         case SPI_FOSC_4:
-            set_spi_spi2x_spr1_spr0(0, 0, 0);
+            set_spi_clk_bits(0, 0, 0);
             break;
         case SPI_FOSC_16:
-            set_spi_spi2x_spr1_spr0(0, 0, 1);
+            set_spi_clk_bits(0, 0, 1);
             break;
         case SPI_FOSC_64:
-            set_spi_spi2x_spr1_spr0(0, 1, 0);
+            set_spi_clk_bits(0, 1, 0);
             break;
         case SPI_FOSC_128:
-            set_spi_spi2x_spr1_spr0(0, 1, 1);
+            set_spi_clk_bits(0, 1, 1);
             break;
         case SPI_FOSC_2:
-            set_spi_spi2x_spr1_spr0(1, 0, 0);
+            set_spi_clk_bits(1, 0, 0);
             break;
         case SPI_FOSC_8:
-            set_spi_spi2x_spr1_spr0(1, 0, 1);
+            set_spi_clk_bits(1, 0, 1);
             break;
         case SPI_FOSC_32:
-            set_spi_spi2x_spr1_spr0(1, 1, 0);
+            set_spi_clk_bits(1, 1, 0);
             break;
         default:
             break;
