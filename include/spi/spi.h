@@ -2,7 +2,6 @@
 #define SPI_H
 
 #include <avr/io.h>
-#include <avr/cpufunc.h> // for _NOP()
 #include <string.h>
 
 #include <utilities/utilities.h>
@@ -48,8 +47,6 @@ void set_cs_high(uint8_t pin, port_t port);
 
 void init_spi(void);
 uint8_t send_spi(uint8_t data);
-uint16_t send_spi_2bytes(uint16_t data);
-uint32_t send_spi_3bytes(uint32_t data);
 
 // SPI data mode (polarity/phase)
 void set_spi_cpol_cpha(uint8_t cpol, uint8_t cpha);
@@ -58,7 +55,7 @@ void set_spi_mode(uint8_t mode);
 void reset_spi_mode(void);
 
 // SPI clock frequency
-void set_spi_spi2x_spr1_spr0(uint8_t spi2x, uint8_t spr1, uint8_t spr0);
+void set_spi_clk_bits(uint8_t spi2x, uint8_t spr1, uint8_t spr0);
 void set_spi_clk_freq(spi_clk_freq_t freq);
 void reset_spi_clk_freq(void);
 
