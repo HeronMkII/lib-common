@@ -6,8 +6,8 @@
     A stack is a data structure that operates under the Last In-First Out
     principle (LIFO). This means that the last element to be put in the stack
     is the first element that is removed from it (think of a stack of coins).
-    Elements are put into the stack using the push method, and removed from the
-    stack using the pop method (from the top of the stack).
+    Elements are put into the stack using the push_stack method, and removed from the
+    stack using the pop_stack method (from the top of the stack).
 */
 
 #include <stack/stack.h>
@@ -55,7 +55,7 @@ Adds element to stack if possible.
 @param const uint8_t* data - 8-byte array with data to add (copy) to the stack
 @return 1 if stack is not empty, otherwise 0 if stack is full
 */
-uint8_t push(stack_t* stack, const uint8_t* data) {
+uint8_t push_stack(stack_t* stack, const uint8_t* data) {
     // checks if stack is full, and return 0 if true
     if (stack_full(stack)) {
         return 0;
@@ -72,26 +72,48 @@ uint8_t push(stack_t* stack, const uint8_t* data) {
 }
 
 /*
+Gets element from top of stack if possible, but does not remove it from the stack
+
+@param stack_t* stack - stack to get an element from
+@param uint8_t* data - 8-byte array that will be populated by this function with the data
+@return 1 if successful, otherwise 0 if stack is empty
+*/
+uint8_t peek_stack(stack_t* stack, uint8_t* data) {
+    //checks if stack is empty and returns 0 if true
+    if (stack_empty(stack)) {
+        return 0;
+    }
+
+    if (data != NULL) {
+        for (uint8_t i = 0; i < STACK_DATA_SIZE; i++) {
+            data[i] = stack->content[stack->index - 1][i];
+        }
+    }
+
+    return 1;
+}
+
+/*
 Removes element from top of stack if possible, and stores it in data
 
 @param stack_t* stack - stack to remove an element from
 @param uint8_t* data - 8-byte array that will be populated by this function with the data
 @return 1 if successful, otherwise 0 if stack is empty
 */
-uint8_t pop(stack_t* stack, uint8_t* data) {
+uint8_t pop_stack(stack_t* stack, uint8_t* data) {
     //checks if stack is empty and returns 0 if true
     if (stack_empty(stack)) {
         return 0;
     }
-    else {
-        stack->index -= 1;
-        uint8_t index = stack->index;
-        for (uint8_t i = 0; i < STACK_DATA_SIZE; i++) {
-            if (data != NULL) {
-                data[i] = (stack->content)[index][i];
-            }
-            (stack->content)[index][i] = 0x00;
-        }
-        return 1;
+
+    // Get the data
+    peek_stack(stack, data);
+
+    // Remove the data
+    for (uint8_t i = 0; i < STACK_DATA_SIZE; i++) {
+        stack->content[stack->index - 1][i] = 0x00;
     }
+    stack->index -= 1;
+
+    return 1;
 }

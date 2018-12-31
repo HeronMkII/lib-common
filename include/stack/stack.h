@@ -18,10 +18,11 @@ typedef struct {
 } stack_t;
 // NOTE: index is always equal to the stack's size
 
-void init_stack(stack_t*);
-uint8_t stack_full(stack_t*);
-uint8_t stack_empty(stack_t*);
-uint8_t push(stack_t*, const uint8_t*);
-uint8_t pop(stack_t*, uint8_t*);
+void init_stack(stack_t* stack);
+uint8_t stack_full(stack_t* stack);
+uint8_t stack_empty(stack_t* stack);
+uint8_t push_stack(stack_t* stack, const uint8_t* data);
+uint8_t peek_stack(stack_t* stack, uint8_t* data);
+uint8_t pop_stack(stack_t* stack, uint8_t* data);
 
 #endif // STACK_H
