@@ -39,5 +39,11 @@ int main(void) {
     init_uart();
     set_uart_rx_cb(echo);
 
+    // Uncomment one of these lines to test a different baud rate (default 9600)
+    // set_uart_baud_rate(UART_BAUD_1200);
+    // set_uart_baud_rate(UART_BAUD_9600);
+    // set_uart_baud_rate(UART_BAUD_19200);
+    // set_uart_baud_rate(UART_BAUD_115200);
+
     while (1) {};
 }

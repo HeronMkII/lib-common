@@ -6,8 +6,6 @@ UART (TX and RX) library.
 UART is a protocol that allows devices to send data to each
 other one byte at a time (usually represented as one character in a
 user-friendly terminal).
-
-TODO - fix 115200 baud rate - not working
 */
 
 #include <uart/uart.h>
@@ -48,6 +46,7 @@ void init_uart(void) {
     Enable RX byte and TX byte
     */
     LINCR = _BV(LENA) | _BV(LCMD2) | _BV(LCMD1) | _BV(LCMD0);
+
     // Only enable interrupts for received charcaters (p. 294)
     LINENIR = _BV(LENRXOK);
 
@@ -61,24 +60,38 @@ void init_uart(void) {
 }
 
 /*
-Sets the UART baud rate.
-baud_rate - arbitrary number for baud rate
-TODO - should this function be atomic?
-*/
-static void set_baud(uint32_t baud_rate) {
-    /*
-    Scaling of clk_io frequency
-    Value to assign to 16-bit LINBRR register (p. 298)
-    Calculated from formula on p.282
-    this number is not necessarily integer; if the number is too far from
-    being an integer, too much error will accumulate and UART will output
-    garbage
-    */
-    int16_t LDIV = (UART_F_IO / (baud_rate * UART_BIT_SAMPLES)) - 1;
+Sets the values of the registers that determine the UART baud rate.
 
-    // Set LINBRR 16-bit register to LDIV (high and low registers are separate)
-    LINBRRH = (uint8_t) (LDIV >> 8);
-    LINBRRL = (uint8_t) LDIV;
+lbt - value of LBT[5:0] in LINBTR (LIN bit timing) register (AFTER subtracting 1
+    in the formula); number of samples per bit; must be between 8 and 63
+    (p. 283, 289, 297)
+
+ldiv - Scaling of clk_io frequency; value to assign to 16-bit LINBRR register
+    (p. 298); calculated from formula on p.282; this number is not necessarily
+    integer; if the number is too far from being an integer, too much error
+    will accumulate and UART will outputgarbage
+    from p.282: LDIV = (F_IO / (BAUD_RATE * BIT_SAMPLES)) - 1;
+*/
+static void set_baud_regs(uint8_t lbt, uint16_t ldiv) {
+    // Set these values atomically because the baud rate is determined by both
+    // Also, we are setting LINBRR, which is a 16-bit register
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        // To be able to set LDISR and LBT[5:0], need to set LENA = 0 (p. 283)
+        // Save the old value of LINCR
+        uint8_t LINCR_old = LINCR;
+        LINCR &= ~_BV(LENA);
+
+        // Need to set the LDISR bit to 1 (disable bit timing resynchronization)
+        // to be able to set LBT[5:0] (p. 289, 297)
+        LINBTR = _BV(LDISR) | lbt;
+
+        // Restore the old value of LINCR
+        LINCR = LINCR_old;
+
+        // Set LINBRR 16-bit register to LDIV (high and low registers separate)
+        LINBRRH = (uint8_t) (ldiv >> 8);
+        LINBRRL = (uint8_t) ldiv;
+    }
 }
 
 /*
@@ -88,18 +101,21 @@ baud_rate - one of a select set of baud rates where the clock division ratios
 The baud rate needs to match the one used for the transceiver/CoolTerm.
 */
 void set_uart_baud_rate(uart_baud_rate_t baud_rate) {
+    // These values of LBT and LDIV are chosen to give as close to integer
+    // numbers as possible with the formula on p. 282
+    // Trying to keep LBT close to the default 32
     switch (baud_rate) {
         case UART_BAUD_1200:
-            set_baud(1200UL);
+            set_baud_regs(32, 207);
             break;
         case UART_BAUD_9600:
-            set_baud(9600UL);
+            set_baud_regs(32, 25);
             break;
         case UART_BAUD_19200:
-            set_baud(19200UL);
+            set_baud_regs(32, 12);
             break;
         case UART_BAUD_115200:
-            set_baud(115200UL);
+            set_baud_regs(35, 1);
             break;
         default:
             break;
