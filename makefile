@@ -17,27 +17,40 @@ export INCLUDES = -I../../include
 export CFLAGS = -Wall -std=gnu99 -g -mmcu=atmega32m1 -Os -mcall-prologues
 
 
-# PORT - Computer port that the programmer is connected to
-# Operating system detection based on https://gist.github.com/sighingnow/deee806603ec9274fd47
+# Detect operating system - based on https://gist.github.com/sighingnow/deee806603ec9274fd47
 
-# Windows
+# One of these flags will be set to true based on the operating system
+WINDOWS := false
+MAC_OS := false
+LINUX := false
+
 ifeq ($(OS),Windows_NT)
-	PORT = $(shell powershell "[System.IO.Ports.SerialPort]::getportnames() | select -First 2 | select -Last 1")
-
-# Unix
+	WINDOWS := true
 else
-	# Get the operating system
+	# Unix - get the operating system
 	UNAME_S := $(shell uname -s)
-
-	# macOS
 	ifeq ($(UNAME_S),Darwin)
-		# Automatically find the port (lower number)
-		PORT = $(shell find /dev -name 'tty.usbmodem[0-9]*' | sort | head -n1)
+		MAC_OS := true
 	endif
-	# Linux
 	ifeq ($(UNAME_S),Linux)
-		PORT = $(shell find /dev -name 'ttyS[0-9]*' | sort | head -n1)
+		LINUX := true
 	endif
+endif
+
+# PORT - Computer port that the programmer is connected to
+# Try to automatically detect the port
+ifeq ($(WINDOWS), true)
+	# higher number
+	PORT = $(shell powershell "[System.IO.Ports.SerialPort]::getportnames() | sort | select -First 2 | select -Last 1")
+endif
+ifeq ($(MAC_OS), true)
+	# lower number
+	PORT = $(shell find /dev -name 'tty.usbmodem[0-9]*' | sort | head -n1)
+endif
+ifeq ($(LINUX), true)
+	# lower number
+	# TODO - test this
+	PORT = $(shell find /dev -name 'ttyS[0-9]*' | sort | head -n1)
 endif
 
 # If automatic port detection fails,
@@ -47,17 +60,21 @@ endif
 # PORT = /dev/ttyS3					# Linux
 
 
-# Set the PYTHON variable
-ifeq ($(OS),Windows_NT)
-	# Windows uses `python` for either Python 2 or 3
-	PYTHON = python
-else
-	# macOS/Linux use `python3` to explicitly use Python 3
-	PYTHON = python3
+# Set the PYTHON variable - Python interpreter
+# Windows uses `python` for either Python 2 or 3,
+# while macOS/Linux use `python3` to explicitly use Python 3
+ifeq ($(WINDOWS), true)
+	PYTHON := python
+endif
+ifeq ($(MAC_OS), true)
+	PYTHON := python3
+endif
+ifeq ($(LINUX), true)
+	PYTHON := python3
 endif
 
 
-.PHONY: all $(SRC) clean debug examples harness help manual_tests
+.PHONY: all $(SRC) clean debug examples harness help manual_tests read-eeprom
 
 all: $(SRC)
 
@@ -85,9 +102,21 @@ debug:
 	@echo ------------
 	@echo $(SRC)
 	@echo ------------
+	@echo $(BUILD)
+	@echo ------------
 	@echo $(EXAMPLES)
 	@echo ------------
 	@echo $(MANUAL_TESTS)
+	@echo ------------
+	@echo $(WINDOWS)
+	@echo ------------
+	@echo $(MAC_OS)
+	@echo ------------
+	@echo $(LINUX)
+	@echo ------------
+	@echo $(PORT)
+	@echo ------------
+	@echo $(PYTHON)
 	@echo ------------
 
 # For each example, clean directory then build
@@ -106,7 +135,7 @@ harness:
 	$(PYTHON) ./bin/harness.py -p $(PORT) -d harness_tests
 
 help:
-	@echo "usage: make [all | clean | debug | examples | harness | help | manual_tests]"
+	@echo "usage: make [all | clean | debug | examples | harness | help | manual_tests | read-eeprom]"
 	@echo ""
 	@echo "Running make without any arguments is equivalent to running make all."
 	@echo ""
@@ -117,6 +146,7 @@ help:
 	@echo "harness        run the test harness"
 	@echo "help           display this help message"
 	@echo "manual_tests   build all manual tests (see manual_tests/makefile)"
+	@echo "read-eeprom    read and display the contents of the microcontroller's EEPROM"
 
 # For each example, clean directory then build
 # TODO - call `make clean` within each subdirectory
@@ -129,3 +159,15 @@ manual_tests:
 		make ; \
 		cd ../.. ; \
 	done
+
+# Create a file called eeprom.bin, which contains a raw binary copy of the micro's EEPROM memory.
+# View the contents of the binary file in hex
+read-eeprom:
+	@echo "Reading EEPROM to binary file eeprom.bin..."
+	avrdude -p m32m1 -c stk500 -P $(PORT) -U eeprom:r:eeprom.bin:r
+	@echo "Displaying eeprom.bin in hex..."
+ifeq ($(WINDOWS), true)
+	powershell Format-Hex eeprom.bin
+else
+	hexdump eeprom.bin
+endif
