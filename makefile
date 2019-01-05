@@ -136,9 +136,7 @@ harness:
 
 help:
 	@echo "usage: make [all | clean | debug | examples | harness | help | manual_tests | read-eeprom]"
-	@echo ""
 	@echo "Running make without any arguments is equivalent to running make all."
-	@echo ""
 	@echo "all            build the lib-common library"
 	@echo "clean          clear the build directory and all subdirectories"
 	@echo "debug          display debugging information"
