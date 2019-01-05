@@ -1,7 +1,13 @@
-# All libraries (subdirectories) in lib-common
+# All libraries (subdirectories/folders) in lib-common
 # Need to put uart first because other libraries depend on it (otherwise get error of "No rule to make target...")
-SRC = $(addprefix src/,uart adc can conversions dac heartbeat pex queue spi stack test timer utilities watchdog)
+LIBNAMES = uart adc can conversions dac heartbeat pex queue spi stack test timer utilities watchdog
+# Subfolders in src folder
+SRC = $(addprefix src/,$(LIBNAMES))
+# Subfolders in build folder
+BUILD = $(addprefix build/,$(LIBNAMES))
+# Subfolders in examples folder
 EXAMPLES = $(dir $(wildcard examples/*/.))
+# Subfolders in manual_tests folder
 MANUAL_TESTS = $(dir $(wildcard manual_tests/*/.))
 
 export CC = avr-gcc
@@ -55,28 +61,43 @@ endif
 
 all: $(SRC)
 
+# Echo the text of the command to print out what we're doing before actually
+# executing the command (can't echo an individual command in a for loop)
+# TODO - calling make in a subdirectory seems to not pass the `clean` argument -
+#	find a fix for this
 clean:
-	@for dir in $(SRC) ; do \
-		$(MAKE) clean -C $$dir ; \
+	@for dir in $(BUILD) ; do \
+		echo rm -f $$dir/*.* ; \
+		rm -f $$dir/*.* ; \
 	done
 
+# Compile each of the source libraries
+# -e: "Environment variables override makefiles."
+# -C: "Change to DIRECTORY before doing anything."
+# $@: The source file being generated
 $(SRC):
 	@$(MAKE) -e -C $@
 
 # Print debug information
 debug:
-	@echo ————————————
+	@echo ------------
+	@echo $(LIBNAMES)
+	@echo ------------
 	@echo $(SRC)
-	@echo ————————————
+	@echo ------------
 	@echo $(EXAMPLES)
-	@echo ————————————
+	@echo ------------
 	@echo $(MANUAL_TESTS)
-	@echo ————————————
+	@echo ------------
 
+# For each example, clean directory then build
+# TODO - call `make clean` within each subdirectory
 examples:
 	@for dir in $(EXAMPLES) ; do \
 		cd $$dir ; \
-		make clean ; \
+		rm -f ./*.o ; \
+		rm -f ./*.elf ; \
+		rm -f ./*.hex ; \
 		make ; \
 		cd ../.. ; \
 	done
@@ -90,17 +111,21 @@ help:
 	@echo "Running make without any arguments is equivalent to running make all."
 	@echo ""
 	@echo "all            build the lib-common library"
-	@echo "clean          clear the build/ directory and all subdirectories"
+	@echo "clean          clear the build directory and all subdirectories"
 	@echo "debug          display debugging information"
-	@echo "examples       build all examples (see the examples/makefile)"
+	@echo "examples       build all examples (see examples/makefile)"
 	@echo "harness        run the test harness"
 	@echo "help           display this help message"
-	@echo "manual_tests   build all manual tests (see the manual_tests/makefile)"
+	@echo "manual_tests   build all manual tests (see manual_tests/makefile)"
 
+# For each example, clean directory then build
+# TODO - call `make clean` within each subdirectory
 manual_tests:
 	@for dir in $(MANUAL_TESTS) ; do \
 		cd $$dir ; \
-		make clean ; \
+		rm -f ./*.o ; \
+		rm -f ./*.elf ; \
+		rm -f ./*.hex ; \
 		make ; \
 		cd ../.. ; \
 	done
