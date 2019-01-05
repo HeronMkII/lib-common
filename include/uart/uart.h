@@ -3,6 +3,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -31,12 +32,6 @@ This is probably better than 1 MHz so we can reach higher UART baud rates.
 // Default baud rate (number of characters per second)
 // p. 282, 298
 #define UART_DEF_BAUD_RATE UART_BAUD_9600
-
-// LBT[5:0] value in LINBTR (LIN bit timing) register (p. 283, 289, 297)
-// LBT[5:0] can't be changed in the register unless the LDISR
-// (disable bit timing resynchronization) bit is set to 1 in the LINBTR register
-// (we are not changing it)
-#define UART_BIT_SAMPLES 32UL
 
 // UART TXD is pin PD3
 // UART RXD is pin PD4
