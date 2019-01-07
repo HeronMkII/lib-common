@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include <avr/pgmspace.h>
+
 // Reference voltage
 #define ADC_V_REF 5.0
 
@@ -19,6 +21,15 @@
 #define OPTICAL_ADC_V_REF   2.5 // reference voltage (in V)
 #define OPTICAL_ADC_N       24  // number of bits in raw data
 
+#define THERM_V_REF 2.5
+// when referencing table in thermistors.c, values are in kilo Ohmns
+// Reference in kohm
+#define THERM_R_REF 10.0
+
+extern const float THERM_RES[];
+extern const int16_t THERM_TEMP[];
+#define THERM_LUT_COUNT 34
+
 
 double adc_raw_data_to_raw_voltage(uint16_t raw_data);
 double adc_eps_raw_voltage_to_voltage(double raw_voltage);
@@ -31,5 +42,10 @@ double hum_raw_data_to_humidity(uint16_t raw_data);
 double pres_raw_data_to_pressure(uint32_t raw_data);
 
 double optical_adc_raw_data_to_voltage(uint32_t raw_data, uint8_t gain);
+
+double therm_res_to_temp(double resistance);
+double therm_temp_to_res(double temp);
+double therm_res_to_vol(double resistance);
+double therm_vol_to_res(double voltage);
 
 #endif

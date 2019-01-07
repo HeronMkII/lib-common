@@ -133,3 +133,114 @@ double optical_adc_raw_data_to_voltage(uint32_t raw_data, uint8_t gain) {
     double denom = (1UL << OPTICAL_ADC_N) * ((double) gain);
     return num / denom;
 }
+
+
+
+
+/*
+Thermistor conversions
+
+For NTC Thermistor 10k 0603 (1608 Metric) Part # NCU18XH103F60RB
+Digikey link: https://www.digikey.ca/product-detail/en/murata-electronics-north-america/NCU18XH103F60RB/490-16279-1-ND/7363262
+Datasheet (page 13. Part # NCU__XH103):
+https://www.murata.com/~/media/webrenewal/support/library/catalog/products/thermistor/r03e.ashx?la=en-us
+Datasheet (NCU18XH103F60RB): https://www.murata.com/en-us/api/pdfdownloadapi?cate=luNTCforTempeSenso&partno=NCU18XH103F60RB
+
+TODO - create test to verify PROGMEM values
+TODO - confirm thermistor part number
+*/
+
+// Lookup table from manufacturer datasheet (pg 13)
+// Resistances are stored in kilo-ohms
+// PROGMEM instructs the compiler to store these values in flash memory
+const float THERM_RES[THERM_LUT_COUNT] PROGMEM = {
+    195.652,    148.171,    113.347,    87.559,     68.237,
+    53.650,     42.506,     33.892,     27.219,     22.021,
+    17.926,     14.674,     12.081,     10.000,     8.315,
+    6.948,      5.834,      4.917,      4.161,      3.535,
+    3.014,      2.586,      2.228,      1.925,      1.669,
+    1.452,      1.268,      1.110,      0.974,      0.858,
+    0.758,      0.672,      0.596,      0.531
+};
+
+// Temperatures in C
+// TODO - should it be int8_t?
+const int16_t THERM_TEMP[THERM_LUT_COUNT] PROGMEM = {
+    -40,        -35,        -30,        -25,        -20,
+    -15,        -10,        -5,         0,          5,
+    10,         15,         20,         25,         30,
+    35,         40,         45,         50,         55,
+    60,         65,         70,         75,         80,
+    85,         90,         95,         100,        105,
+    110,        115,        120,        125
+};
+
+
+/*
+Convert the measured thermistor resistance to temperature
+resistance - thermistor resistance (in kilo-ohms)
+Returns - temperature (in C)
+*/
+double therm_res_to_temp(double resistance){
+    for (uint8_t i = 0; i < THERM_LUT_COUNT - 1; i++){
+        // Next value should be smaller than previous value
+        double resistance_next = pgm_read_float(&THERM_RES[i + 1]);
+
+        if (resistance >= resistance_next){
+            double resistance_prev = pgm_read_float(&THERM_RES[i]);
+            int16_t temp_next = pgm_read_word(&THERM_TEMP[i + 1]);
+            int16_t temp_prev = pgm_read_word(&THERM_TEMP[i]);
+
+            double temp_diff = (double) (temp_next - temp_prev);
+            double resistance_diff = (double) (resistance_next - resistance_prev);
+            double slope = temp_diff / resistance_diff;
+
+            double diff = resistance - resistance_prev;  //should be negative
+            return temp_prev + (diff * slope);
+        }
+    }
+
+    // TODO - this shouldn't happen
+    return 0.0;
+}
+
+/*
+Convert the thermistor temperature to resistance
+temp - temperature (in C)
+Returns - thermistor resistance (in kilo-ohms)
+*/
+double therm_temp_to_res(double temp) {
+    for (uint8_t i = 0; i < THERM_LUT_COUNT - 1; i++){
+        // Next value should be bigger than previous value
+        int16_t temp_next = pgm_read_word(&THERM_TEMP[i + 1]);
+
+        if (temp <= temp_next){
+            int16_t temp_prev = pgm_read_word(&THERM_TEMP[i]);
+            double resistance_next = pgm_read_float(&THERM_RES[i + 1]);
+            double resistance_prev = pgm_read_float(&THERM_RES[i]);
+
+            double resistance_diff = (double) (resistance_next - resistance_prev);
+            double temp_diff = (double) (temp_next - temp_prev);
+            double slope = resistance_diff / temp_diff;
+
+            double diff = temp - temp_prev;  //should be positive
+            return resistance_prev + (diff * slope);
+        }
+    }
+
+    // TODO - this shouldn't happen
+    return 0.0;
+}
+
+// Using the thermistor resistance, get the voltage at the point between the thermistor and the constant 10k resistor
+// (10k connected to ground)
+// See: https://www.allaboutcircuits.com/projects/measuring-temperature-with-an-ntc-thermistor/
+double therm_res_to_vol(double resistance) {
+    return THERM_V_REF * THERM_R_REF / (resistance + THERM_R_REF);
+}
+
+// Get the resistance of the thermistor given the voltage
+// For equation, see: https://www.allaboutcircuits.com/projects/measuring-temperature-with-an-ntc-thermistor/
+double therm_vol_to_res(double voltage) {
+    return THERM_R_REF * (THERM_V_REF / voltage - 1);
+}
