@@ -21,13 +21,13 @@
 #define OPTICAL_ADC_V_REF   2.5 // reference voltage (in V)
 #define OPTICAL_ADC_N       24  // number of bits in raw data
 
-#define THERMIS_V_REF     2.5
-#define THERMIS_R_REF 10.0 // when referencing table in thermistors.c, values are in kilo Ohmns
+#define THERM_V_REF 2.5
+// when referencing table in thermistors.c, values are in kilo Ohmns
+// Reference in kohm
+#define THERM_R_REF 10.0
 
-// Resistances are stored in kilo-ohms
-// PROGMEM instructs the compiler to store these values in flash memory
 extern const float THERM_RES[];
-extern const int THERM_TEMP[];
+extern const int8_t THERM_TEMP[];
 #define THERM_LUT_COUNT 34
 
 
@@ -43,9 +43,9 @@ double pres_raw_data_to_pressure(uint32_t raw_data);
 
 double optical_adc_raw_data_to_voltage(uint32_t raw_data, uint8_t gain);
 
-double thermis_resistance_to_temp(double resistance);
-double thermis_temp_to_resistance(double temp);
-double thermis_resistance_to_voltage(double resistance);
-double thermis_voltage_to_resistance(double voltage);
+double therm_res_to_temp(double resistance);
+double therm_temp_to_res(double temp);
+double therm_res_to_vol(double resistance);
+double therm_vol_to_res(double voltage);
 
 #endif

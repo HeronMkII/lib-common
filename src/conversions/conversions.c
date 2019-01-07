@@ -164,7 +164,7 @@ const float THERM_RES[THERM_LUT_COUNT] PROGMEM = {
 };
 
 // Temperatures in C
-const int THERM_TEMP[THERM_LUT_COUNT] PROGMEM = {
+const int8_t THERM_TEMP[THERM_LUT_COUNT] PROGMEM = {
     -40,        -35,        -30,        -25,        -20,
     -15,        -10,        -5,         0,          5,
     10,         15,         20,         25,         30,
@@ -176,7 +176,7 @@ const int THERM_TEMP[THERM_LUT_COUNT] PROGMEM = {
 
 
 // Convert the measured thermistor resistance to temperature
-double thermis_resistance_to_temp(double resistance){
+double therm_res_to_temp(double resistance){
     for (uint8_t i = 0; i < THERM_LUT_COUNT - 1; i++){
         double resistance_next = pgm_read_float(&THERM_RES[i + 1]);
 
@@ -196,7 +196,7 @@ double thermis_resistance_to_temp(double resistance){
 }
 
 // Convert the thermistor temperature to resistance
-double thermis_temp_to_resistance(double temp) {
+double therm_temp_to_res(double temp) {
     for (uint8_t i = 0; i < THERM_LUT_COUNT - 1; i++){
         int16_t temp_next = pgm_read_word(&THERM_TEMP[i + 1]);
 
@@ -215,15 +215,15 @@ double thermis_temp_to_resistance(double temp) {
     return 0.0;
 }
 
-// Get the voltage at the point between the thermistor and the constant 10k resistor
+// Using the thermistor resistance, get the voltage at the point between the thermistor and the constant 10k resistor
 // (10k connected to ground)
 // See: https://www.allaboutcircuits.com/projects/measuring-temperature-with-an-ntc-thermistor/
-double thermis_resistance_to_voltage(double resistance) {
-    return THERMIS_V_REF * THERMIS_R_REF / (resistance + THERMIS_R_REF);
+double therm_res_to_vol(double resistance) {
+    return THERM_V_REF * THERM_R_REF / (resistance + THERM_R_REF);
 }
 
 // Get the resistance of the thermistor given the voltage
 // For equation, see: https://www.allaboutcircuits.com/projects/measuring-temperature-with-an-ntc-thermistor/
-double thermis_voltage_to_resistance(double voltage) {
-    return THERMIS_R_REF * (THERMIS_V_REF / voltage - 1);
+double therm_vol_to_res(double voltage) {
+    return THERM_R_REF * (THERM_V_REF / voltage - 1);
 }
