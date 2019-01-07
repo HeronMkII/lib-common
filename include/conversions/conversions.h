@@ -27,7 +27,7 @@
 #define THERM_R_REF 10.0
 
 extern const float THERM_RES[];
-extern const int8_t THERM_TEMP[];
+extern const int16_t THERM_TEMP[];
 #define THERM_LUT_COUNT 34
 
 
