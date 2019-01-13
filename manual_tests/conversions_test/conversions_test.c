@@ -5,8 +5,14 @@ Test the data conversion functions in the conversions library.
 #include <conversions/conversions.h>
 #include <uart/uart.h>
 
+// DAC conversions
+void test_dac(void) {
+    print("dac_raw_data_to_vol: 0x3F7 -> %.3f\n", dac_raw_data_to_vol(0x3F7));
+    print("dac_vol_to_raw_data: 2.1 V -> %.3X\n", dac_vol_to_raw_data(2.1));
+}
+
 // thermistor conversions
-void test_therm() {
+void test_therm(void) {
     print("Thermistors:\n");
 
     print("therm_res_to_temp: 18k -> %.3f C\n", therm_res_to_temp(18.0));
@@ -20,6 +26,7 @@ int main(void) {
     init_uart();
 
     print("\n\nStarting test\n\n");
+    test_dac();
     test_therm();
     print("\nDone test\n");
 
