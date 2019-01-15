@@ -1,0 +1,2 @@
+PROG = sizeof
+include ../makefile
