@@ -80,6 +80,45 @@ double adc_eps_raw_data_to_current(uint16_t raw_data) {
 
 
 
+/*
+DAC
+DAC7562
+Datasheet: http://www.ti.com/lit/ds/symlink/dac8162.pdf
+*/
+
+/*
+Converts raw data (12 bits) to an output voltage.
+raw_data - 12 bit raw data (Din)
+returns - output voltage (in V)
+*/
+double dac_raw_data_to_vol(uint16_t raw_data) {
+    // p.28 - 8.3.1
+    // Vout = (Din / 2^n) x Vref x Gain
+    double ratio = ((double) raw_data) / ((double) (1 << DAC_NUM_BITS));
+    double result = ratio * DAC_VREF * DAC_VREF_GAIN;
+
+    return result;
+}
+
+/*
+Converts an output voltage value to the raw data (12 bit) value.
+voltage - output voltage (in V)
+returns - 12 bit raw data
+*/
+uint16_t dac_vol_to_raw_data(double voltage) {
+    // p.28 - 8.3.1
+    // Vout = (Din / 2^n) x Vref x Gain
+    // Din = (Vout x 2^n) / (Vref x Gain)
+    double num = voltage * ((double) (1 << DAC_NUM_BITS));
+    double denom = DAC_VREF * DAC_VREF_GAIN;
+    uint16_t result = (uint16_t) (num / denom);
+
+    return result;
+}
+
+
+
+
 /* Payload Environmental Sensors */
 
 /*
