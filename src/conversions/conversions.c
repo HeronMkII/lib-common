@@ -109,7 +109,7 @@ uint16_t dac_vol_to_raw_data(double voltage) {
     // p.28 - 8.3.1
     // Vout = (Din / 2^n) x Vref x Gain
     // Din = (Vout x 2^n) / (Vref x Gain)
-    double num = voltage * (1 << DAC_NUM_BITS);
+    double num = voltage * ((double) (1 << DAC_NUM_BITS));
     double denom = DAC_VREF * DAC_VREF_GAIN;
     uint16_t result = (uint16_t) (num / denom);
 
