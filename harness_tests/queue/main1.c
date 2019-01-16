@@ -22,6 +22,7 @@ void init_queue_test() {
     // Verify that the queue is initialized correctly
     ASSERT_EQ(queue.head, 0);
     ASSERT_EQ(queue.tail, 0);
+    ASSERT_EQ(queue_size(&queue), 0);
 
     // Verify that the queue is empty
     for (uint8_t i = 0; i < MAX_QUEUE_SIZE; i++) {
@@ -38,6 +39,7 @@ void enqueue_simple() {
 
     ASSERT_EQ(queue.head, 0);
     ASSERT_EQ(queue.tail, 1);
+    ASSERT_EQ(queue_size(&queue), 1);
 
     for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
         ASSERT_EQ(queue.content[0][j], r[j]);
@@ -48,6 +50,7 @@ void enqueue_simple() {
 
     ASSERT_EQ(queue.head, 0);
     ASSERT_EQ(queue.tail, 2);
+    ASSERT_EQ(queue_size(&queue), 2);
 
     for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
         ASSERT_EQ(queue.content[1][j], s[j]);
@@ -63,6 +66,7 @@ void peek_queue_simple() {
 
     ASSERT_EQ(queue.head, 0);
     ASSERT_EQ(queue.tail, 2);
+    ASSERT_EQ(queue_size(&queue), 2);
 
     for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
         ASSERT_EQ(data[j], r[j]);
@@ -82,6 +86,7 @@ void dequeue_simple() {
 
     ASSERT_EQ(queue.head, 1);
     ASSERT_EQ(queue.tail, 2);
+    ASSERT_EQ(queue_size(&queue), 1);
 
     for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
         ASSERT_EQ(data[j], r[j]);
@@ -96,6 +101,7 @@ void dequeue_simple() {
 
     ASSERT_EQ(queue.head, 2);
     ASSERT_EQ(queue.tail, 2);
+    ASSERT_EQ(queue_size(&queue), 0);
 
     for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
         ASSERT_EQ(data[j], s[j]);
@@ -165,12 +171,14 @@ void mixed_test() {
 
     ASSERT_EQ(queue.head, MAX_QUEUE_SIZE);
     ASSERT_EQ(queue.tail, MAX_QUEUE_SIZE);
+    ASSERT_EQ(queue_size(&queue), 0);
 
     succ = enqueue(&queue, r);
     ASSERT_TRUE(succ);
 
     ASSERT_EQ(queue.head, 0);
     ASSERT_EQ(queue.tail, 1);
+    ASSERT_EQ(queue_size(&queue), 1);
 }
 
 test_t t1 = { .name = "init_queue", .fn = init_queue_test };

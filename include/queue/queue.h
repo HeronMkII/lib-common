@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdlib.h> // for NULL
 
+#include <util/atomic.h>
+
 // Maximum number of elements each queue can store
 #define MAX_QUEUE_SIZE 5
 // Number of bytes per element
