@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdlib.h> // for NULL
 
+#include <util/atomic.h>
+
 // Maximum number of elements each queue can store
 #define MAX_QUEUE_SIZE 5
 // Number of bytes per element
@@ -21,6 +23,7 @@ typedef struct {
 // NOTE: tail - head is always equal to the queue's size
 
 void init_queue(queue_t* queue);
+uint8_t queue_size(queue_t* queue);
 uint8_t queue_full(queue_t* queue);
 uint8_t queue_empty(queue_t* queue);
 void shift_queue_left(queue_t* queue);
