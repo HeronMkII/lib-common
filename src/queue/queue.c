@@ -31,13 +31,21 @@ void init_queue(queue_t* queue) {
 }
 
 /*
+queue - queue to get the size of
+Returns - the size of the queue (number of 8-byte elements)
+*/
+uint8_t queue_size(queue_t* queue) {
+    return (queue->tail - queue->head);
+}
+
+/*
 Checks whether the queue is full
 
 @param queue_t* queue - queue to check
 @return 1 if the queue has reached maximum capacity, 0 otherwise
 */
 uint8_t queue_full(queue_t* queue) {
-    return ((queue->tail - queue->head) == MAX_QUEUE_SIZE);
+    return (queue_size(queue) == MAX_QUEUE_SIZE);
 }
 
 /*
@@ -47,7 +55,7 @@ Checks whether the queue is empty
 @return 1 if there are no elements in the queue, 0 otherwise
 */
 uint8_t queue_empty(queue_t* queue) {
-    return ((queue->tail - queue->head) == 0);
+    return (queue_size(queue) == 0);
 }
 
 /*
@@ -58,7 +66,7 @@ Shifts all the elements in queue left (to start at index 0)
 void shift_queue_left(queue_t* queue) {
     for (uint8_t i = queue->head; i < queue->tail; i++) {
         for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
-            queue->content[i - (queue->head)][j] = queue->content[i][j];
+            queue->content[i - queue->head][j] = queue->content[i][j];
             queue->content[i][j] = 0x00;
         }
     }
@@ -83,7 +91,7 @@ uint8_t enqueue(queue_t* queue, const uint8_t* data) {
         }
         uint8_t index = queue->tail;
         for (uint8_t i = 0; i < QUEUE_DATA_SIZE; i++) {
-            (queue->content)[index][i] = data[i];
+            queue->content[index][i] = data[i];
         }
         queue->tail += 1;
         return 1;
