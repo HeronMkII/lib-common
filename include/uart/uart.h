@@ -50,7 +50,7 @@ void set_uart_rx_cb(uart_rx_cb_t cb);
 void clear_uart_rx_buf(void);
 
 // Printing (from log.c)
-int16_t print(char* str, ...);
+int16_t print(char* fmt, ...);
 void print_bytes(uint8_t* data, uint8_t len);
 
 #endif // UART_H
