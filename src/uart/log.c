@@ -21,11 +21,18 @@ Note: Floating point output (with %f) is not available by default, must add
 str - Format string for the message
 variable arguments - To be substituted for format specifiers
 */
-inline int16_t print(char* str, ...) {
+inline int16_t print(char* fmt, ...) {
     va_list args;
-    va_start(args, str);
+    va_start(args, fmt);
 
-    int16_t ret = vsprintf((char*) print_buf, str, args);
+    /*
+    Note that we use vsnprintf instead of vsprintf to specify the maximum
+    number of characters to be written to print_buf. This is to prevent errors
+    if you try to print a string longer than PRINT_BUF_SIZE, exceeding
+    print_buf and overwriting uart_rx_buf and/or uart_rx_buf_count.
+    See https://www.microchip.com/webdoc/AVRLibcReferenceManual/group__avr__stdio_1gac92e8c42a044c8f50aad5c2c69e638e0.html
+    */
+    int16_t ret = vsnprintf((char*) print_buf, PRINT_BUF_SIZE, fmt, args);
     va_end(args);
 
     send_uart(print_buf, strlen((char*) print_buf));
