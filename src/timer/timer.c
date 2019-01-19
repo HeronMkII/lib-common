@@ -1,6 +1,7 @@
 /*
  Author: Shimi Smith
  This is a timer that runs a given function every x minutes
+ https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-8209-8-bit%20AVR%20ATmega16M1-32M1-64M1_Datasheet.pdf
 */
 
 #include <timer/timer.h>
@@ -8,13 +9,13 @@
 static timer_t timer16;
 static timer_t timer8;
 
-void init_timer_16bit(uint8_t minutes, cmd_fn_t cmd) {
-    uint32_t delay = minutes * 60L * 1000L;  // delay in ms
+void init_timer_16bit(uint8_t seconds, cmd_fn_t cmd) {
+    uint32_t delay = seconds * 1000L;  // delay in ms
     timer16.ints = ((delay / MAX_TIME_16BIT));
     timer16.count = ((delay - (timer16.ints * MAX_TIME_16BIT)) / T) + ROUND;
     timer16.cmd = cmd;
 
-    // set timer to CTC mode - using OCR1A
+    // set timer to CTC mode - using OCR1Au
     TCCR1A &= ~(_BV(WGM10) | _BV(WGM11));
     TCCR1B |= _BV(WGM12);
     TCCR1B &= ~_BV(WGM13);
@@ -34,8 +35,8 @@ void init_timer_16bit(uint8_t minutes, cmd_fn_t cmd) {
     sei(); // enable global interrupts
 }
 
-void init_timer_8bit(uint8_t minutes, cmd_fn_t cmd) {
-    uint32_t delay = minutes * 60L * 1000L;  // delay in ms
+void init_timer_8bit(uint8_t seconds, cmd_fn_t cmd) {
+    uint32_t delay = seconds * 1000L;  // delay in ms
     timer8.ints = ((delay / MAX_TIME_8BIT));
     timer8.count = ((delay - (timer8.ints * MAX_TIME_8BIT)) / T) + ROUND;
     timer8.cmd = cmd;
@@ -52,7 +53,7 @@ void init_timer_8bit(uint8_t minutes, cmd_fn_t cmd) {
     // disable use of Output compare pins so that they can be used as normal pins
     TCCR0A &= ~(_BV(COM0A1) | _BV(COM0A0) | _BV(COM0B1) | _BV(COM0B0));
 
-    TCNT0 = 0;  // initialize counter at 0
+    TCNT0 = 0;  // initialize 8 bit counter at 0
     OCR0A = 0xFF;  // set compare value
 
     // enable output compare interupt
@@ -80,6 +81,7 @@ ISR(TIMER1_COMPA_vect) {
 }
 
 // This ISR occurs when TCNT0 is equal to OCR0A
+
 ISR(TIMER0_COMPA_vect) {
     // TODO: Should this happen in an atomic block?
     counter8 += 1;
@@ -92,3 +94,5 @@ ISR(TIMER0_COMPA_vect) {
         (timer8.cmd)();
     }
 }
+
+// TODO: write an ISR for 16 bit timer?
