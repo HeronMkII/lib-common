@@ -283,6 +283,14 @@ class Test:
             self.handle_assert_true(line)
         elif line[:12] == "ASSERT FALSE":
             self.handle_assert_false(line)
+        elif line[:15] == "ASSERT FLOAT EQ":
+            self.handle_assert_two_float_nums(line)
+        elif line[:16] == "ASSERT FLOAT NEQ":
+            self.handle_assert_two_float_nums(line)
+        elif line[:20] == "ASSERT FLOAT GREATER":
+            self.handle_assert_two_float_nums(line)
+        elif line[:17] == "ASSERT FLOAT LESS":
+            self.handle_assert_two_float_nums(line)
         else:
             # Execute line in code if no other conditions are true
             sys.stdout.write(line)
@@ -322,13 +330,13 @@ class Test:
                     self.assert_passed += 1
             self.time_cb = fn
 
-    # Extracts line for assertion with two decimal inputs
+    # Extracts line for assertion with two integer inputs
     # Prints out error message if it fails
     def handle_assert_two_nums(self, line):
         regex = r"ASSERT (\w+) (\d+) (\d+) \((.+)\) \((.+)\)\r\n"
         match = re.search(regex, line)
-        a, b = int(match.group(2)), int(match.group(3))
         operation = str(match.group(1)) # Type of assertion
+        a, b = int(match.group(2)), int(match.group(3))
         failure = False # Flag for if assertion failed
         # Passes if both sides are equivalent
         if operation == "EQ":
@@ -354,12 +362,56 @@ class Test:
                 self.assert_passed += 1
             else:
                 failure = True
+
         # Printing failure message
         if failure == True:
             self.assert_failed += 1
             fn, line = str(match.group(4)), int(match.group(5))
             print("In function '%s', line %d" % (fn, line))
-            print("    Error: ASSERT_'%s' failed" % (operation))
+            print("    Error: ASSERT_%s failed" % (operation))
+
+    # Extracts line for assertion with two float inputs
+    # Prints out error message if it fails
+    # Accurate to 6 decimal places. Code will round for the 6th decimal place
+    def handle_assert_two_float_nums(self, line):
+        regex = r"ASSERT FLOAT (\w+) (\d+\.\d+) (\d+\.\d+) \((.+)\) \((.+)\)\r\n"
+        match = re.search(regex, line)
+        operation = str(match.group(1)) # Type of assertion
+        a, b = float(match.group(2)), float(match.group(3))
+        a = "%.6f" % a # Truncating to three decimal places
+        b = "%.6f" % b
+        failure = False # Flag for if assertion failed
+        # Passes if both sides are equivalent
+        if operation == "EQ":
+            if a == b:
+                self.assert_passed += 1
+            else:
+                failure = True
+        # Passes if both sides are not equivalent
+        elif operation == "NEQ":
+            if a != b:
+                self.assert_passed += 1
+            else:
+                failure = True
+        # Passes if first greater than second number
+        elif operation == "GREATER":
+            if a > b:
+                self.assert_passed += 1
+            else:
+                failure = True
+        # Passes if first less than second number
+        elif operation == "LESS":
+            if a < b:
+                self.assert_passed += 1
+            else:
+                failure = True
+
+        # Printing failure message
+        if failure == True:
+            self.assert_failed += 1
+            fn, line = str(match.group(4)), int(match.group(5))
+            print("In function '%s', line %d" % (fn, line))
+            print("    Error: ASSERT_FLOAT_%s failed" % (operation))
 
     # Extracts line and passes if it evaluates to true
     # Prints out error message if it fails

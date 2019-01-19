@@ -23,6 +23,18 @@
 #define ASSERT_FALSE(v) (print("ASSERT FALSE %d (%s) (%d)\r\n",\
     (v), __FUNCTION__, __LINE__))
 
+#define ASSERT_FLOAT_EQ(a, b) (print("ASSERT FLOAT EQ %f %f (%s) (%d)\r\n",\
+    (a), (b), __FUNCTION__, __LINE__))
+
+#define ASSERT_FLOAT_NEQ(a, b) (print("ASSERT FLOAT NEQ %f %f (%s) (%d)\r\n",\
+    (a), (b), __FUNCTION__, __LINE__))
+
+#define ASSERT_FLOAT_GREATER(a, b) (print("ASSERT FLOAT GREATER %f %f (%s) (%d)\r\n",\
+    (a), (b), __FUNCTION__, __LINE__))
+
+#define ASSERT_FLOAT_LESS(a, b) (print("ASSERT FLOAT LESS %f %f (%s) (%d)\r\n",\
+    (a), (b), __FUNCTION__, __LINE__))
+
 typedef void(*test_fn_t)(void);
 
 typedef struct {
