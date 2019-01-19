@@ -31,13 +31,16 @@ AUTHORS: Dylan Vogel, Shimi Smith, Bruno Almeida, Siddharth Mahendraker
 #include <util/delay.h>
 
 
-// TODO: clarify this section
 // Register addresses
-#define PEX_IOCON       0x0A // Assumes bank = 0, such as after reset
-#define PEX_IODIR_BASE  0x00 // where direction is stored. 0 is output, 1 is input.
+// Page 12, table 3-1
+#define PEX_IOCON       0x0A  // Assumes bank = 0, such as after reset
+// Page 16 of data sheet, table 3-3
+#define PEX_IODIR_BASE  0x00 // where direction of each pin is stored.
+// 0 is output, 1 is input.
+
 #define PEX_GPIO_BASE   0x12 // where GPIO states are stored.
 
-// Register addresses for banks A and B
+// Register addresses for banks A and B, assuming bank = 0
 #define PEX_IODIR_A (PEX_IODIR_BASE)
 #define PEX_IODIR_B (PEX_IODIR_BASE + 0x01)
 #define PEX_GPIO_A  (PEX_GPIO_BASE)
@@ -47,7 +50,8 @@ AUTHORS: Dylan Vogel, Shimi Smith, Bruno Almeida, Siddharth Mahendraker
 #define PEX_IOCON_DEFAULT       0b00001000
 // Bit 3 sets hardware addressing
 
-// Control bytes for writing and reading registers
+// Control bytes for writing and reading registers, see page 15
+// Last bit is 0 for write, 1 for read
 #define PEX_WRITE_CONTROL_BYTE  0b01000000
 #define PEX_READ_CONTROL_BYTE   0b01000001
 // Bits [3:1] are A[2:0] hardware addresses.
@@ -75,6 +79,7 @@ void reset_pex(pex_t* pex) {
  // Writes data 'data' to register 'addr'
 void write_register(pex_t* pex, uint8_t addr, uint8_t data) {
     set_cs_low(pex->cs->pin, pex->cs->port);
+    // SPI control byte format: pg 15
     send_spi(PEX_WRITE_CONTROL_BYTE | (pex->addr << 1));
     send_spi(addr);
     send_spi(data);
@@ -82,8 +87,11 @@ void write_register(pex_t* pex, uint8_t addr, uint8_t data) {
 }
 
 // Reads data from register 'addr'
+// e.g. if 'addr' = PEX_IODIR_A then IO data for bank A is returned
+// e.g. if 'addr' = PEX_GPIO_A then the values of bank A is returned
 uint8_t read_register(pex_t* pex, uint8_t addr) {
     set_cs_low(pex->cs->pin, pex->cs->port);
+    // SPI control byte format: pg 15
     send_spi(PEX_READ_CONTROL_BYTE | (pex->addr << 1));
     send_spi(addr);
     uint8_t ret = send_spi(0x00);

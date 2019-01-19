@@ -28,13 +28,13 @@ pex_t pex = {
 };
 
 void print_dirs() {
-    print("GPA Directions: %.2x\n", read_register(&pex, PEX_A));
-    print("GPB Directions: %.2x\n", read_register(&pex, PEX_B));
+    print("GPA Directions: %.2x\n", read_register(&pex, PEX_IODIR_A));
+    print("GPB Directions: %.2x\n", read_register(&pex, PEX_IODIR_B));
 }
 
 void print_values() {
-    print("GPA Values: %.2x\n", read_register(&pex, PEX_A));
-    print("GPB Values: %.2x\n", read_register(&pex, PEX_B));
+    print("GPA Values: %.2x\n", read_register(&pex, PEX_GPIO_A));
+    print("GPB Values: %.2x\n", read_register(&pex, PEX_GPIO_B));
 }
 
 int main(void) {
