@@ -272,7 +272,13 @@ class Test:
         elif line[:4] == "TIME":
             self.handle_time(line)
         elif line[:9] == "ASSERT EQ":
-            self.handle_assert_eq(line)
+            self.handle_assert_two_nums(line)
+        elif line[:10] == "ASSERT NEQ":
+            self.handle_assert_two_nums(line)
+        elif line[:14] == "ASSERT GREATER":
+            self.handle_assert_two_nums(line)
+        elif line[:11] == "ASSERT LESS":
+            self.handle_assert_two_nums(line)
         elif line[:11] == "ASSERT TRUE":
             self.handle_assert_true(line)
         elif line[:12] == "ASSERT FALSE":
@@ -316,19 +322,44 @@ class Test:
                     self.assert_passed += 1
             self.time_cb = fn
 
-    # Extracts line and passes if both sides are equivalent
+    # Extracts line for assertion with two decimal inputs
     # Prints out error message if it fails
-    def handle_assert_eq(self, line):
-        regex = r"ASSERT EQ (\d+) (\d+) \((.+)\) \((.+)\)\r\n"
+    def handle_assert_two_nums(self, line):
+        regex = r"ASSERT (\w+) (\d+) (\d+) \((.+)\) \((.+)\)\r\n"
         match = re.search(regex, line)
-        a, b = int(match.group(1)), int(match.group(2))
-        if a == b:
-            self.assert_passed += 1
-        else:
+        a, b = int(match.group(2)), int(match.group(3))
+        operation = str(match.group(1)) # Type of assertion
+        failure = False # Flag for if assertion failed
+        # Passes if both sides are equivalent
+        if operation == "EQ":
+            if a == b:
+                self.assert_passed += 1
+            else:
+                failure = True
+        # Passes if both sides are not equivalent
+        elif operation == "NEQ":
+            if a != b:
+                self.assert_passed += 1
+            else:
+                failure = True
+        # Passes if first greater than second number
+        elif operation == "GREATER":
+            if a > b:
+                self.assert_passed += 1
+            else:
+                failure = True
+        # Passes if first less than second number
+        elif operation == "LESS":
+            if a < b:
+                self.assert_passed += 1
+            else:
+                failure = True
+        # Printing failure message
+        if failure == True:
             self.assert_failed += 1
-            fn, line = str(match.group(3)), int(match.group(4))
+            fn, line = str(match.group(4)), int(match.group(5))
             print("In function '%s', line %d" % (fn, line))
-            print("    Error: ASSERT_EQ failed")
+            print("    Error: ASSERT_'%s' failed" % (operation))
 
     # Extracts line and passes if it evaluates to true
     # Prints out error message if it fails
