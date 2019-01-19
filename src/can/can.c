@@ -142,6 +142,7 @@ void init_rx_mob(mob_t* mob) {
     // add mob to mob_list
     mob_array[mob->mob_num] = mob;
 
+    // does this do anything, since the appropriate case is empty?
     resume_mob(mob); // enable mob
 }
 
@@ -168,13 +169,16 @@ void init_auto_mob(mob_t* mob) {
 
     // TODO: this data might be stale
     // ideally, you'd load the data just before the auto-reply was sent
+    // In order to avoid stale data, we should develop a timer-triggered load
     load_data(mob);
 
-    CANGIE |= _BV(ENRX) | _BV(ENTX);
+    CANGIE |= _BV(ENTX); /* auto-reply mobs only generate tx interrupts */
     CANIE2 |= _BV(mob->mob_num);
 
     mob_array[mob->mob_num] = mob;
-    pause_mob(mob);
+    /* The below line may not be necessary, as it transmits only upon reciept of an appropriate msg
+     and behaves as an rx mob until then.  */
+    //pause_mob(mob);
 }
 
 void handle_rx_interrupt(mob_t* mob) {
@@ -239,14 +243,20 @@ void handle_auto_tx_interrupt(mob_t* mob) {
     // as in the TX case, if there is no data left, pause the mob
     // otherwise, load fresh data via tx callback
 
+    // NOTE: RTR, RPLV are reset automatically
+
     // TODO: maybe make this work like TX MObs?
 
-    load_data(mob);
+    /*load_data(mob);*/
+    // This line likely does not have the intended effect, as the data is  re-loaded
+    // after the message has been transmitted. The data should be updated via other
+    // means, such as being triggered by a timer.
 
     // clear interrupt flag
     CANSTMOB &= ~(_BV(TXOK));
 
-    // this should happen all at once
+    // this should happen all at once (NOTE: This was removed from tx_mob interrupt,
+    // so it is possible that this is not needed here anymore)
     if (mob->dlc != 0) resume_mob(mob);
     else pause_mob(mob);
 

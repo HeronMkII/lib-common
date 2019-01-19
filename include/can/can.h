@@ -31,6 +31,7 @@ typedef struct {
 // TODO: change these; ide_mask SHOULD matter
 #define default_rx_ctrl { 0, 0, 0, 0, 0, 0 }
 #define default_tx_ctrl { 0, 0, 0, 0, 0, 0 }
+#define default_auto_ctrl {1, 0, 0, 0, 0, 0, 1} // RTR, RPLV bits are set 
 
 typedef void (*can_rx_callback_t)(const uint8_t*, uint8_t);
 typedef void (*can_tx_callback_t)(uint8_t*, uint8_t*);
