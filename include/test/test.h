@@ -8,6 +8,15 @@
 #define ASSERT_EQ(a, b) (print("ASSERT EQ %d %d (%s) (%d)\r\n",\
     (a), (b), __FUNCTION__, __LINE__))
 
+#define ASSERT_NEQ(a, b) (print("ASSERT NEQ %d %d (%s) (%d)\r\n",\
+    (a), (b), __FUNCTION__, __LINE__))
+
+#define ASSERT_GREATER(a, b) (print("ASSERT GREATER %d %d (%s) (%d)\r\n",\
+    (a), (b), __FUNCTION__, __LINE__))
+
+#define ASSERT_LESS(a, b) (print("ASSERT LESS %d %d (%s) (%d)\r\n",\
+    (a), (b), __FUNCTION__, __LINE__))
+
 #define ASSERT_TRUE(v) (print("ASSERT TRUE %d (%s) (%d)\r\n",\
     (v), __FUNCTION__, __LINE__))
 
