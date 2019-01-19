@@ -3,7 +3,7 @@
 
 #define ERR_MSG "ERR: %s.\n"
 
-mob_t* mob_array[6] = {0};
+mob_t* mob_array[6] = {0}; //6 MOBs in the array
 
 static inline void select_mob(uint8_t mob_num) {
     CANPAGE = mob_num << 4;
@@ -79,6 +79,7 @@ void init_can() {
     CANBT3 = 0x37;
 
     CANGIE |= _BV(ENIT) | _BV(ENTX) | _BV(ENRX) | _BV(ENERR);
+    //TODO: deal with error interrupts? - BOFFIT
     // enable most CAN interrupts, execept the overrun timer, and general errors
 
     // disable all mobs, clear all interrupt flags
@@ -91,8 +92,12 @@ void init_can() {
     sei();
 
     CANGCON |= _BV(ENASTB);
-    while (!(CANGSTA & _BV(ENFG))) {}
+
+    uint16_t timeout = 1;
+
+    while (!(CANGSTA & _BV(ENFG)) & !(timeout == 0)) {}
     // enable CAN and wait for CAN to turn on before returning
+    // added a timeout for this infite loop
 }
 
 void pause_mob(mob_t* mob) {
