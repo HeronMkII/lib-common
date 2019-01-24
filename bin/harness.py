@@ -58,9 +58,8 @@ class TestHarness:
 
     # Asks user for permission to run test suite (wait for correct shell input to continue)
     def has_permission(self, suite):
-        print("WARNING: The UART TX pin(s) on SCK must be disconnected " +
-            "before upload.\nEnsure the UART TX pin on each board " +
-            "is disconnected before proceeding.")
+        print("WARNING: Disconnect programmer TX pin from board RX/SCK pin " +
+            "or set board switch to PROG.")
         ans = input("Run test suite '%s'? (y/n) " % suite.name)
         if ans == "y":
             return True
@@ -72,26 +71,24 @@ class TestHarness:
     # returns count from harness
     # checks for appropriate input (ok)
     def recv_count(self, suite):
-        ok = input("Connect the UART TX pin(s) to SCK. (ok) ")
-        if ok == "ok":
-            # prints '-' 80 times
-            print(sep)
-            # Assigns serial ports to self.serial and specifies baud rate
-            # Added timeout member, see if this resolves blocking and freezing issues
-            # Figure out how to prevent this from failing and crashing program (if it does)
-            self.serial = [serial.Serial(self.serial_port[i], self.baud_rate, timeout = self.timeout)
-                for i in range(suite.boards)]
-            # Write data to each port
-            for ser in self.serial:
-                ser.write(b"COUNT\r\n")
-            # strip method removes white space when called with no parameters
-            # readline reads an entire line from self.serial[0] (self.serial_port[i])
-            # and a trailing '\n' (new line) is kept in the string (but removed by strip method)
-            count = int(self.serial[0].readline().strip().decode('utf-8',errors='ignore'))
+        ok = input("Connect the programmer TX pin to board RX/SCK or set board switch to RUN. (press enter) ")
 
-            return count
-        else:
-            return self.recv_count(suite)
+        # prints '-' 80 times
+        print(sep)
+        # Assigns serial ports to self.serial and specifies baud rate
+        # Added timeout member, see if this resolves blocking and freezing issues
+        # Figure out how to prevent this from failing and crashing program (if it does)
+        self.serial = [serial.Serial(self.serial_port[i], self.baud_rate, timeout = self.timeout)
+            for i in range(suite.boards)]
+        # Write data to each port
+        for ser in self.serial:
+            ser.write(b"COUNT\r\n")
+        # strip method removes white space when called with no parameters
+        # readline reads an entire line from self.serial[0] (self.serial_port[i])
+        # and a trailing '\n' (new line) is kept in the string (but removed by strip method)
+        count = int(self.serial[0].readline().strip().decode('utf-8',errors='ignore'))
+
+        return count
 
     # Writes 'START' to serial port
     def send_start(self):
@@ -271,12 +268,26 @@ class Test:
             self.handle_name(line)
         elif line[:4] == "TIME":
             self.handle_time(line)
-        elif line[:9] == "ASSERT EQ":
-            self.handle_assert_eq(line)
-        elif line[:11] == "ASSERT TRUE":
+        elif line.startswith("AS EQ"):
+            self.handle_assert_two_nums(line)
+        elif line.startswith("AS NEQ"):
+            self.handle_assert_two_nums(line)
+        elif line.startswith("AS GT"):
+            self.handle_assert_two_nums(line)
+        elif line.startswith("AS LT"):
+            self.handle_assert_two_nums(line)
+        elif line.startswith("AS TRUE"):
             self.handle_assert_true(line)
-        elif line[:12] == "ASSERT FALSE":
+        elif line.startswith("AS FALSE"):
             self.handle_assert_false(line)
+        elif line.startswith("AS FP EQ"):
+            self.handle_assert_two_float_nums(line)
+        elif line.startswith("AS FP NEQ"):
+            self.handle_assert_two_float_nums(line)
+        elif line.startswith("AS FP GT"):
+            self.handle_assert_two_float_nums(line)
+        elif line.startswith("AS FP LT"):
+            self.handle_assert_two_float_nums(line)
         else:
             # Execute line in code if no other conditions are true
             sys.stdout.write(line)
@@ -316,24 +327,94 @@ class Test:
                     self.assert_passed += 1
             self.time_cb = fn
 
-    # Extracts line and passes if both sides are equivalent
+    # Extracts line for assertion with two integer inputs
     # Prints out error message if it fails
-    def handle_assert_eq(self, line):
-        regex = r"ASSERT EQ (\d+) (\d+) \((.+)\) \((.+)\)\r\n"
+    def handle_assert_two_nums(self, line):
+        regex = r"AS (\w+) (\d+) (\d+) \((.+)\) \((.+)\)\r\n"
         match = re.search(regex, line)
-        a, b = int(match.group(1)), int(match.group(2))
-        if a == b:
-            self.assert_passed += 1
-        else:
+        operation = str(match.group(1)) # Type of assertion
+        a, b = int(match.group(2)), int(match.group(3))
+        failure = False # Flag for if assertion failed
+        # Passes if both sides are equivalent
+        if operation == "EQ":
+            if a == b:
+                self.assert_passed += 1
+            else:
+                failure = True
+        # Passes if both sides are not equivalent
+        elif operation == "NEQ":
+            if a != b:
+                self.assert_passed += 1
+            else:
+                failure = True
+        # Passes if first greater than second number
+        elif operation == "GT":
+            if a > b:
+                self.assert_passed += 1
+            else:
+                failure = True
+        # Passes if first less than second number
+        elif operation == "LT":
+            if a < b:
+                self.assert_passed += 1
+            else:
+                failure = True
+
+        # Printing failure message
+        if failure == True:
             self.assert_failed += 1
-            fn, line = str(match.group(3)), int(match.group(4))
+            fn, line = str(match.group(4)), int(match.group(5))
             print("In function '%s', line %d" % (fn, line))
-            print("    Error: ASSERT_EQ failed")
+            print("    Error: ASSERT_%s failed" % (operation))
+
+    # Extracts line for assertion with two float inputs
+    # Prints out error message if it fails
+    # Accurate to 3 decimal places. Code will round for the 6th decimal place
+    # Note: If program fails here, check to make sure that function name is not long
+    def handle_assert_two_float_nums(self, line):
+        regex = r"AS FP (\w+) (\d+\.\d+) (\d+\.\d+) \((.+)\) \((.+)\)\r\n"
+        match = re.search(regex, line)
+        operation = str(match.group(1)) # Type of assertion
+        a, b = float(match.group(2)), float(match.group(3))
+        a = "%.3f" % a # Truncating to three decimal places
+        b = "%.3f" % b
+        failure = False # Flag for if assertion failed
+        # Passes if both sides are equivalent
+        if operation == "EQ":
+            if a == b:
+                self.assert_passed += 1
+            else:
+                failure = True
+        # Passes if both sides are not equivalent
+        elif operation == "NEQ":
+            if a != b:
+                self.assert_passed += 1
+            else:
+                failure = True
+        # Passes if first greater than second number
+        elif operation == "GT":
+            if a > b:
+                self.assert_passed += 1
+            else:
+                failure = True
+        # Passes if first less than second number
+        elif operation == "LT":
+            if a < b:
+                self.assert_passed += 1
+            else:
+                failure = True
+
+        # Printing failure message
+        if failure == True:
+            self.assert_failed += 1
+            fn, line = str(match.group(4)), int(match.group(5))
+            print("In function '%s', line %d" % (fn, line))
+            print("    Error: ASSERT_FP_%s failed" % (operation))
 
     # Extracts line and passes if it evaluates to true
     # Prints out error message if it fails
     def handle_assert_true(self, line):
-        regex = r"ASSERT TRUE (\d+) \((.+)\) \((.+)\)\r\n"
+        regex = r"AS TRUE (\d+) \((.+)\) \((.+)\)\r\n"
         match = re.search(regex, line)
         v = int(match.group(1))
         if v != 0:
@@ -346,7 +427,7 @@ class Test:
 
     # Extracts line and passes if it evaluates to false, else fails and prints error
     def handle_assert_false(self, line):
-        regex = r"ASSERT FALSE (\d+) \((.+)\) \((.+)\)\r\n"
+        regex = r"AS FALSE (\d+) \((.+)\) \((.+)\)\r\n"
         match = re.search(regex, line)
         v = int(match.group(1))
         if v == 0:
@@ -371,7 +452,7 @@ if __name__ == "__main__":
         print("Unknown error. Exiting....")
         sys.exit(1)
 
-    print("Disconnect CoolTerm so the port is available for testing.")
+    print("WARNING: Disconnect CoolTerm so the port is available for testing.")
 
     # It is necessary for the user to specify the programming port and appropriate directory
     # In most cases, this should be the tests directory
