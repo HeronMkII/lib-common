@@ -58,7 +58,7 @@ class TestHarness:
 
     # Asks user for permission to run test suite (wait for correct shell input to continue)
     def has_permission(self, suite):
-        print("WARNING: Disconnect programmer TX pin from board RX/SCK pin" +
+        print("WARNING: Disconnect programmer TX pin from board RX/SCK pin " +
             "or set board switch to PROG.")
         ans = input("Run test suite '%s'? (y/n) " % suite.name)
         if ans == "y":
