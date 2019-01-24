@@ -24,16 +24,16 @@
     (v), __FUNCTION__, __LINE__))
 
 #define ASSERT_FP_EQ(a, b) (print("AS FP EQ %.3f %.3f (%s) (%d)\r\n",\
-    (a), (b), __FUNCTION__, __LINE__))
+    (float)(a), (float)(b), __FUNCTION__, __LINE__))
 
 #define ASSERT_FP_NEQ(a, b) (print("AS FP NEQ %.3f %.3f (%s) (%d)\r\n",\
-    (a), (b), __FUNCTION__, __LINE__))
+    (float)(a), (float)(b), __FUNCTION__, __LINE__))
 
 #define ASSERT_FP_GREATER(a, b) (print("AS FP GT %.3f %.3f (%s) (%d)\r\n",\
-    (a), (b), __FUNCTION__, __LINE__))
+    (float)(a), (float)(b), __FUNCTION__, __LINE__))
 
 #define ASSERT_FP_LESS(a, b) (print("AS FP LT %.3f %.3f (%s) (%d)\r\n",\
-    (a), (b), __FUNCTION__, __LINE__))
+    (float)(a), (float)(b), __FUNCTION__, __LINE__))
 
 typedef void(*test_fn_t)(void);
 

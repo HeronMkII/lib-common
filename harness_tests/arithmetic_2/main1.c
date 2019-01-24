@@ -23,23 +23,30 @@ void less(void) { //True if first value less than second
 }
 // Below are assertions for float values
 void float_equal(void) {
-    ASSERT_FP_EQ(1.121234, 1.121234); //Assert true
-    ASSERT_FP_EQ(1.111234, 1.11123416); //Assert true due to 3 decimal truncation
-    ASSERT_FP_EQ(1.111876, 1.222234); //Assert false
+    ASSERT_FP_EQ(1.121, 1.121); //Assert true
+    ASSERT_FP_EQ(1.234, 1.2341); //Assert true due to 3 decimal truncation
+    ASSERT_FP_EQ(1.876, 1.234); //Assert false
 }
 void float_not_equal(void) {
-    ASSERT_FP_NEQ(2.232946, 2.232123); //Assert true
-    ASSERT_FP_NEQ(10.121987, 10.1219876); //Assert true due to rounding
-    ASSERT_FP_NEQ(10.232987, 10.232987); //Assert false
+    ASSERT_FP_NEQ(2.946, 2.123); //Assert true
+    ASSERT_FP_NEQ(10.987, 10.9876); //Assert true due to rounding
+    ASSERT_FP_NEQ(10.987, 10.987); //Assert false
     ASSERT_FP_NEQ(10.23, 10.23); //Assert false
 }
 void float_greater(void) {
-    ASSERT_FP_GREATER(2.111117, 2.111116); //Assert true
-    ASSERT_FP_GREATER(1.2221, 1.2225); //Assert false
+    ASSERT_FP_GREATER(2.117, 2.116); //Assert true
+    ASSERT_FP_GREATER(1.221, 1.225); //Assert false
 }
 void float_less(void) {
-    ASSERT_FP_LESS(1.565155, 1.565160); //Assert true
-    ASSERT_FP_LESS(1.11111, 1.11110); //Assert false
+    ASSERT_FP_LESS(1.155, 1.160); //Assert true
+    ASSERT_FP_LESS(1.111, 1.110); //Assert false
+}
+
+void assert_pass(void) { //Assert pass
+    ASSERT_FP_EQ(0, 0);
+    ASSERT_FP_NEQ(1 ,2.001);
+    ASSERT_FP_GREATER(1.001, 1.000);
+    ASSERT_FP_LESS(0.05, 0.09);
 }
 
 test_t t1 = { .name = "not equal assert test", .fn = not_equal };
@@ -49,11 +56,11 @@ test_t t4 = { .name = "float equal assert test", .fn = float_equal };
 test_t t5 = { .name = "float not equal assert test", .fn = float_not_equal };
 test_t t6 = { .name = "float greater than assert test", .fn = float_greater };
 test_t t7 = { .name = "float less than assert test", .fn = float_less };
+test_t t8 = { .name = "float assert pass", .fn = assert_pass };
 
-
-test_t* suite[7] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7 };
+test_t* suite[8] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8 };
 
 int main() {
-    run_tests(suite, 7);
+    run_tests(suite, 8);
     return 0;
 }

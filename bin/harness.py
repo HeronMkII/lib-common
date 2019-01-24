@@ -268,25 +268,25 @@ class Test:
             self.handle_name(line)
         elif line[:4] == "TIME":
             self.handle_time(line)
-        elif line[:9] == "AS EQ":
+        elif line.startswith("AS EQ"):
             self.handle_assert_two_nums(line)
-        elif line[:10] == "AS NEQ":
+        elif line.startswith("AS NEQ"):
             self.handle_assert_two_nums(line)
-        elif line[:14] == "AS GT":
+        elif line.startswith("AS GT"):
             self.handle_assert_two_nums(line)
-        elif line[:11] == "AS LT":
+        elif line.startswith("AS LT"):
             self.handle_assert_two_nums(line)
-        elif line[:11] == "AS TRUE":
+        elif line.startswith("AS TRUE"):
             self.handle_assert_true(line)
-        elif line[:12] == "AS FALSE":
+        elif line.startswith("AS FALSE"):
             self.handle_assert_false(line)
-        elif line[:15] == "AS FP EQ":
+        elif line.startswith("AS FP EQ"):
             self.handle_assert_two_float_nums(line)
-        elif line[:16] == "AS FP NEQ":
+        elif line.startswith("AS FP NEQ"):
             self.handle_assert_two_float_nums(line)
-        elif line[:20] == "AS FP GT":
+        elif line.startswith("AS FP GT"):
             self.handle_assert_two_float_nums(line)
-        elif line[:17] == "AS FP LT":
+        elif line.startswith("AS FP LT"):
             self.handle_assert_two_float_nums(line)
         else:
             # Execute line in code if no other conditions are true
