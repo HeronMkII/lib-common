@@ -5,34 +5,34 @@
 #include <avr/io.h>
 #include <stdint.h>
 
-#define ASSERT_EQ(a, b) (print("ASSERT EQ %d %d (%s) (%d)\r\n",\
+#define ASSERT_EQ(a, b) (print("AS EQ %d %d (%s) (%d)\r\n",\
     (a), (b), __FUNCTION__, __LINE__))
 
-#define ASSERT_NEQ(a, b) (print("ASSERT NEQ %d %d (%s) (%d)\r\n",\
+#define ASSERT_NEQ(a, b) (print("AS NEQ %d %d (%s) (%d)\r\n",\
     (a), (b), __FUNCTION__, __LINE__))
 
-#define ASSERT_GREATER(a, b) (print("ASSERT GREATER %d %d (%s) (%d)\r\n",\
+#define ASSERT_GREATER(a, b) (print("AS GT %d %d (%s) (%d)\r\n",\
     (a), (b), __FUNCTION__, __LINE__))
 
-#define ASSERT_LESS(a, b) (print("ASSERT LESS %d %d (%s) (%d)\r\n",\
+#define ASSERT_LESS(a, b) (print("AS LT %d %d (%s) (%d)\r\n",\
     (a), (b), __FUNCTION__, __LINE__))
 
-#define ASSERT_TRUE(v) (print("ASSERT TRUE %d (%s) (%d)\r\n",\
+#define ASSERT_TRUE(v) (print("AS TRUE %d (%s) (%d)\r\n",\
     (v), __FUNCTION__, __LINE__))
 
-#define ASSERT_FALSE(v) (print("ASSERT FALSE %d (%s) (%d)\r\n",\
+#define ASSERT_FALSE(v) (print("AS FALSE %d (%s) (%d)\r\n",\
     (v), __FUNCTION__, __LINE__))
 
-#define ASSERT_FLOAT_EQ(a, b) (print("ASSERT FLOAT EQ %f %f (%s) (%d)\r\n",\
+#define ASSERT_FP_EQ(a, b) (print("AS FP EQ %.3f %.3f (%s) (%d)\r\n",\
     (a), (b), __FUNCTION__, __LINE__))
 
-#define ASSERT_FLOAT_NEQ(a, b) (print("ASSERT FLOAT NEQ %f %f (%s) (%d)\r\n",\
+#define ASSERT_FP_NEQ(a, b) (print("AS FP NEQ %.3f %.3f (%s) (%d)\r\n",\
     (a), (b), __FUNCTION__, __LINE__))
 
-#define ASSERT_FLOAT_GREATER(a, b) (print("ASSERT FLOAT GREATER %f %f (%s) (%d)\r\n",\
+#define ASSERT_FP_GREATER(a, b) (print("AS FP GT %.3f %.3f (%s) (%d)\r\n",\
     (a), (b), __FUNCTION__, __LINE__))
 
-#define ASSERT_FLOAT_LESS(a, b) (print("ASSERT FLOAT LESS %f %f (%s) (%d)\r\n",\
+#define ASSERT_FP_LESS(a, b) (print("AS FP LT %.3f %.3f (%s) (%d)\r\n",\
     (a), (b), __FUNCTION__, __LINE__))
 
 typedef void(*test_fn_t)(void);
