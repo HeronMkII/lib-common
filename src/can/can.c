@@ -78,7 +78,7 @@ void init_can() {
     CANBT2 = 0x0C;
     CANBT3 = 0x37;
 
-    CANGIE |= _BV(ENIT) | _BV(ENTX) | _BV(ENRX) | _BV(ENERR);
+    CANGIE |= _BV(ENIT) | _BV(ENBOFF) |_BV(ENTX) | _BV(ENRX) | _BV(ENERR);
     //TODO: deal with error interrupts? - BOFFIT
     // enable most CAN interrupts, execept the overrun timer, and general errors
 
@@ -299,6 +299,30 @@ uint8_t handle_err(mob_t* mob) {
     return 0;
 }
 
+void handle_bus_off_interrupt(mob_t* mob) {
+    select_mob(mob->mob_num);
+
+    CANGIT &= ~(_BV(BOFFIT));
+
+    // do something
+    // i.e. store appropriate information to be retrieved later and modify global variable
+    //   that keeps track of number of BOFFIT interrupts
+    // handle interrupt by performing a software reset
+
+    CANGCON |= _BV(SWRES);
+    // TODO: Look into what this affects and how it needs to be handled
+
+    // Another option: Abort CAN channel, will need to be configured again after
+    // TODO: Look into what this affects and how it needs to be handled
+    CANGCON |= _BV(ABRQ);
+
+    //NOTE:
+    // Force enable mode: CANGCON |= _BV(ENASTB);
+    // Current status of bus: CANGSTA & _BV(BOFF);
+    // Error passive mode: CANGSTA & _BV(ERRP);
+    // Software reset: CANGCON |= _BV(SWRES); (this resets CAN controller)
+
+}
 ISR(CAN_INT_vect) {
     for (uint8_t i = 0; i < 6; i++) {
         mob_t* mob = mob_array[i];
@@ -309,6 +333,10 @@ ISR(CAN_INT_vect) {
         uint8_t status = mob_status(mob);
 
         if (handle_err(mob)) continue;
+
+        if (CANGIT & _BV(BOFFIT)){
+            handle_bus_off_interrupt(mob);
+        }
 
         if (status & _BV(RXOK)) {
             handle_rx_interrupt(mob);
