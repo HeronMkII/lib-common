@@ -36,7 +36,8 @@ AUTHORS: Dylan Vogel, Shimi Smith, Bruno Almeida, Siddharth Mahendraker
 #define PEX_IOCON       0x0A  // Assumes bank = 0, such as after reset
 // Page 16 of data sheet, table 3-3
 #define PEX_IODIR_BASE  0x00 // where direction of each pin is stored.
-// 0 is output, 1 is input.
+// Page 18 0 is output, 1 is input
+// default is input (Page 1)
 
 #define PEX_GPIO_BASE   0x12 // where GPIO states are stored.
 
