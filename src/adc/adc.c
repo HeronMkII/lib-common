@@ -108,7 +108,8 @@ void init_adc(adc_t* adc) {
 
     // TODO: Figure out how to reset the ADC. See the power down (PD) pin notes
     // in the datasheet.
-    // ----------> power down then restart?
+    //(in response to this...)
+    //idea: power down then restart?
     //nikoo has proposal: set DI05 = 1 to power down, then immediately DI05 = 0 to restart.
     //adc->channel[i] indicates each of the 12 channels, correct?
     //therefore a reset could look like this:
@@ -117,7 +118,8 @@ void init_adc(adc_t* adc) {
     //(verify this is correct...)
     //(based on table p.33 of datasheet)
 
-    //new TODO: come up with test to verify this procedure reset the ADC.
+    //new TODO: come up with test to verify this procedure to reset the ADC...
+    // need i only check the channel = 0?
 
 
     // Program auto-1 register
