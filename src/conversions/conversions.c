@@ -1,12 +1,16 @@
 /*
-Conversions between raw data (bits represented as `uint` types) and actual
-measurements for all software systems in the satellite.
+Conversions library
+Conversion functions between raw data (bits represented as `uint` types) and
+actual measurements for all software systems in the satellite.
 
 ADC - ADS7952 - PAY/EPS
 http://www.ti.com/lit/ds/slas605c/slas605c.pdf
 
 EPS ADC uses current monitor - INA214
 http://www.ti.com/lit/ds/symlink/ina214.pdf
+
+DAC - DAC7562 - PAY
+Datasheet: http://www.ti.com/lit/ds/symlink/dac8162.pdf
 
 Temperature sensor - LM95071 - PAY
 http://www.ti.com/lit/ds/symlink/lm95071.pdf
@@ -19,40 +23,47 @@ http://www.te.com/commerce/DocumentDelivery/DDEController?Action=showdoc&DocId=D
 
 Optical ADC - AD7194 - PAY-Optical, different from main ADC
 http://www.analog.com/media/en/technical-documentation/data-sheets/AD7194.pdf
+
+Thermistor:
+NTC Thermistor 10k 0603 (1608 Metric) Part # NCU18XH103F60RB
+Digikey link: https://www.digikey.ca/product-detail/en/murata-electronics-north-america/NCU18XH103F60RB/490-16279-1-ND/7363262
+Datasheet (page 13. Part # NCU__XH103):
+https://www.murata.com/~/media/webrenewal/support/library/catalog/products/thermistor/r03e.ashx?la=en-us
+Datasheet (NCU18XH103F60RB): https://www.murata.com/en-us/api/pdfdownloadapi?cate=luNTCforTempeSenso&partno=NCU18XH103F60RB
 */
 
 #include <conversions/conversions.h>
 
 
-/* ADC (common) */
-
 /*
-Converts raw 12 bit data from an ADC channel to the voltage (in V) on that ADC
-input pin.
+Converts raw data from an ADC channel to the voltage on that ADC input pin.
+raw_data - 12 bit ADC data
+returns - raw voltage on ADC input channel pin (in V)
 */
-double adc_raw_data_to_raw_voltage(uint16_t raw_data) {
+double adc_raw_data_to_raw_vol(uint16_t raw_data) {
     double ratio = (double) raw_data / (double) 0x0FFF;
     double voltage = ratio * ADC_V_REF;
     return voltage;
 }
 
-
-/* ADC (EPS) */
-
 /*
-Converts a raw voltage (read from an ADC channel pin) to a voltage in the
-circuit using the known voltage divider.
+Converts a raw voltage on an ADC pin to a voltage in the EPS electronics using
+    the known voltage divider.
+raw_voltage - voltage on an ADC input pin (in V)
+returns - voltage in the EPS circuit (in V)
 */
-double adc_eps_raw_voltage_to_voltage(double raw_voltage) {
+double adc_raw_vol_to_eps_vol(double raw_voltage) {
     // Use voltage divider circuit ratio to recover original voltage before division
     return raw_voltage / ADC_EPS_VOUT_DIV_RATIO;
 }
 
 /*
-Converts a raw voltage (read from an ADC channel pin) to a current in the
-circuit using the known current monitoring circuit.
+Converts a raw voltage on an ADC pin to a current in the EPS electronics using
+    the known current monitoring circuit.
+raw_voltage - voltage on an ADC input pin (in V)
+returns - current in the EPS circuit (in A)
 */
-double adc_eps_raw_voltage_to_current(double raw_voltage) {
+double adc_raw_vol_to_eps_cur(double raw_voltage) {
     double before_ref_voltage = raw_voltage - ADC_EPS_IOUT_VREF;
 
     // Get the voltage across the resistor before amplifier gain
@@ -64,30 +75,36 @@ double adc_eps_raw_voltage_to_current(double raw_voltage) {
 }
 
 /*
-Converts raw 12 bit data from an ADC channel to a voltage in the circuit.
+Converts raw 12 bit data from an ADC channel to a voltage in the EPS circuit.
+raw_data - 12 bits
+returns - in V
 */
-double adc_eps_raw_data_to_voltage(uint16_t raw_data) {
-    return adc_eps_raw_voltage_to_voltage(adc_raw_data_to_raw_voltage(raw_data));
+double adc_raw_data_to_eps_vol(uint16_t raw_data) {
+    return adc_raw_vol_to_eps_vol(adc_raw_data_to_raw_vol(raw_data));
 }
 
 /*
-Converts raw 12 bit data from an ADC channel to a current in the circuit.
+Converts raw 12 bit data from an ADC channel to a current in the EPS circuit.
+raw_data - 12 bits
+returns - in A
 */
-double adc_eps_raw_data_to_current(uint16_t raw_data) {
-    return adc_eps_raw_voltage_to_current(adc_raw_data_to_raw_voltage(raw_data));
+double adc_raw_data_to_eps_cur(uint16_t raw_data) {
+    return adc_raw_vol_to_eps_cur(adc_raw_data_to_raw_vol(raw_data));
+}
+
+/*
+Converts raw 12 bit data from an ADC channel to the temperature measured by a
+    thermistor.
+raw_data - 12 bits
+returns - in C
+*/
+double adc_raw_data_to_therm_temp(uint16_t raw_data) {
+    return therm_res_to_temp(therm_vol_to_res(adc_raw_data_to_raw_vol(raw_data)));
 }
 
 
-
-
 /*
-DAC
-DAC7562
-Datasheet: http://www.ti.com/lit/ds/symlink/dac8162.pdf
-*/
-
-/*
-Converts raw data (12 bits) to an output voltage.
+Converts DAC raw data to an output voltage.
 raw_data - 12 bit raw data (Din)
 returns - output voltage (in V)
 */
@@ -101,7 +118,7 @@ double dac_raw_data_to_vol(uint16_t raw_data) {
 }
 
 /*
-Converts an output voltage value to the raw data (12 bit) value.
+Converts a DAC output voltage value to the raw data (12 bit) value.
 voltage - output voltage (in V)
 returns - 12 bit raw data
 */
@@ -117,13 +134,10 @@ uint16_t dac_vol_to_raw_data(double voltage) {
 }
 
 
-
-
-/* Payload Environmental Sensors */
-
 /*
-Converts 16 bit raw data (INCLUDING the 0b11 on the right that is always there)
-to temperature in degrees C (p. 9).
+Converts raw data to a temperature from the temperature sensor
+raw_data - 16 bits (INCLUDING the 0b11 on the right that is always there)
+returns - temperature in degrees C (p. 9).
 */
 double temp_raw_data_to_temperature(uint16_t raw_data) {
     int16_t signed_temp_data = ((int16_t) raw_data) / 4;
@@ -132,17 +146,19 @@ double temp_raw_data_to_temperature(uint16_t raw_data) {
 }
 
 /*
-Converts 14 bit raw data to a humidity measurement in %RH (relative humidity).
-p.6
+Converts raw data to a humidity measurement (p.6).
+raw_data - 14 bits
+returns - humidity (in %RH, relative humidity)
 */
 double hum_raw_data_to_humidity(uint16_t raw_data) {
     return ((double) raw_data) / ((1 << 14) - 2.0) * 100.0;
 }
 
 /*
-Converts 24 bit raw pressure data to the pressure in kPa.
-Raw data - 0-6000 mbar with 0.01mbar resolution per bit
-Datasheet says 0.03mbar resolution, but should be 0.01mbar
+Converts raw pressure data to the pressure.
+raw_data - 24 bits, 0-6000 mbar with 0.01mbar resolution per bit
+    datasheet says 0.03mbar resolution, but should be 0.01mbar
+returns - pressure (in kPa)
 
 1 bar = 100,000 Pa
 1 mbar = 100 Pa
@@ -155,43 +171,29 @@ double pres_raw_data_to_pressure(uint32_t raw_data) {
 }
 
 
-
-
-/* Optical ADC */
-
 /*
-Converts a raw 24 bit measurement to the input voltage on the ADC pin (in V),
-including applying the gain factor.
+Converts a raw measurement to the input voltage on the ADC pin.
+raw_data - 24 bits
+gain - gain scaling factor to multiply the voltage by
+returns - voltage (in V)
 Unipolar operation (only positive)
 */
-double optical_adc_raw_data_to_voltage(uint32_t raw_data, uint8_t gain) {
+double opt_adc_raw_data_to_vol(uint32_t raw_data, uint8_t gain) {
     // p.31
     // Code = (2^N * AIN * Gain) / (V_REF)
     // => AIN = (Code * V_REF) / (2^N * Gain)
-    double num = ((double) raw_data) * ((double) OPTICAL_ADC_V_REF);
-    double denom = (1UL << OPTICAL_ADC_N) * ((double) gain);
+    double num = ((double) raw_data) * ((double) OPT_ADC_V_REF);
+    double denom = (1UL << OPT_ADC_NUM_BITS) * ((double) gain);
     return num / denom;
 }
 
 
-
-
-/*
-Thermistor conversions
-
-For NTC Thermistor 10k 0603 (1608 Metric) Part # NCU18XH103F60RB
-Digikey link: https://www.digikey.ca/product-detail/en/murata-electronics-north-america/NCU18XH103F60RB/490-16279-1-ND/7363262
-Datasheet (page 13. Part # NCU__XH103):
-https://www.murata.com/~/media/webrenewal/support/library/catalog/products/thermistor/r03e.ashx?la=en-us
-Datasheet (NCU18XH103F60RB): https://www.murata.com/en-us/api/pdfdownloadapi?cate=luNTCforTempeSenso&partno=NCU18XH103F60RB
-
-TODO - create test to verify PROGMEM values
-TODO - confirm thermistor part number
-*/
-
-// Lookup table from manufacturer datasheet (pg 13)
-// Resistances are stored in kilo-ohms
+// The following two arrays are lookup tables for the thermistors
+// From manufacturer datasheet (pg 13)
 // PROGMEM instructs the compiler to store these values in flash memory
+// (read-only memory where the program instructions are stored)
+
+// Resistances (in kilo-ohms)
 const float THERM_RES[THERM_LUT_COUNT] PROGMEM = {
     195.652,    148.171,    113.347,    87.559,     68.237,
     53.650,     42.506,     33.892,     27.219,     22.021,
@@ -202,7 +204,7 @@ const float THERM_RES[THERM_LUT_COUNT] PROGMEM = {
     0.758,      0.672,      0.596,      0.531
 };
 
-// Temperatures in C
+// Temperatures (in C)
 // TODO - should it be int8_t?
 const int16_t THERM_TEMP[THERM_LUT_COUNT] PROGMEM = {
     -40,        -35,        -30,        -25,        -20,
@@ -214,9 +216,8 @@ const int16_t THERM_TEMP[THERM_LUT_COUNT] PROGMEM = {
     110,        115,        120,        125
 };
 
-
 /*
-Convert the measured thermistor resistance to temperature
+Converts the measured thermistor resistance to temperature.
 resistance - thermistor resistance (in kilo-ohms)
 Returns - temperature (in C)
 */
@@ -239,12 +240,12 @@ double therm_res_to_temp(double resistance){
         }
     }
 
-    // TODO - this shouldn't happen
+    // This shouldn't happen
     return 0.0;
 }
 
 /*
-Convert the thermistor temperature to resistance
+Converts the thermistor temperature to resistance.
 temp - temperature (in C)
 Returns - thermistor resistance (in kilo-ohms)
 */
@@ -267,19 +268,27 @@ double therm_temp_to_res(double temp) {
         }
     }
 
-    // TODO - this shouldn't happen
+    // This shouldn't happen
     return 0.0;
 }
 
-// Using the thermistor resistance, get the voltage at the point between the thermistor and the constant 10k resistor
-// (10k connected to ground)
-// See: https://www.allaboutcircuits.com/projects/measuring-temperature-with-an-ntc-thermistor/
+/*
+Using the thermistor resistance, get the voltage at the point between the
+    thermistor and the constant 10k resistor (10k connected to ground)
+See: https://www.allaboutcircuits.com/projects/measuring-temperature-with-an-ntc-thermistor/
+resistance - in kilo-ohms
+returns - voltage (in V)
+*/
 double therm_res_to_vol(double resistance) {
     return THERM_V_REF * THERM_R_REF / (resistance + THERM_R_REF);
 }
 
-// Get the resistance of the thermistor given the voltage
-// For equation, see: https://www.allaboutcircuits.com/projects/measuring-temperature-with-an-ntc-thermistor/
+/*
+Gets the resistance of the thermistor given the voltage.
+For equation, see: https://www.allaboutcircuits.com/projects/measuring-temperature-with-an-ntc-thermistor/
+voltage - in V
+returns - resistance (in kilo-ohms)
+*/
 double therm_vol_to_res(double voltage) {
     return THERM_R_REF * (THERM_V_REF / voltage - 1);
 }
