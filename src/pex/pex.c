@@ -57,7 +57,10 @@ AUTHORS: Dylan Vogel, Shimi Smith, Bruno Almeida, Siddharth Mahendraker
 #define PEX_READ_CONTROL_BYTE   0b01000001
 // Bits [3:1] are A[2:0] hardware addresses.
 
-// Initializes port expander reset and chip select pins on the 32M1
+/*
+Initializes port expander reset and chip select pins on the 32M1
+pex - pointer to the pex device
+*/
 void init_pex(pex_t* pex) {
     init_cs(pex->rst->pin, pex->rst->ddr);
     set_cs_high(pex->rst->pin, pex->rst->port);
@@ -69,7 +72,10 @@ void init_pex(pex_t* pex) {
     write_register(pex, PEX_IOCON, PEX_IOCON_DEFAULT);
 }
 
-// Resets the port expander
+/*
+Resets the port expander
+pex - pointer to the pex device
+*/
 void reset_pex(pex_t* pex) {
     set_cs_low(pex->rst->pin, pex->rst->port);
     _delay_ms(1); // minimum 1 microsecond
@@ -77,7 +83,12 @@ void reset_pex(pex_t* pex) {
     _delay_ms(1);
 }
 
- // Writes data 'data' to register 'addr'
+ /*
+ Writes data to register
+ pex - pointer to the pex device
+ addr - address of register being written to
+ data - 8 bit data
+ */
 void write_register(pex_t* pex, uint8_t addr, uint8_t data) {
     set_cs_low(pex->cs->pin, pex->cs->port);
     // SPI control byte format: pg 15
@@ -87,9 +98,13 @@ void write_register(pex_t* pex, uint8_t addr, uint8_t data) {
     set_cs_high(pex->cs->pin, pex->cs->port);
 }
 
-// Reads data from register 'addr'
-// e.g. if 'addr' = PEX_IODIR_A then IO data for bank A is returned
-// e.g. if 'addr' = PEX_GPIO_A then the values of bank A is returned
+/*
+Reads data from register 'addr'
+e.g. if 'addr' = PEX_IODIR_A then IO data for bank A is returned
+e.g. if 'addr' = PEX_GPIO_A then the values of bank A is returned
+pex - pointer to the pex device
+addr - address of register to read
+*/
 uint8_t read_register(pex_t* pex, uint8_t addr) {
     set_cs_low(pex->cs->pin, pex->cs->port);
     // SPI control byte format: pg 15
@@ -101,9 +116,13 @@ uint8_t read_register(pex_t* pex, uint8_t addr) {
     return ret;
 }
 
-// Sets the direction of pin 'pin' on bank 's' to state 'dir'
-// bank - A (GPIOA) or B (GPIOB)
-// direction - OUTPUT or INPUT
+/*
+Sets the direction of pin 'pin' on bank 's' to state 'dir'
+pex - pointer to the pex device
+pin - the pin that is having its direction set
+s - the bank the pin is on, A (GPIOA) or B (GPIOB)
+dir - desired direction: OUTPUT or INPUT
+*/
 void pex_set_pin_dir(pex_t* pex, uint8_t pin, pex_bank_t s, pex_dir_t dir) {
     uint8_t base = PEX_IODIR_BASE + s;
     uint8_t register_state = read_register(pex, base);
@@ -117,9 +136,13 @@ void pex_set_pin_dir(pex_t* pex, uint8_t pin, pex_bank_t s, pex_dir_t dir) {
     }
 }
 
-// Sets the value of pin 'pin' on bank 's' to value 'v'
-// bank - A (GPIOA) or B (GPIOB)
-// value - HIGH or LOW
+/*
+Sets the value of pin 'pin' on bank 's' to value 'v'
+pex - pointer to the pex device
+pin - the pin to set
+s - the bank the pin is on, A (GPIOA) or B (GPIOB)
+v - the value, must be HIGH or LOW
+*/
 void pex_set_pin(pex_t* pex, uint8_t pin, pex_bank_t s, pex_val_t v) {
     uint8_t base = PEX_GPIO_BASE + s;
     uint8_t register_state = read_register(pex, base);
@@ -133,8 +156,12 @@ void pex_set_pin(pex_t* pex, uint8_t pin, pex_bank_t s, pex_val_t v) {
     }
 }
 
-// Reads the state of `pin` on bank `s` (either 0 or 1)
-// bank - A (GPIOA) or B (GPIOB)
+/*
+Reads the state of `pin` on bank `s` (either 0 or 1)
+pex - pointer to the pex device
+pin - pin to read
+s - the bank, A (GPIOA) or B (GPIOB)
+*/
 uint8_t pex_get_pin(pex_t* pex, uint8_t pin, pex_bank_t s) {
     uint8_t base = PEX_GPIO_BASE + s;
     uint8_t register_state = read_register(pex, base);

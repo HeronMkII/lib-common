@@ -2,6 +2,7 @@
 #include <pex/pex.h>
 
 /*
+    This test must be run on the PAY PCB.
     The goals of this harness test are:
     1. Make sure pex initializes correctly
     2. We can write to entire registers
@@ -28,14 +29,16 @@ pex_t pex = {
 };
 
 // Test that the pex has been correctly initialized
+// Also initializes SPI
 void init_pex_test(void) {
+    init_spi();
     init_pex(&pex);
 
     ASSERT_EQ(read_register(&pex, PEX_IOCON), PEX_IOCON_DEFAULT);
 
     // Check that the IO register pins, aka the direction, default to input (1)
-    ASSERT_EQ(read_register(&pex, PEX_IODIR_A), 0xEE);
-    ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0xEE);
+    ASSERT_EQ(read_register(&pex, PEX_IODIR_A), 0xFF);
+    ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0xFF);
 
     // Not sure what the default states of the GPIO pins are
 }
@@ -55,8 +58,8 @@ void set_pin_test(void) {
     pex_set_pin_dir(&pex, 3, PEX_A, OUTPUT);
     pex_set_pin_dir(&pex, 6, PEX_B, OUTPUT);
 
-    ASSERT_EQ(read_register(&pex, PEX_IODIR_A), 0xE5);
-    ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0xCE);
+    ASSERT_EQ(read_register(&pex, PEX_IODIR_A), 0xF5);
+    ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0xCF);
 
     // Set some states
     pex_set_pin(&pex, 6, PEX_A, HIGH);
@@ -71,7 +74,7 @@ void set_pin_test(void) {
 
     // Test setting pins that don't exist, values shouldn't change
     pex_set_pin_dir(&pex, 10, PEX_B, OUTPUT);
-    ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0xCE);
+    ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0xCF);
 }
 
 // Test setting pins and then setting the same pin again
@@ -107,7 +110,6 @@ test_t t4 = { .name = "set pins multiple times", .fn = set_pin_multiple_test };
 test_t* suite[4] = {&t1, &t2, &t3, &t4};
 
 int main(void) {
-    init_spi();
     run_tests(suite, 4);
     return 0;
 }
