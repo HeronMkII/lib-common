@@ -71,7 +71,7 @@ class TestHarness:
     # returns count from harness
     # checks for appropriate input (ok)
     def recv_count(self, suite):
-        ok = input("Connect the programmer TX pin to board RX/SCK or set board switch to RUN. (press enter) ")
+        ok = input("Connect programmer TX pin to board RX/SCK pin or set board switch to RUN. (press enter) ")
 
         # prints '-' 80 times
         print(sep)
@@ -127,7 +127,7 @@ class TestSuite:
     mcu = "m32m1"
     prog = "stk500"
     includes = "-I./include/"
-    lib = "-L./lib/ -ltest -lprintf_flt -lm -luart -lspi -lcan -ltimer -lqueue -lstack -lheartbeat -lwatchdog -lutilities"
+    lib = "-L./lib/ -ltest -lprintf_flt -lm -ladc -lcan -lconversions -ldac -lheartbeat -lpex -lqueue -lspi -lstack -ltimer -luart -lutilities -lwatchdog"
 
     def __init__(self, path, boards, harness):
         self.path = path
@@ -255,6 +255,9 @@ class Test:
             return False
 
     def handle_line(self, line):
+        # Print the raw characters received
+        print("UART RX:", line.strip())
+
         if line == "DONE\r\n":
             (self.time_cb)()
             self.done = True

@@ -3,14 +3,14 @@
 
 #include <util/atomic.h>
 
-#define START_LEN 7
+#define COUNT_MSG "COUNT\r\n"
 #define COUNT_LEN 7
+#define START_MSG "START\r\n"
+#define START_LEN 7
+#define KILL_MSG "KILL\r\n"
 #define KILL_LEN 6
 
-#define COUNT_MSG "COUNT\r\n"
 #define END_MSG "END\r\n"
-#define START_TEST_MSG "START\r\n"
-#define DONE_TEST_MSG "DONE\r\n"
 
 test_t** test_suite;
 uint8_t test_num;
@@ -21,7 +21,7 @@ void run_test(test_t*);
 
 // FIXME: this code is very precarious
 uint8_t test_start_cb(const uint8_t* data, uint8_t len) {
-    char* start = "START\r\n";
+    char* start = START_MSG;
     if (len < START_LEN) return 0;
 
     uint8_t flag = 1;
@@ -43,7 +43,7 @@ uint8_t test_start_cb(const uint8_t* data, uint8_t len) {
 }
 
 uint8_t test_count_cb(const uint8_t* data, uint8_t len) {
-    char* count = "COUNT\r\n";
+    char* count = COUNT_MSG;
     if (len < COUNT_LEN) return 0;
 
     uint8_t flag = 1;
@@ -90,7 +90,7 @@ void run_test(test_t* test) {
 }
 
 uint8_t slave_kill_cb(const uint8_t* data, uint8_t len) {
-    char* kill = "KILL\r\n";
+    char* kill = KILL_MSG;
     if (len < KILL_LEN) return 0;
 
     uint8_t flag = 1;
