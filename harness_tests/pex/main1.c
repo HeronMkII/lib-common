@@ -1,4 +1,5 @@
 #include <test/test.h>
+#include <pex/pay.h>
 #include <pex/pex.h>
 
 /*
@@ -66,15 +67,15 @@ void set_pin_test(void) {
     print("GPA Values: %.2x\n", read_register(&pex, PEX_GPIO_B));
 
     // Set some states
-    pex_set_pin(&pex, 6, PEX_A, HIGH);
-    pex_set_pin(&pex, 7, PEX_A, LOW);
-    pex_set_pin(&pex, 2, PEX_B, HIGH);
-    pex_set_pin(&pex, 1, PEX_B, LOW);
+    pex_set_pin(&pex, 6, PEX_A, 1);
+    pex_set_pin(&pex, 7, PEX_A, 0);
+    pex_set_pin(&pex, 2, PEX_B, 1);
+    pex_set_pin(&pex, 1, PEX_B, 0);
 
-    ASSERT_EQ(pex_get_pin(&pex, 6, PEX_A), HIGH);
-    ASSERT_EQ(pex_get_pin(&pex, 7, PEX_A), LOW);
-    ASSERT_EQ(pex_get_pin(&pex, 2, PEX_B), HIGH);
-    ASSERT_EQ(pex_get_pin(&pex, 1, PEX_B), LOW);
+    ASSERT_EQ(pex_get_pin(&pex, 6, PEX_A), 1);
+    ASSERT_EQ(pex_get_pin(&pex, 7, PEX_A), 0);
+    ASSERT_EQ(pex_get_pin(&pex, 2, PEX_B), 1);
+    ASSERT_EQ(pex_get_pin(&pex, 1, PEX_B), 0);
 
     // Print the states after
     print("GPA Values: %.2x\n", read_register(&pex, PEX_GPIO_A));
@@ -88,26 +89,26 @@ void set_pin_test(void) {
 // Test setting pins and then setting the same pin again
 void set_pin_multiple_test(void) {
     // Set the pins
-    pex_set_pin(&pex, 3, PEX_A, LOW);
-    pex_set_pin(&pex, 4, PEX_A, HIGH);
-    pex_set_pin(&pex, 5, PEX_B, LOW);
-    pex_set_pin(&pex, 6, PEX_B, HIGH);
+    pex_set_pin(&pex, 3, PEX_A, 0);
+    pex_set_pin(&pex, 4, PEX_A, 1);
+    pex_set_pin(&pex, 5, PEX_B, 0);
+    pex_set_pin(&pex, 6, PEX_B, 1);
 
-    ASSERT_EQ(pex_get_pin(&pex, 3, PEX_A), LOW);
-    ASSERT_EQ(pex_get_pin(&pex, 4, PEX_A), HIGH);
-    ASSERT_EQ(pex_get_pin(&pex, 5, PEX_B), LOW);
-    ASSERT_EQ(pex_get_pin(&pex, 6, PEX_B), HIGH);
+    ASSERT_EQ(pex_get_pin(&pex, 3, PEX_A), 0);
+    ASSERT_EQ(pex_get_pin(&pex, 4, PEX_A), 1);
+    ASSERT_EQ(pex_get_pin(&pex, 5, PEX_B), 0);
+    ASSERT_EQ(pex_get_pin(&pex, 6, PEX_B), 1);
 
     // Set them back
-    pex_set_pin(&pex, 3, PEX_A, HIGH);
-    pex_set_pin(&pex, 4, PEX_A, LOW);
-    pex_set_pin(&pex, 5, PEX_B, HIGH);
-    pex_set_pin(&pex, 6, PEX_B, LOW);
+    pex_set_pin(&pex, 3, PEX_A, 1);
+    pex_set_pin(&pex, 4, PEX_A, 0);
+    pex_set_pin(&pex, 5, PEX_B, 1);
+    pex_set_pin(&pex, 6, PEX_B, 0);
 
-    ASSERT_EQ(pex_get_pin(&pex, 3, PEX_A), HIGH);
-    ASSERT_EQ(pex_get_pin(&pex, 4, PEX_A), LOW);
-    ASSERT_EQ(pex_get_pin(&pex, 5, PEX_B), HIGH);
-    ASSERT_EQ(pex_get_pin(&pex, 6, PEX_B), LOW);
+    ASSERT_EQ(pex_get_pin(&pex, 3, PEX_A), 1);
+    ASSERT_EQ(pex_get_pin(&pex, 4, PEX_A), 0);
+    ASSERT_EQ(pex_get_pin(&pex, 5, PEX_B), 1);
+    ASSERT_EQ(pex_get_pin(&pex, 6, PEX_B), 0);
 }
 
 test_t t1 = { .name = "init_pex", .fn = init_pex_test };

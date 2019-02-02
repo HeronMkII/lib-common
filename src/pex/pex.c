@@ -30,33 +30,6 @@ AUTHORS: Dylan Vogel, Shimi Smith, Bruno Almeida, Siddharth Mahendraker
 
 #include <util/delay.h>
 
-
-// Register addresses
-// Page 12, table 3-1
-#define PEX_IOCON       0x0A  // Assumes bank = 0, such as after reset
-// Page 16 of data sheet, table 3-3
-#define PEX_IODIR_BASE  0x00 // where direction of each pin is stored.
-// Page 18 0 is output, 1 is input
-// default is input (Page 1)
-
-#define PEX_GPIO_BASE   0x12 // where GPIO states are stored.
-
-// Register addresses for banks A and B, assuming bank = 0
-#define PEX_IODIR_A (PEX_IODIR_BASE)
-#define PEX_IODIR_B (PEX_IODIR_BASE + 0x01)
-#define PEX_GPIO_A  (PEX_GPIO_BASE)
-#define PEX_GPIO_B  (PEX_GPIO_BASE + 0x01)
-
-// Default configuration
-#define PEX_IOCON_DEFAULT       0b00001000
-// Bit 3 sets hardware addressing
-
-// Control bytes for writing and reading registers, see page 15
-// Last bit is 0 for write, 1 for read
-#define PEX_WRITE_CONTROL_BYTE  0b01000000
-#define PEX_READ_CONTROL_BYTE   0b01000001
-// Bits [3:1] are A[2:0] hardware addresses.
-
 /*
 Initializes port expander reset and chip select pins on the 32M1
 pex - pointer to the pex device
@@ -87,7 +60,7 @@ void reset_pex(pex_t* pex) {
  Writes data to register
  pex - pointer to the pex device
  addr - address of register being written to
- data - 8 bit data
+ data - 8 bit data to write to the registers
  */
 void write_register(pex_t* pex, uint8_t addr, uint8_t data) {
     set_cs_low(pex->cs->pin, pex->cs->port);
@@ -141,16 +114,16 @@ Sets the value of pin 'pin' on bank 'bank' to value 'state'
 pex - pointer to the pex device
 pin - the pin to set
 bank - the bank the pin is on, A (GPIOA) or B (GPIOB)
-v - the value, must be 1 (HIGH) or 0 (LOW)
+state - the value, must be 1 (HIGH) or 0 (LOW)
 */
 void pex_set_pin(pex_t* pex, pex_bank_t bank, uint8_t pin, uint8_t state) {
     uint8_t base = PEX_GPIO_BASE + bank;
     uint8_t register_state = read_register(pex, base);
     switch (state) {
-        case HIGH:
+        case 1:
             write_register(pex, base, register_state | _BV(pin));
             break;
-        case LOW:
+        case 0:
             write_register(pex, base, register_state & ~_BV(pin));
             break;
     }
