@@ -5,6 +5,8 @@
 
 mob_t* mob_array[6] = {0}; //6 MOBs in the array
 
+uint8_t boffit_count = 0;
+
 static inline void select_mob(uint8_t mob_num) {
     CANPAGE = mob_num << 4;
 }
@@ -74,9 +76,8 @@ void init_can() {
     // TODO: figure out why these settings work, and why they weren't working
     // earlier. These settings are taken directly from the 32m1 datasheet,
     // pg 240
-    CANBT1 = 0x08;
-    CANBT2 = 0x0C;
-    CANBT3 = 0x37;
+    set_can_baud_rate(CAN_DEF_BAUD_RATE);
+
 
     CANGIE |= _BV(ENIT) | _BV(ENBOFF) |_BV(ENTX) | _BV(ENRX) | _BV(ENERR);
     //TODO: deal with error interrupts? - BOFFIT
@@ -298,25 +299,66 @@ uint8_t handle_err(mob_t* mob) {
 
     return 0;
 }
+void set_can_rate_reg(uint8_t canbt1, uint8_t canbt2, uint8_t canbt3){
+    CANBT1 = canbt1;
+    CANBT2 = canbt2;
+    CANBT3 = canbt3;
+}
+
+void set_can_baud_rate(can_baud_rate_t baud_rate){
+
+switch (baud_rate) {
+    case CAN_RATE_100,:
+        set_can_rate_reg(8, 12, 55);
+        break;
+    case CAN_RATE_125:
+        set_can_rate_reg(6, 12, 55);
+        break;
+    case CAN_RATE_250,:
+        set_can_rate_reg(2, 12, 55);
+        break;
+    case CAN_RATE_500,:
+        set_can_rate_reg(0, 12, 54);
+        break;
+    case CAN_RATE_1000,:
+        set_can_rate_reg(0, 4, 18);
+        break;
+    default:
+        break;
+}
+}
 
 void handle_bus_off_interrupt(mob_t* mob) {
-    select_mob(mob->mob_num);
+    select_mob(mob->mob_num) //not sure if this is necessary
 
-    CANGIT &= ~(_BV(BOFFIT));
+    CANGIT |= _BV(BOFFIT); //setting this bit clears it
 
     // do something
     // i.e. store appropriate information to be retrieved later and modify global variable
     //   that keeps track of number of BOFFIT interrupts
     // handle interrupt by performing a software reset
 
-    CANGCON |= _BV(SWRES);
-    // TODO: Look into what this affects and how it needs to be handled
+    if(boffit_count == 0){
+        print("Resetting CAN controller...");
+        CANGCON |= _BV(SWRES); // Only resets CAN controller
+        CANGCON |= _BV(ENASTB); // Enable mode (0x02)
+        while (!(CANGSTA & _BV(ENFG)){ // Wait until enabled
+            print("Waiting...");
+        }
+        print("Node enabled...");
+    }
+    else if (boffit_count < 3){
+        print("Aborting message...");
+        CANGCON |= _BV(ABRQ); // Disable pending and terminate current communications
+    }
 
-    // Another option: Abort CAN channel, will need to be configured again after
-    // TODO: Look into what this affects and how it needs to be handled
-    CANGCON |= _BV(ABRQ);
+    else {
+        print("Standby mode...")
+        CANGCON |= _BV(SWRES); // Only resets CAN controller
+        CANGCON |= ~(_BV(ENASTB)); // Disable node (0x02)
+    }
 
-    //NOTE:
+    // NOTE:
     // Force enable mode: CANGCON |= _BV(ENASTB);
     // Current status of bus: CANGSTA & _BV(BOFF);
     // Error passive mode: CANGSTA & _BV(ERRP);
