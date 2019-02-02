@@ -31,8 +31,14 @@ The input data is 12 bits describing some voltage, and the ADC takes this in and
 converts it to some digital 12 bit value. If the output is to be "high", this will
 look like 12 1's, while an output of "low" would look like 12 0's.
 
-note: clarify naming of bits vs channels
 
+Usages:
+1. Initialize ADC -> init_adc()
+2. Call a fetch on a particular channel or all the channels to update the values on the channel array -> fetch_all() or fetch_channel(c) 
+where c is the channel number
+3. Call read to return the value on a particular channel -> read_channel(c)
+
+note: clarify naming of bits vs channels
 */
 
 #include <adc/adc.h>
@@ -126,6 +132,9 @@ void init_adc(adc_t* adc) {
     send_adc(adc, f1);
     send_adc(adc, f2);
 }
+/*
+Resets the ADC: powers it off, then powers it on.
+*/
 
 void reset_adc(adc_t* adc){
   uint16_t frame = START_RESET;
@@ -137,8 +146,8 @@ void reset_adc(adc_t* adc){
 }
 
 /*
-Updates all the values in each channel that are read by the ADC.
-
+Gets the digital data from all channels in the ADC and updates
+the channel array at all indicies.
 @param adc_t* adc - ADC
 */
 void fetch_all(adc_t* adc) {
@@ -157,9 +166,10 @@ void fetch_all(adc_t* adc) {
 }
 
 /*
-Fetching data of one particular channel in the ADC.
+Gets the digital data from one channel in the ADC and updates
+channel array at index c.
 @param adc_t* adc - ADC
-@param uint8_t c - the channel
+@param uint8_t c - the specified channel
 */
 void fetch_channel(adc_t* adc, uint8_t c) {
     uint16_t channel_addr = ((uint16_t) c) << 7;
@@ -178,10 +188,9 @@ void fetch_channel(adc_t* adc, uint8_t c) {
 
 /*
 Reads the inforamtion currently stored in the ADC.
-This function returns the informaton saved in the channel,
-but it requires that fetch_channel be called first.
+Returns a 16-bit unsigned integer that is stored in the channel array at index c.
 @param adc_t* adc - the ADC
-@param uint8_t c - the channel
+@param uint8_t c - the specified channel
 */
 uint16_t read_channel(adc_t* adc, uint8_t c) {
     return adc->channel[c];
