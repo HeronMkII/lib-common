@@ -61,6 +61,10 @@ void set_pin_test(void) {
     ASSERT_EQ(read_register(&pex, PEX_IODIR_A), 0xF5);
     ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0xCF);
 
+    // Print the states before we set the states
+    print("GPA Values: %.2x\n", read_register(&pex, PEX_GPIO_A));
+    print("GPA Values: %.2x\n", read_register(&pex, PEX_GPIO_B));
+
     // Set some states
     pex_set_pin(&pex, 6, PEX_A, HIGH);
     pex_set_pin(&pex, 7, PEX_A, LOW);
@@ -71,6 +75,10 @@ void set_pin_test(void) {
     ASSERT_EQ(pex_get_pin(&pex, 7, PEX_A), LOW);
     ASSERT_EQ(pex_get_pin(&pex, 2, PEX_B), HIGH);
     ASSERT_EQ(pex_get_pin(&pex, 1, PEX_B), LOW);
+
+    // Print the states after
+    print("GPA Values: %.2x\n", read_register(&pex, PEX_GPIO_A));
+    print("GPA Values: %.2x\n", read_register(&pex, PEX_GPIO_B));
 
     // Test setting pins that don't exist, values shouldn't change
     pex_set_pin_dir(&pex, 10, PEX_B, OUTPUT);

@@ -22,12 +22,6 @@ typedef enum {
     PEX_B = 1
 } pex_bank_t;
 
-// GPIO pin values
-typedef enum {
-    HIGH = 1,
-    LOW = 0
-} pex_val_t;
-
 // PEX device
 typedef struct {
     uint8_t addr;
@@ -42,8 +36,8 @@ void reset_pex(pex_t*);
 uint8_t read_register(pex_t*, uint8_t addr);
 void write_register(pex_t*, uint8_t addr, uint8_t data);
 
-void pex_set_pin_dir(pex_t* pex, uint8_t pin, pex_bank_t s, pex_dir_t dir);
-void pex_set_pin(pex_t* pex, uint8_t pin, pex_bank_t s, pex_val_t v);
-uint8_t pex_get_pin(pex_t* pex, uint8_t pin, pex_bank_t s);
+void pex_set_pin_dir(pex_t* pex, pex_bank_t bank, uint8_t pin, pex_dir_t dir);
+void pex_set_pin(pex_t* pex, pex_bank_t bank, uint8_t pin, uint8_t state);
+uint8_t pex_get_pin(pex_t* pex, pex_bank_t bank, uint8_t pin);
 
 #endif // PEX_H

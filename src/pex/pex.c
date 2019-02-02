@@ -117,14 +117,14 @@ uint8_t read_register(pex_t* pex, uint8_t addr) {
 }
 
 /*
-Sets the direction of pin 'pin' on bank 's' to state 'dir'
+Sets the direction of pin 'pin' on bank 'bank' to state 'dir'
 pex - pointer to the pex device
+bank - the bank the pin is on, A (GPIOA) or B (GPIOB)
 pin - the pin that is having its direction set
-s - the bank the pin is on, A (GPIOA) or B (GPIOB)
 dir - desired direction: OUTPUT or INPUT
 */
-void pex_set_pin_dir(pex_t* pex, uint8_t pin, pex_bank_t s, pex_dir_t dir) {
-    uint8_t base = PEX_IODIR_BASE + s;
+void pex_set_pin_dir(pex_t* pex, pex_bank_t bank, uint8_t pin, pex_dir_t dir) {
+    uint8_t base = PEX_IODIR_BASE + bank;
     uint8_t register_state = read_register(pex, base);
     switch (dir) {
         case OUTPUT:
@@ -137,16 +137,16 @@ void pex_set_pin_dir(pex_t* pex, uint8_t pin, pex_bank_t s, pex_dir_t dir) {
 }
 
 /*
-Sets the value of pin 'pin' on bank 's' to value 'v'
+Sets the value of pin 'pin' on bank 'bank' to value 'state'
 pex - pointer to the pex device
 pin - the pin to set
-s - the bank the pin is on, A (GPIOA) or B (GPIOB)
-v - the value, must be HIGH or LOW
+bank - the bank the pin is on, A (GPIOA) or B (GPIOB)
+v - the value, must be 1 (HIGH) or 0 (LOW)
 */
-void pex_set_pin(pex_t* pex, uint8_t pin, pex_bank_t s, pex_val_t v) {
-    uint8_t base = PEX_GPIO_BASE + s;
+void pex_set_pin(pex_t* pex, pex_bank_t bank, uint8_t pin, uint8_t state) {
+    uint8_t base = PEX_GPIO_BASE + bank;
     uint8_t register_state = read_register(pex, base);
-    switch (v) {
+    switch (state) {
         case HIGH:
             write_register(pex, base, register_state | _BV(pin));
             break;
@@ -157,13 +157,13 @@ void pex_set_pin(pex_t* pex, uint8_t pin, pex_bank_t s, pex_val_t v) {
 }
 
 /*
-Reads the state of `pin` on bank `s` (either 0 or 1)
+Reads the state of `pin` on bank `bank` (either 0 or 1)
 pex - pointer to the pex device
+bank - the bank, A (GPIOA) or B (GPIOB)
 pin - pin to read
-s - the bank, A (GPIOA) or B (GPIOB)
 */
-uint8_t pex_get_pin(pex_t* pex, uint8_t pin, pex_bank_t s) {
-    uint8_t base = PEX_GPIO_BASE + s;
+uint8_t pex_get_pin(pex_t* pex, pex_bank_t bank, uint8_t pin) {
+    uint8_t base = PEX_GPIO_BASE + bank;
     uint8_t register_state = read_register(pex, base);
     return (register_state >> pin) & 0b1;
 }
