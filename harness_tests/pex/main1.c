@@ -46,69 +46,61 @@ void init_pex_test(void) {
 
 // Test that registers can be written to
 void write_register_test(void) {
-    write_register(&pex, PEX_GPIO_A, 0x00);
-    write_register(&pex, PEX_GPIO_B, 0x67); // 0x67 chosen arbitrarily
+    write_register(&pex, PEX_IODIR_A, 0x0F);
+    write_register(&pex, PEX_IODIR_B, 0x67); // 0x67 chosen arbitrarily
 
-    ASSERT_EQ(read_register(&pex, PEX_GPIO_A), 0x00);
-    ASSERT_EQ(read_register(&pex, PEX_GPIO_B), 0x67);
+    ASSERT_EQ(read_register(&pex, PEX_IODIR_A), 0x0F);
+    ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0x67);
 }
 
 // Test setting specific pins on all registers
 void set_pin_test(void) {
     // Set some directions
-    pex_set_pin_dir(&pex, 3, PEX_A, OUTPUT);
-    pex_set_pin_dir(&pex, 6, PEX_B, OUTPUT);
+    pex_set_pin_dir(&pex, PEX_A, 3, OUTPUT);
+    pex_set_pin_dir(&pex, PEX_B, 6, OUTPUT);
 
-    ASSERT_EQ(read_register(&pex, PEX_IODIR_A), 0xF5);
-    ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0xCF);
-
-    // Print the states before we set the states
-    print("GPA Values: %.2x\n", read_register(&pex, PEX_GPIO_A));
-    print("GPA Values: %.2x\n", read_register(&pex, PEX_GPIO_B));
+    ASSERT_EQ(read_register(&pex, PEX_IODIR_A), 0x07);
+    ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0x27);
 
     // Set some states
-    pex_set_pin(&pex, 6, PEX_A, 1);
-    pex_set_pin(&pex, 7, PEX_A, 0);
-    pex_set_pin(&pex, 2, PEX_B, 1);
-    pex_set_pin(&pex, 1, PEX_B, 0);
+    pex_set_pin(&pex, PEX_A, 6, 1);
+    pex_set_pin(&pex, PEX_A, 7, 0);
+    pex_set_pin(&pex, PEX_B, 2, 1);
+    pex_set_pin(&pex, PEX_B, 1, 0);
 
-    ASSERT_EQ(pex_get_pin(&pex, 6, PEX_A), 1);
-    ASSERT_EQ(pex_get_pin(&pex, 7, PEX_A), 0);
-    ASSERT_EQ(pex_get_pin(&pex, 2, PEX_B), 1);
-    ASSERT_EQ(pex_get_pin(&pex, 1, PEX_B), 0);
-
-    // Print the states after
-    print("GPA Values: %.2x\n", read_register(&pex, PEX_GPIO_A));
-    print("GPA Values: %.2x\n", read_register(&pex, PEX_GPIO_B));
+    ASSERT_EQ(pex_get_pin(&pex, PEX_A, 6), 1);
+    ASSERT_EQ(pex_get_pin(&pex, PEX_A, 7), 0);
+    ASSERT_EQ(pex_get_pin(&pex, PEX_B, 2), 1);
+    ASSERT_EQ(pex_get_pin(&pex, PEX_B, 1), 0);
 
     // Test setting pins that don't exist, values shouldn't change
-    pex_set_pin_dir(&pex, 10, PEX_B, OUTPUT);
+    pex_set_pin_dir(&pex, PEX_B, 10, OUTPUT);
     ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0xCF);
 }
 
 // Test setting pins and then setting the same pin again
 void set_pin_multiple_test(void) {
     // Set the pins
-    pex_set_pin(&pex, 3, PEX_A, 0);
-    pex_set_pin(&pex, 4, PEX_A, 1);
-    pex_set_pin(&pex, 5, PEX_B, 0);
-    pex_set_pin(&pex, 6, PEX_B, 1);
+    pex_set_pin(&pex, PEX_A, 3, 0);
+    pex_set_pin(&pex, PEX_A, 4, 1);
+    pex_set_pin(&pex, PEX_B, 5, 0);
+    pex_set_pin(&pex, PEX_B, 6, 1);
 
-    ASSERT_EQ(pex_get_pin(&pex, 3, PEX_A), 0);
-    ASSERT_EQ(pex_get_pin(&pex, 4, PEX_A), 1);
-    ASSERT_EQ(pex_get_pin(&pex, 5, PEX_B), 0);
-    ASSERT_EQ(pex_get_pin(&pex, 6, PEX_B), 1);
+    ASSERT_EQ(pex_get_pin(&pex, PEX_A, 3), 0);
+    ASSERT_EQ(pex_get_pin(&pex, PEX_A, 4), 1);
+    ASSERT_EQ(pex_get_pin(&pex, PEX_B, 5), 0);
+    ASSERT_EQ(pex_get_pin(&pex, PEX_B, 6), 1);
 
     // Set them back
-    pex_set_pin(&pex, 3, PEX_A, 1);
-    pex_set_pin(&pex, 4, PEX_A, 0);
-    pex_set_pin(&pex, 5, PEX_B, 1);
-    pex_set_pin(&pex, 6, PEX_B, 0);
+    pex_set_pin(&pex, PEX_A, 3, 1);
+    pex_set_pin(&pex, PEX_A, 4, 0);
+    pex_set_pin(&pex, PEX_B, 5, 1);
+    pex_set_pin(&pex, PEX_B, 6, 0);
 
-    ASSERT_EQ(pex_get_pin(&pex, 3, PEX_A), 1);
-    ASSERT_EQ(pex_get_pin(&pex, 4, PEX_A), 0);
-    ASSERT_EQ(pex_get_pin(&pex, 5, PEX_B), 1);
-    ASSERT_EQ(pex_get_pin(&pex, 6, PEX_B), 0);
+    ASSERT_EQ(pex_get_pin(&pex, PEX_A, 3), 1);
+    ASSERT_EQ(pex_get_pin(&pex, PEX_A, 4), 0);
+    ASSERT_EQ(pex_get_pin(&pex, PEX_B, 5), 1);
+    ASSERT_EQ(pex_get_pin(&pex, PEX_B, 6), 0);
 }
 
 test_t t1 = { .name = "init_pex", .fn = init_pex_test };
