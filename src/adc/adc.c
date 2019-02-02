@@ -31,6 +31,8 @@ The input data is 12 bits describing some voltage, and the ADC takes this in and
 converts it to some digital 12 bit value. If the output is to be "high", this will
 look like 12 1's, while an output of "low" would look like 12 0's.
 
+note: clarify naming of bits vs channels
+
 */
 
 #include <adc/adc.h>
@@ -60,12 +62,17 @@ is never set, nor are the GPIO pins used.
 #define RANGE2        0x0040 // 5V
 #define RANGE1        0x0000 // 2.5V
 
+// DI05 - power down (p.32)
+#define POWER_DN 0x0020
+#define POWER_UP 0x0000
+
 // TODO: Verify that these are actually correct
 // --> build test for this.
 #define REQUEST_AUTO1_MODE (AUTO1_MODE | EN_PGM | RANGE2 | CHAN_CTR_RST)
 #define ENTER_AUTO1_MODE (AUTO1_MODE | EN_PGM | RANGE2)
 #define CONTINUE_AUTO1_MODE (AUTO1_MODE | EN_PGM | RANGE2)
-
+#define START_RESET (MANUAL_MODE | EN_PGM | RANGE2 | POWER_DN)
+#define STOP_RESET (MANUAL_MODE | EN_PGM | RANGE2 | POWER_UP)
 
 /*
 Sending 16 bits to and from the ADC as per SPI protocol.
@@ -110,16 +117,7 @@ void init_adc(adc_t* adc) {
     // in the datasheet.
     //(in response to this...)
     //idea: power down then restart?
-    //nikoo has proposal: set DI05 = 1 to power down, then immediately DI05 = 0 to restart.
-    //adc->channel[i] indicates each of the 12 channels, correct?
-    //therefore a reset could look like this:
-    //  adc->channel[5] = 1; //powers down on SCLK falling edge (idk what that is but ok)
-    //  adc->channel[5] = 0;
-    //(verify this is correct...)
-    //(based on table p.33 of datasheet)
-
-    //new TODO: come up with test to verify this procedure to reset the ADC...
-    // need i only check the channel = 0?
+    reset_adc(adc);
 
 
     // Program auto-1 register
@@ -127,6 +125,15 @@ void init_adc(adc_t* adc) {
     uint16_t f2 = adc->channels;
     send_adc(adc, f1);
     send_adc(adc, f2);
+}
+
+void reset_adc(adc_t* adc){
+  uint16_t frame = START_RESET;
+  send_adc(adc,frame);
+  frame = STOP_RESET;
+  send_adc(adc,frame);
+  //verify this is correct... somehow
+  //based on table p.33 of datasheet
 }
 
 /*
@@ -150,6 +157,7 @@ void fetch_all(adc_t* adc) {
 }
 
 /*
+Fetching data of one particular channel in the ADC.
 @param adc_t* adc - ADC
 @param uint8_t c - the channel
 */
@@ -169,6 +177,9 @@ void fetch_channel(adc_t* adc, uint8_t c) {
 }
 
 /*
+Reads the inforamtion currently stored in the ADC.
+This function returns the informaton saved in the channel,
+but it requires that fetch_channel be called first.
 @param adc_t* adc - the ADC
 @param uint8_t c - the channel
 */

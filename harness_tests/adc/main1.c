@@ -1,16 +1,18 @@
 #include <test/test.h>
 #include <uart/uart.h>
 #include <adc/adc.h>
+#include <adc/pay.h>
 
-//adc object to test
-uint16_t channels = ;//uhhh how are channels made..
-pin_info_t* cs = {};//uhh
-adc_mode_t mode;
-uint16_t channel[ADC_CHANNELS] = {};//uhhhh
+pin_info_t cs = {
+    .port = &ADC_CS_PORT_PAY,
+    .ddr = &ADC_CS_DDR_PAY,
+    .pin = ADC_CS_PIN_PAY
+};
 
-adc_t* adc = {channels, cs, mode, channel};
-//okie so creating the adc to test is proving
-//a challenge.. please check over
+adc_t adc = {
+    .channels = 0x0c00, // poll pins 10 and 11 of the ADC in auto-1 mode
+    .cs = &cs
+};
 
 void init_adc_test(void){
   init_adc()

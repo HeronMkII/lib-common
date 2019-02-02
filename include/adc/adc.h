@@ -16,11 +16,16 @@ typedef enum {
 
 // ADC type
 typedef struct {
+    //
     uint16_t channels;
+
+    //
     pin_info_t* cs;
 
     // private
+    //
     adc_mode_t mode;
+    //
     uint16_t channel[ADC_CHANNELS];
 } adc_t;
 
