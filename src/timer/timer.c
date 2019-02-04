@@ -61,6 +61,22 @@ void init_timer_8bit(uint8_t seconds, cmd_fn_t cmd) {
     sei(); // enable global interrupts
 }
 
+void stop_timer_16bit()
+{
+    //stop timer by clearing bits
+    TCCR1B &= ~(1 << CS10);
+    TCCR1B &= ~(1 << CS11);
+    TCCR1B &= ~(1 << CS12);
+}
+
+void stop_timer_8bit()
+{
+    // stop timer by clearing bits
+    TCCR0B &= ~(1 << CS00);
+    TCCR0B &= ~(1 << CS01);
+    TCCR0B &= ~(1 << CS02);
+}
+
 // Counts the number of interrupts that have occured for the 16 bit timer
 volatile uint32_t counter16 = 0;
 
