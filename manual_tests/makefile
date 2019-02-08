@@ -8,18 +8,21 @@
 # Includes (header files)
 INCLUDES = -I../../include
 # Libraries from lib-common to link
-LIB = -L../../lib -ladc -lcan -lconversions -ldac -lheartbeat -lpex -lqueue -lspi -ltimer -luart -lutilities -lprintf_flt -lm
+LIB = -L../../lib -ladc -lcan -lconversions -ldac -lheartbeat -lpex -lqueue -lspi -ltimer -luart -lutilities -lwatchdog -lprintf_flt -lm
+# Name of microcontroller ("32m1" or "64m1")
+MCU = 64m1
 #-------------------------------------------------------------------------------
 
 
 # AVR-GCC compiler
 CC = avr-gcc
 # Compiler flags
-CFLAGS = -std=gnu99 -Wall -Wl,-u,vfprintf -g -mmcu=atmega32m1 -Os -mcall-prologues
+# Should have "-mmcu=atmega32m1" or "-mmcu=atmega64m1"
+CFLAGS = -std=gnu99 -Wall -Wl,-u,vfprintf -g -mmcu=atmega$(MCU) -Os -mcall-prologues
 # Programmer
 PGMR = stk500
-# Microcontroller
-MCU = m32m1
+# AVR device for avrdude uploading - must be prefixed with "m"
+DEVICE = m$(MCU)
 
 
 # Detect operating system - based on https://gist.github.com/sighingnow/deee806603ec9274fd47
@@ -94,9 +97,15 @@ clean:
 # Print debug information
 debug:
 	@echo ------------
-	@echo $(SRC)
+	@echo "WINDOWS:" $(WINDOWS)
 	@echo ------------
-	@echo $(OBJ)
+	@echo "MAC_OS:" $(MAC_OS)
+	@echo ------------
+	@echo "LINUX:" $(LINUX)
+	@echo ------------
+	@echo "SRC:" $(SRC)
+	@echo ------------
+	@echo "OBJ:" $(OBJ)
 	@echo ------------
 
 help:
@@ -131,4 +140,4 @@ else
 endif
 
 upload: $(PROG)
-	avrdude -p $(MCU) -c $(PGMR) -P $(PORT) -U flash:w:./$^.hex
+	avrdude -p $(DEVICE) -c $(PGMR) -P $(PORT) -U flash:w:./$^.hex
