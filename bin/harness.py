@@ -123,8 +123,8 @@ class TestHarness:
 class TestSuite:
     # Specifies compiler, flags, and libraries to include. Similar options are found in makefiles.
     cc = "avr-gcc"
-    cflags = "-std=gnu99 -Wall -Wl,-u,vfprintf -mmcu=atmega32m1 -Os -mcall-prologues"
-    mcu = "m32m1"
+    cflags = "-std=gnu99 -Wall -Wl,-u,vfprintf -mmcu=atmega64m1 -Os -mcall-prologues"
+    mcu = "m64m1"
     prog = "stk500"
     includes = "-I./include/"
     lib = "-L./lib/ -ltest -lprintf_flt -lm -ladc -lcan -lconversions -ldac -lheartbeat -lpex -lqueue -lspi -lstack -ltimer -luart -lutilities -lwatchdog"
