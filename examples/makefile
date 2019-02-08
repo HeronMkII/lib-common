@@ -1,4 +1,5 @@
-# This makefile should go in the manual_tests folder or examples folder of a repository
+# This makefile should go in the examples folder, harness_tests folder, or
+# manual_tests folder of a repository
 
 # Reference: http://www.atmel.com/webdoc/avrlibcreferencemanual/group__demo__project_1demo_project_compile.html
 
@@ -8,7 +9,7 @@
 # Includes (header files)
 INCLUDES = -I../../include
 # Libraries from lib-common to link
-LIB = -L../../lib -ladc -lcan -lconversions -ldac -lheartbeat -lpex -lqueue -lspi -ltimer -luart -lutilities -lwatchdog -lprintf_flt -lm
+LIB = -L../../lib -ladc -lcan -lconversions -ldac -lheartbeat -lpex -lqueue -lspi -lstack -ltest -ltimer -luart -lutilities -lwatchdog -lprintf_flt -lm
 # Name of microcontroller ("32m1" or "64m1")
 MCU = 64m1
 #-------------------------------------------------------------------------------
@@ -77,7 +78,7 @@ OBJ = $(SRC:../../src/%.c=./%.o)
 
 all: $(PROG)
 
-# Make program
+# Link .o files to make .elf program, then copies to .hex file
 $(PROG): $(PROG).o $(OBJ)
 	$(CC) $(CFLAGS) -o $@.elf $^ $(LIB)
 	avr-objcopy -j .text -j .data -O ihex $@.elf $@.hex
@@ -86,6 +87,7 @@ $(PROG): $(PROG).o $(OBJ)
 $(PROG).o: $(PROG).c
 	$(CC) $(CFLAGS) -c $(PROG).c $(INCLUDES)
 
+# Compile .c file to .o files
 ./%.o: ../../src/%.c
 	$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDES)
 
@@ -139,5 +141,6 @@ else
 	hexdump eeprom.bin
 endif
 
+# Upload .hex program to device
 upload: $(PROG)
 	avrdude -p $(DEVICE) -c $(PGMR) -P $(PORT) -U flash:w:./$^.hex
