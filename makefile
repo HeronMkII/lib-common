@@ -9,12 +9,14 @@ BUILD = $(addprefix build/,$(LIBNAMES))
 EXAMPLES = $(dir $(wildcard examples/*/.))
 # Subfolders in manual_tests folder
 MANUAL_TESTS = $(dir $(wildcard manual_tests/*/.))
+# Microcontroller - "32m1" or "64m1"
+MCU = 64m1
 
 export CC = avr-gcc
 export AR = avr-ar
 export RANLIB = avr-ranlib
 export INCLUDES = -I../../include
-export CFLAGS = -Wall -std=gnu99 -g -mmcu=atmega32m1 -Os -mcall-prologues
+export CFLAGS = -Wall -std=gnu99 -g -mmcu=atmega$(MCU) -Os -mcall-prologues
 
 
 # Detect operating system - based on https://gist.github.com/sighingnow/deee806603ec9274fd47
