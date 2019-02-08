@@ -6,7 +6,7 @@ Functions for using variable arguments and format specifiers to print messages.
 #include <uart/uart.h>
 
 // Character buffer for formatted print messages
-#define PRINT_BUF_SIZE 50
+#define PRINT_BUF_SIZE 80
 uint8_t print_buf[PRINT_BUF_SIZE];
 
 /*

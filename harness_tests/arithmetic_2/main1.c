@@ -24,7 +24,7 @@ void less(void) { //True if first value less than second
 // Below are assertions for float values
 void float_equal(void) {
     ASSERT_FP_EQ(1.121, 1.121); //Assert true
-    ASSERT_FP_EQ(1.234, 1.2341); //Assert true due to 3 decimal truncation
+    ASSERT_FP_EQ(-1.234, -1.2341); //Assert true due to 3 decimal truncation
     ASSERT_FP_EQ(1.876, 1.234); //Assert false
 }
 void float_not_equal(void) {
