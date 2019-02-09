@@ -45,7 +45,7 @@ TODO - power down/up DAC A/B?
 // Number of bits to represent voltage
 #define DAC_N               12
 
-// SPI commands
+// SPI commands (pg 38)
 // "Enable internal reference and reset DACs to gain = 2"
 #define ENABLE_INT_REF  ((0b111UL << 19) | 0b1)
 // "LDAC pin inactive for DAC-B and DAC-A"
@@ -89,32 +89,46 @@ void init_dac(dac_t* dac) {
     dac_send(dac, ENABLE_INT_REF);
     // Disable LDAC
     dac_send(dac, DISABLE_LDAC);
+
+
+    //reset dac
+    // set raw voltages to 0
+    reset_dac(dac);
 }
 
 // Resets the DAC
+// pg 4, sets output to zero scale
+// pg 34, write to register immediately outputs to zero scale
 void reset_dac(dac_t* dac) {
     set_cs_low(dac->clr->pin, dac->clr->port);
     _delay_ms(1);
     set_cs_high(dac->clr->pin, dac->clr->port);
-}
 
-// Converts an output voltage value to the equivalent 12 bit value
-uint16_t dac_voltage_to_12bits(double voltage) {
-    // p.28 - 8.3.1
-    // Vout = (Din / 2^n) x Vref x Gain
-    // Din = (Vout x 2^n) / (Vref x Gain)
-    double num = voltage * (1 << DAC_N);
-    double denom = DAC_INT_VREF * DAC_INT_VREF_GAIN;
-    uint16_t result = (uint16_t) (num / denom);
-
-    return result;
+    dac->raw_voltage_a = 0;
+    dac->raw_voltage_b = 0;
 }
 
 // Sets the output voltage for the specified output pin (C)
 // voltage - in V (after gain, as measured for hardware output)
-void dac_set_voltage(dac_t* dac, double voltage, dac_chan_t C) {
-    uint16_t data = dac_voltage_to_12bits(voltage);
-    // "Write to DAC-C input register and update DAC-C"
-    uint32_t spi = (0b011UL << 19) | (((uint32_t) C) << 16) | (data << 4);
+void dac_set_voltage(dac_t* dac, dac_chan_t channel, double voltage) {
+    uint16_t raw_data = dac_vol_to_raw_data(voltage);
+    dac_set_voltage_with_12bits(dac, channel, raw_data);
+}
+
+// Sets the output voltage for the specified output pin (C)
+// 12bits = equivalent 12 bit value of output voltage
+void dac_set_voltage_with_12bits(dac_t* dac, dac_chan_t channel, uint16_t raw_data){
+     // "Write to DAC-C input register and update DAC-Channel"
+    uint32_t spi = (0b011UL << 19) | (((uint32_t)channel) << 16) | (raw_data << 4);
     dac_send(dac, spi);
+
+    switch (channel){
+        case (DAC_A):
+            dac->raw_voltage_a = raw_data;
+            break;
+
+        case (DAC_B):
+            dac->raw_voltage_b = raw_data;
+            break;
+    }
 }

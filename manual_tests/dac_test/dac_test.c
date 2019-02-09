@@ -50,9 +50,9 @@ int main(void) {
     print("DAC Initialized\n");
     print("\n");
 
-    dac_set_voltage(&dac, 0.7, DAC_A);
+    dac_set_voltage(&dac, DAC_A, 0.7);
     print("Set VOUTA = 0.7 V\n");
-    dac_set_voltage(&dac, 1.2, DAC_B);
+    dac_set_voltage(&dac, DAC_B, 1.2);
     print("Set VOUTB = 1.2 V\n");
     delay_s(20);
     print("\n");
@@ -63,10 +63,10 @@ int main(void) {
     print("\n");
 
     for (uint8_t i = 0; i < 40; i++) {
-        dac_set_voltage(&dac, i * 0.1, DAC_A);
+        dac_set_voltage(&dac, DAC_A, i * 0.1);
         print("Set VOUTA = %u * 0.1V\n", i);
 
-        dac_set_voltage(&dac, (40 - 1 - i) * 0.1, DAC_B);
+        dac_set_voltage(&dac, DAC_B, (40 - 1 - i) * 0.1);
         print("Set VOUTB = %u * 0.1V\n", 40 - 1 - i);
 
         delay_s(1);
