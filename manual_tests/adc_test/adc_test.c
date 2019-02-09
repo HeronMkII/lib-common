@@ -23,7 +23,7 @@ adc_t adc = {
 
 void print_voltage(adc_t* adc, uint8_t c) {
     uint16_t raw_data = read_channel(adc, c);
-    double raw_voltage = adc_raw_data_to_raw_voltage(raw_data);
+    double raw_voltage = adc_raw_data_to_raw_vol(raw_data);
     print("Channel: %u, Raw Data: 0x%.4x, Raw Voltage: %f\n",
             c, raw_data, raw_voltage);
 }

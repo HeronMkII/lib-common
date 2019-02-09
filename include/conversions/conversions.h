@@ -28,25 +28,28 @@
 #define DAC_NUM_BITS    12
 
 
-#define OPTICAL_ADC_V_REF   2.5 // reference voltage (in V)
-#define OPTICAL_ADC_N       24  // number of bits in raw data
+#define OPT_ADC_V_REF       2.5 // reference voltage (in V)
+#define OPT_ADC_NUM_BITS    24  // number of bits in raw data (called 'N' in datasheet)
 
 
+// Reference (maximum) voltage for thermistor voltage divider
 #define THERM_V_REF 2.5
-// when referencing table in thermistors.c, values are in kilo Ohmns
-// Reference in kohm
+// Reference resistance (connected to ground) in kohm
 #define THERM_R_REF 10.0
 
+// Lookup tables for thermistor data conversions
 extern const float THERM_RES[];
 extern const int16_t THERM_TEMP[];
+// Number of points in arrays
 #define THERM_LUT_COUNT 34
 
 
-double adc_raw_data_to_raw_voltage(uint16_t raw_data);
-double adc_eps_raw_voltage_to_voltage(double raw_voltage);
-double adc_eps_raw_voltage_to_current(double raw_voltage);
-double adc_eps_raw_data_to_voltage(uint16_t raw_data);
-double adc_eps_raw_data_to_current(uint16_t raw_data);
+double adc_raw_data_to_raw_vol(uint16_t raw_data);
+double adc_raw_vol_to_eps_vol(double raw_voltage);
+double adc_raw_vol_to_eps_cur(double raw_voltage);
+double adc_raw_data_to_eps_vol(uint16_t raw_data);
+double adc_raw_data_to_eps_cur(uint16_t raw_data);
+double adc_raw_data_to_therm_temp(uint16_t raw_data);
 
 double dac_raw_data_to_vol(uint16_t raw_data);
 uint16_t dac_vol_to_raw_data(double voltage);
@@ -55,7 +58,7 @@ double temp_raw_data_to_temperature(uint16_t raw_data);
 double hum_raw_data_to_humidity(uint16_t raw_data);
 double pres_raw_data_to_pressure(uint32_t raw_data);
 
-double optical_adc_raw_data_to_voltage(uint32_t raw_data, uint8_t gain);
+double opt_adc_raw_data_to_vol(uint32_t raw_data, uint8_t gain);
 
 double therm_res_to_temp(double resistance);
 double therm_temp_to_res(double temp);

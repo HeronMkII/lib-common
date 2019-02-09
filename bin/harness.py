@@ -211,6 +211,7 @@ class Test:
 
     def handle_line(self, line):
         # Print the raw characters received
+        # print("UART RX (%d characters)" % len(line))
         print("UART RX:", line.strip())
 
         if line == "DONE\r\n":
@@ -293,6 +294,7 @@ class Test:
         operation = str(match.group(1)) # Type of assertion
         a, b = int(match.group(2)), int(match.group(3))
         failure = False # Flag for if assertion failed
+
         # Passes if both sides are equivalent
         if operation == "EQ":
             if a == b:
@@ -330,7 +332,8 @@ class Test:
     # Accurate to 3 decimal places. Code will round for the 6th decimal place
     # Note: If program fails here, check to make sure that function name is not long
     def handle_assert_two_float_nums(self, line):
-        regex = r"AS FP (\w+) (\d+\.\d+) (\d+\.\d+) \((.+)\) \((.+)\)\r\n"
+        regex = r"AS FP (\w+) (-?\d+\.\d+) (-?\d+\.\d+) \((.+)\) \((.+)\)\r\n"
+
         match = re.search(regex, line)
         operation = str(match.group(1)) # Type of assertion
         a, b = float(match.group(2)), float(match.group(3))
