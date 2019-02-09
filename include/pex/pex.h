@@ -59,11 +59,11 @@ typedef struct {
 void init_pex(pex_t*);
 void reset_pex(pex_t*);
 
-uint8_t read_register(pex_t*, uint8_t addr);
-void write_register(pex_t*, uint8_t addr, uint8_t data);
+uint8_t read_pex_register(pex_t*, uint8_t addr);
+void write_pex_register(pex_t*, uint8_t addr, uint8_t data);
 
-void pex_set_pin_dir(pex_t* pex, pex_bank_t bank, uint8_t pin, pex_dir_t dir);
-void pex_set_pin(pex_t* pex, pex_bank_t bank, uint8_t pin, uint8_t state);
-uint8_t pex_get_pin(pex_t* pex, pex_bank_t bank, uint8_t pin);
+void set_pex_pin_dir(pex_t* pex, pex_bank_t bank, uint8_t pin, pex_dir_t dir);
+void set_pex_pin(pex_t* pex, pex_bank_t bank, uint8_t pin, uint8_t state);
+uint8_t get_pex_pin(pex_t* pex, pex_bank_t bank, uint8_t pin);
 
 #endif // PEX_H
