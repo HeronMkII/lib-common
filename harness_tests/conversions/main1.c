@@ -3,17 +3,17 @@
 
 void adc_data_to_voltage_test(void) {
     uint16_t raw_data_0 = 0x0FFF;
-    double voltage_0 = 2.5;
+    double voltage_0 = 5.0; // 5V range
     ASSERT_FP_EQ(adc_raw_data_to_raw_vol(raw_data_0), voltage_0);
 
     uint16_t raw_data_1 = 0x0333;
-    double voltage_1 = 0.5;
+    double voltage_1 = 1.0;
     ASSERT_FP_EQ(adc_raw_data_to_raw_vol(raw_data_1), voltage_1);
 }
 
 void adc_raw_vol_to_eps_vol_test(void) {
     double raw_voltage = 2.5;
-    ASSERT_FP_EQ(adc_raw_data_to_raw_vol(raw_voltage), 5.0);
+    ASSERT_FP_EQ(adc_raw_vol_to_eps_vol(raw_voltage), 5.0);
 }
 
 void adc_raw_vol_to_eps_cur_test(void) {
@@ -33,8 +33,8 @@ void adc_raw_data_to_eps_cur_test(void) {
 }
 
 void adc_raw_data_to_therm_temp_test(void) {
-    // 0x375 -> 0.540 V -> 36.296 kohm -> -6.395 C
-    ASSERT_FP_EQ(adc_raw_data_to_therm_temp(0x375), -6.395);
+    // 0x1BA -> 0.540 V -> 36.296 kohm -> -6.395 C (rounding goes to -6.411)
+    ASSERT_FP_EQ(adc_raw_data_to_therm_temp(0x1BA), -6.411);
 }
 
 void dac_raw_data_to_vol_test(void) {
@@ -62,7 +62,7 @@ void pres_raw_data_to_pressure_test(void) {
 
 void opt_adc_raw_data_to_vol_test(void) {
     uint32_t raw_data = 1UL << 23;
-    uint8_t gain = 1 < 2;
+    uint8_t gain = 1 << 2;
     ASSERT_FP_EQ(opt_adc_raw_data_to_vol(raw_data, gain), 0.3125);
 }
 

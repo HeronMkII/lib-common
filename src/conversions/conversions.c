@@ -1,5 +1,9 @@
 /*
 Conversions library
+
+All conversions are based on the data conversion protocol:
+https://utat-ss.readthedocs.io/en/master/our-protocols/data-conversion.html
+
 Conversion functions between raw data (bits represented as `uint` types) and
 actual measurements for all software systems in the satellite.
 
