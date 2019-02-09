@@ -121,14 +121,6 @@ class TestHarness:
             print("    Total failed: %d / %d" % (self.total_failed, total))
 
 class TestSuite:
-    # Specifies compiler, flags, and libraries to include. Similar options are found in makefiles.
-    cc = "avr-gcc"
-    cflags = "-std=gnu99 -Wall -Wl,-u,vfprintf -mmcu=atmega64m1 -Os -mcall-prologues"
-    mcu = "m64m1"
-    prog = "stk500"
-    includes = "-I./include/"
-    lib = "-L./lib/ -ltest -lprintf_flt -lm -ladc -lcan -lconversions -ldac -lheartbeat -lpex -lqueue -lspi -lstack -ltimer -luart -lutilities -lwatchdog"
-
     def __init__(self, path, boards, harness):
         self.path = path
         self.boards = boards
@@ -139,56 +131,19 @@ class TestSuite:
         self.failed = 0
 
     # Compiles code for each board
-    def compile(self):
-        print("    Compiling...")
+    def compile_upload(self):
+        print("    Compiling and uploading program...")
         for i in range(1, self.boards + 1):
-            # Joins output (.o) files and .c files for each board, separated by a space
-            cmd = " ".join([self.cc, self.cflags,
-                "-o " + self.path + "/main" + str(i) + ".o",
-                "-c " + self.path + "/main" + str(i) + ".c",
-                self.includes])
+            # Call "make upload" in the specific test suite's directory
+            cmd = " ".join(["make", "upload", "-C", self.path,
+                "PROG=main" + str(i), "PORT=" + self.harness.port[i - 1]])
             # Calls cmd using shell
-            subprocess.call(cmd, shell=True)
-
-    # Links code for each board (joins .elf, .o files)
-    def link(self):
-        print("    Linking...")
-        for i in range(1, self.boards + 1):
-            cmd = " ".join([self.cc, self.cflags,
-                "-o " + self.path + "/test" + str(i) + ".elf",
-                self.path + "/main" + str(i) + ".o",
-                self.lib])
-            subprocess.call(cmd, shell=True)
-
-    # Copies code from one object to another
-    # The -j option copies only specified named section from input file
-    # -O specifies a hex file as output, with the path shown below
-    def obj_copy(self):
-        for i in range(1, self.boards + 1):
-            cmd = " ".join(["avr-objcopy",
-                "-j .text", "-j .data",
-                "-O ihex", self.path + "/test" + str(i) + ".elf",
-                self.path + "/test" + str(i) + ".hex"])
-            subprocess.call(cmd, shell=True)
-
-    # Uploads code using options specified at top of class
-    def upload(self):
-        print("    Uploading...")
-        for i in range(1, self.boards + 1):
-            cmd = " ".join(["avrdude -qq",
-                "-p", self.mcu,
-                "-c", self.prog,
-                "-P", self.harness.port[i - 1],
-                "-U flash:w:" + self.path + "/test" + str(i) + ".hex"])
             subprocess.call(cmd, shell=True)
 
     def run_suite(self):
         # Upon getting permission from user, compile, link, copy and upload code to 32m1
         if self.harness.has_permission(self):
-            self.compile()
-            self.link()
-            self.obj_copy()
-            self.upload()
+            self.compile_upload()
 
             # Gets count of tests to be run, then appends it
             count = self.harness.recv_count(self)
