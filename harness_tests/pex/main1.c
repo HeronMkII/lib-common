@@ -62,6 +62,10 @@ void set_pin_test(void) {
     ASSERT_EQ(read_register(&pex, PEX_IODIR_A), 0x07);
     ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0x27);
 
+    // Set the direction register to output so we can set values for pins
+    write_register(&pex, PEX_IODIR_A, 0x00);
+    write_register(&pex, PEX_IODIR_B, 0x00);
+
     // Set some states
     pex_set_pin(&pex, PEX_A, 6, 1);
     pex_set_pin(&pex, PEX_A, 7, 0);
@@ -75,7 +79,7 @@ void set_pin_test(void) {
 
     // Test setting pins that don't exist, values shouldn't change
     pex_set_pin_dir(&pex, PEX_B, 10, OUTPUT);
-    ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0xCF);
+    ASSERT_EQ(read_register(&pex, PEX_IODIR_B), 0x00);
 }
 
 // Test setting pins and then setting the same pin again
