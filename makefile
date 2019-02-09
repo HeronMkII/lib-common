@@ -11,6 +11,8 @@ EXAMPLES = $(dir $(wildcard examples/*/.))
 MANUAL_TESTS = $(dir $(wildcard manual_tests/*/.))
 # Microcontroller - "32m1" or "64m1"
 MCU = 64m1
+# AVR device for avrdude uploading - must be prefixed with "m"
+DEVICE = m$(MCU)
 
 export CC = avr-gcc
 export AR = avr-ar
@@ -164,7 +166,7 @@ manual_tests:
 # View the contents of the binary file in hex
 read-eeprom:
 	@echo "Reading EEPROM to binary file eeprom.bin..."
-	avrdude -p m32m1 -c stk500 -P $(PORT) -U eeprom:r:eeprom.bin:r
+	avrdude -p $(DEVICE) -c stk500 -P $(PORT) -U eeprom:r:eeprom.bin:r
 	@echo "Displaying eeprom.bin in hex..."
 ifeq ($(WINDOWS), true)
 	powershell Format-Hex eeprom.bin

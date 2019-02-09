@@ -133,7 +133,7 @@ lib-common:
 # View the contents of the binary file in hex
 read-eeprom:
 	@echo "Reading EEPROM to binary file eeprom.bin..."
-	avrdude -p m32m1 -c stk500 -P $(PORT) -U eeprom:r:eeprom.bin:r
+	avrdude -p $(DEVICE) -c stk500 -P $(PORT) -U eeprom:r:eeprom.bin:r
 	@echo "Displaying eeprom.bin in hex..."
 ifeq ($(WINDOWS), true)
 	powershell Format-Hex eeprom.bin
