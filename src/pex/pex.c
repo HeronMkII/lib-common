@@ -69,7 +69,6 @@ void write_pex_register(pex_t* pex, uint8_t addr, uint8_t data) {
     send_spi(addr);
     send_spi(data);
     set_cs_high(pex->cs->pin, pex->cs->port);
-    _delay_ms(5);
 }
 
 /*
@@ -86,7 +85,6 @@ uint8_t read_pex_register(pex_t* pex, uint8_t addr) {
     send_spi(addr);
     uint8_t ret = send_spi(0x00);
     set_cs_high(pex->cs->pin, pex->cs->port);
-    _delay_ms(5);
 
     return ret;
 }
