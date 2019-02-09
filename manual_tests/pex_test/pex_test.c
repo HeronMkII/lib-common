@@ -28,13 +28,13 @@ pex_t pex = {
 };
 
 void print_dirs() {
-    print("GPA Directions: %.2x\n", read_register(&pex, PEX_A));
-    print("GPB Directions: %.2x\n", read_register(&pex, PEX_B));
+    print("GPA Directions: %.2x\n", read_pex_register(&pex, PEX_IODIR_A));
+    print("GPB Directions: %.2x\n", read_pex_register(&pex, PEX_IODIR_B));
 }
 
 void print_values() {
-    print("GPA Values: %.2x\n", read_register(&pex, PEX_A));
-    print("GPB Values: %.2x\n", read_register(&pex, PEX_B));
+    print("GPA Values: %.2x\n", read_pex_register(&pex, PEX_GPIO_A));
+    print("GPB Values: %.2x\n", read_pex_register(&pex, PEX_GPIO_B));
 }
 
 int main(void) {
@@ -54,37 +54,24 @@ int main(void) {
     print_values();
     print("\n");
 
-    pex_set_pin_dir(&pex, 6, PEX_A, OUTPUT);
-    print("Set GPA6 as output\n");
-    pex_set_pin_dir(&pex, 2, PEX_A, INPUT);
-    print("Set GPA2 as input\n");
+    set_pex_pin_dir(&pex, PEX_A, 6, OUTPUT);
+    print("Set A6 as output\n");
+    set_pex_pin_dir(&pex, PEX_A, 2, INPUT);
+    print("Set A2 as input\n");
 
-    pex_set_pin_dir(&pex, 0, PEX_B, OUTPUT);
-    print("Set GPB0 as output\n");
-    pex_set_pin_dir(&pex, 7, PEX_B, INPUT);
-    print("Set GPB7 as input\n");
+    set_pex_pin_dir(&pex, PEX_B, 1, OUTPUT);
+    print("Set B1 as output\n");
+    set_pex_pin_dir(&pex, PEX_B, 7, INPUT);
+    print("Set B7 as input\n");
 
     print_dirs();
     print_values();
     print("\n");
 
-    pex_set_pin(&pex, 6, PEX_A, HIGH);
-    print("Set GPA6 high\n");
-    pex_set_pin(&pex, 0, PEX_B, HIGH);
-    print("Set GPB0 high\n");
-
-    print_dirs();
-    print_values();
-
-    print("Waiting 30 seconds\n");
-    _delay_ms(30000);
-    print("\n");
-
-
-    pex_set_pin(&pex, 6, PEX_A, LOW);
-    print("Set GPA6 low\n");
-    pex_set_pin(&pex, 0, PEX_B, LOW);
-    print("Set GPB0 low\n");
+    set_pex_pin(&pex, PEX_A, 6, 1);
+    print("CHECK: A6 (pin 27) high\n");
+    set_pex_pin(&pex, PEX_B, 1, 0);
+    print("CHECK: B1 (pin 2) low\n");
 
     print_dirs();
     print_values();
@@ -93,8 +80,21 @@ int main(void) {
     _delay_ms(30000);
     print("\n");
 
-    print("Read GPA2 = %u\n", pex_get_pin(&pex, 2, PEX_A));
-    print("Read GPB5 = %u\n", pex_get_pin(&pex, 5, PEX_B));
+
+    set_pex_pin(&pex, PEX_A, 6, 0);
+    print("CHECK: A6 (pin 27) low\n");
+    set_pex_pin(&pex, PEX_B, 1, 1);
+    print("CHECK: B1 (pin 2) high\n");
+
+    print_dirs();
+    print_values();
+
+    print("Waiting 30 seconds\n");
+    _delay_ms(30000);
+    print("\n");
+
+    print("Read A2 = %u\n", get_pex_pin(&pex, PEX_A, 2));
+    print("Read B5 = %u\n", get_pex_pin(&pex, PEX_B, 5));
 
     print_dirs();
     print_values();
