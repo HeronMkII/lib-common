@@ -4,8 +4,10 @@
 #include <stdint.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 
 #include <utilities/utilities.h>
+
 
 //prescaler factor - divide F_CPU (main clock, 8MHz) by 1024
 #define PRESCALER 1024.0
@@ -29,6 +31,8 @@ typedef struct {
     uint16_t remainder_time;
     // The command to run once the desired time has passed
     timer_fn_t cmd;
+    // Counts the number of interrupts that have occured for the timer
+    volatile uint16_t int_count;
 } timer_t;
 
 void start_timer_16bit(uint16_t seconds, timer_fn_t cmd);

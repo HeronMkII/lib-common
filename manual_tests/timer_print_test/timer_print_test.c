@@ -26,12 +26,12 @@ int main() {
 
     start_timer_16bit(1, timer1_func);//increases count every 1 second
     print("Started timer 1: every 1 second\n");
-    start_timer_8bit(11, timer2_func);//increases count every 15 seconds
-    print("Started timer 2: every 11 seconds\n");
+    start_timer_8bit(6, timer2_func);//increases count every 15 seconds
+    print("Started timer 2: every 6 seconds\n");
 
     // Stop when we hit some arbitrary conditions
     while (1) {
-        if (count1 >= 40 && count2 >= 3) {
+        if (count1 >= 20 && count2 >= 3) {
             print("Found stop condition\n");
             break;
         }
@@ -40,11 +40,14 @@ int main() {
     stop_timer_16bit();
     stop_timer_8bit();
     print("Stopped both timers\n");
-    print("Waiting 30 seconds...");
-    _delay_ms(30000);
+    print("Waiting 15 seconds...\n");
+    _delay_ms(15000);
+
+    count1 = 0;
+    count2 = 0;
 
     start_timer_16bit(5, timer1_func);
-    print("Started timer 1: every 5 second\n");
+    print("Started timer 1: every 5 seconds\n");
     start_timer_8bit(2, timer2_func);
     print("Started timer 2: every 2 seconds\n");
 

@@ -23,12 +23,14 @@ void timer_fn_nop(void) {}
 timer_t timer16 = {
     .max_time_ints = 0,
     .remainder_time = 0,
-    .cmd = timer_fn_nop
+    .cmd = timer_fn_nop,
+    .int_count = 0
 };
 timer_t timer8 = {
     .max_time_ints = 0,
     .remainder_time = 0,
-    .cmd = timer_fn_nop
+    .cmd = timer_fn_nop,
+    .int_count = 0
 };
 
 /*
@@ -48,25 +50,39 @@ void start_timer_16bit(uint16_t seconds, timer_fn_t cmd) {
     //command to run
     timer16.cmd = cmd;
 
-    // set timer to CTC mode - using OCR1A
-    TCCR1A &= ~(_BV(WGM10) | _BV(WGM11));
-    TCCR1B |= _BV(WGM12);
-    TCCR1B &= ~_BV(WGM13);
+    // Update timer registers atomically so we don't accidentally trigger an
+    // interrupt
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        // Clear any pending interrupt flags (if we started and stopped the
+        // timer before) (p. 182)
+        TIFR1 |= _BV(OCF1A);
 
-    // set timer to use internal clock with prescaler of 1024
-    TCCR1B |= _BV(CS12) | _BV(CS10);
-    TCCR1B &= ~_BV(CS11);
+        // set timer to CTC mode - using OCR1A
+        TCCR1A &= ~(_BV(WGM10) | _BV(WGM11));
+        TCCR1B |= _BV(WGM12);
+        TCCR1B &= ~_BV(WGM13);
 
-    // disable use of output compare pins so that they can be used normally
-    TCCR1A &= ~(_BV(COM1A1) | _BV(COM1A0) | _BV(COM1B1) | _BV(COM1B0));
+        // set timer to use internal clock with prescaler of 1024
+        TCCR1B |= _BV(CS12) | _BV(CS10);
+        TCCR1B &= ~_BV(CS11);
 
-    // initialize counter at 0
-    TCNT1 = 0;
-    // set compare value
-    OCR1A = 0xFFFF;
+        // disable use of output compare pins so that they can be used normally
+        TCCR1A &= ~(_BV(COM1A1) | _BV(COM1A0) | _BV(COM1B1) | _BV(COM1B0));
 
-    // enable output compare interupt
-    TIMSK1 |= _BV(OCIE1A);
+        // initialize counter at 0
+        TCNT1 = 0;
+
+        // set compare value
+        if (timer16.max_time_ints == 0) {
+            OCR1A = timer16.remainder_time;
+        } else {
+            OCR1A = 0xFFFF;
+        }
+
+        // enable output compare interupt
+        TIMSK1 |= _BV(OCIE1A);
+    }
+
     // enable global interrupts
     sei();
 }
@@ -88,25 +104,39 @@ void start_timer_8bit(uint16_t seconds, timer_fn_t cmd) {
     //command to run
     timer8.cmd = cmd;
 
-    // set timer to CTC mode - using OCR0A
-    TCCR0A &= ~_BV(WGM00);
-    TCCR0A |= _BV(WGM01);
-    TCCR0B &= ~_BV(WGM02);
+    // Update timer registers atomically so we don't accidentally trigger an
+    // interrupt
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        // Clear any pending interrupt flags (if we started and stopped the
+        // timer before) (p. 149)
+        TIFR0 |= _BV(OCF0A);
 
-    // set timer to use internal clock with prescaler of 1024
-    TCCR0B |= _BV(CS02) | _BV(CS00);
-    TCCR0B &= ~_BV(CS01);
+        // set timer to CTC mode - using OCR0A
+        TCCR0A &= ~_BV(WGM00);
+        TCCR0A |= _BV(WGM01);
+        TCCR0B &= ~_BV(WGM02);
 
-    // disable use of output compare pins so that they can be used as normal pins
-    TCCR0A &= ~(_BV(COM0A1) | _BV(COM0A0) | _BV(COM0B1) | _BV(COM0B0));
+        // set timer to use internal clock with prescaler of 1024
+        TCCR0B |= _BV(CS02) | _BV(CS00);
+        TCCR0B &= ~_BV(CS01);
 
-    // initialize 8 bit counter at 0
-    TCNT0 = 0;
-    // set compare value
-    OCR0A = 0xFF;
+        // disable use of output compare pins so that they can be used as normal pins
+        TCCR0A &= ~(_BV(COM0A1) | _BV(COM0A0) | _BV(COM0B1) | _BV(COM0B0));
 
-    // enable output compare interupt
-    TIMSK0 |= _BV(OCIE0A);
+        // initialize 8 bit counter at 0
+        TCNT0 = 0;
+
+        // set compare value
+        if (timer8.max_time_ints == 0) {
+            OCR0A = timer8.remainder_time;
+        } else {
+            OCR0A = 0xFF;
+        }
+
+        // enable output compare interupt
+        TIMSK0 |= _BV(OCIE0A);
+    }
+
     // enable global interrupts
     sei();
 }
@@ -116,9 +146,7 @@ Stops the 16-bit timer so it will stop calling the command function.
 */
 void stop_timer_16bit(void) {
     //stop timer by clearing bits
-    TCCR1B &= ~(1 << CS10);
-    TCCR1B &= ~(1 << CS11);
-    TCCR1B &= ~(1 << CS12);
+    TCCR1B &= ~((1 << CS10) | (1 << CS11) | (1 << CS12));
 }
 
 /*
@@ -126,46 +154,54 @@ Stops the 8-bit timer so it will stop calling the command function.
 */
 void stop_timer_8bit(void) {
     // stop timer by clearing bits
-    TCCR0B &= ~(1 << CS00);
-    TCCR0B &= ~(1 << CS01);
-    TCCR0B &= ~(1 << CS02);
+    TCCR0B &= ~((1 << CS00) | (1 << CS01) | (1 << CS02));
 }
 
-
-// Counts the number of interrupts that have occured for the 16 bit timer
-volatile uint32_t timer16_int_counter = 0;
-
-// Counts the number of interrupts that have occured for the 8 bit timer
-volatile uint32_t timer8_int_counter = 0;
 
 // This ISR occurs when TCNT1 is equal to OCR1A for a 16-bit timer
 // Timer 1 compare match A handler
 ISR(TIMER1_COMPA_vect) {
-    timer16_int_counter += 1; //counting number of interrupts
+    timer16.int_count += 1; //counting number of interrupts
+    TCNT1 = 0;
 
-    if (timer16_int_counter == timer16.max_time_ints) {
+    if (timer16.max_time_ints == 0) {
+        timer16.int_count = 0;
         OCR1A = timer16.remainder_time;
-    }
-    else if (timer16_int_counter >= timer16.max_time_ints + 1) {
-        // the desired time has passed
-        timer16_int_counter = 0; // reset the number of interrupts to 0
-        OCR1A = 0xFFFF; //set compare value
         (timer16.cmd)();
+    }
+    else {
+        if (timer16.int_count == timer16.max_time_ints) {
+            OCR1A = timer16.remainder_time;
+        }
+        else if (timer16.int_count >= timer16.max_time_ints + 1) {
+            // the desired time has passed
+            timer16.int_count = 0; // reset the number of interrupts to 0
+            OCR1A = 0xFFFF; //set compare value
+            (timer16.cmd)();
+        }
     }
 }
 
 // This ISR occurs when TCNT0 is equal to OCR0A for a 8-bit timer
 // Timer 0 compare match A handler
 ISR(TIMER0_COMPA_vect) {
-    timer8_int_counter += 1; //counting number of interrupts
+    timer8.int_count += 1; //counting number of interrupts
+    TCNT0 = 0;
 
-    if (timer8_int_counter == timer8.max_time_ints) {
+    if (timer8.max_time_ints == 0) {
+        timer8.int_count = 0;
         OCR0A = timer8.remainder_time;
-    }
-    else if (timer8_int_counter >= timer8.max_time_ints + 1) {
-        // the desired time has passed
-        timer8_int_counter = 0; // reset the number of interrupts to 0
-        OCR0A = 0xFF; //set compare value
         (timer8.cmd)();
+    }
+    else {
+        if (timer8.int_count == timer8.max_time_ints) {
+            OCR0A = timer8.remainder_time;
+        }
+        else if (timer8.int_count >= timer8.max_time_ints + 1) {
+            // the desired time has passed
+            timer8.int_count = 0; // reset the number of interrupts to 0
+            OCR0A = 0xFF; //set compare value
+            (timer8.cmd)();
+        }
     }
 }
