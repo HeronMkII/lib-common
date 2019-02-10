@@ -34,7 +34,8 @@ look like 12 1's, while an output of "low" would look like 12 0's.
 
 Usages:
 1. Initialize ADC -> init_adc()
-2. Call a fetch on a particular channel or all the channels to update the values on the channel array -> fetch_all() or fetch_channel(c) 
+2. Call a fetch on a particular channel or all the channels to update the values
+on the channel array -> fetch_all() or fetch_channel(c)
 where c is the channel number
 3. Call read to return the value on a particular channel -> read_channel(c)
 
@@ -89,8 +90,7 @@ simultaneously, until the full 16 bits are sent and recieved.
 @param adc_t* adc - the ADC
 @param uint16_t frame - the 16 bits of the frame
 */
-uint16_t send_adc(adc_t* adc, uint16_t frame) {//ps the cs fcns are from spi... idk how much of that to note
-    set_cs_low(adc->cs->pin, adc->cs->port);
+uint16_t send_adc(adc_t* adc, uint16_t frame) {
     uint8_t d1 = send_spi((uint8_t)(frame >> 8));
     uint8_t d2 = send_spi((uint8_t)(frame));
     set_cs_high(adc->cs->pin, adc->cs->port);
@@ -141,7 +141,6 @@ void reset_adc(adc_t* adc){
   send_adc(adc,frame);
   frame = STOP_RESET;
   send_adc(adc,frame);
-  //verify this is correct... somehow
   //based on table p.33 of datasheet
 }
 
@@ -161,7 +160,6 @@ void fetch_all(adc_t* adc) {
             adc->channel[i] = send_adc(adc, CONTINUE_AUTO1_MODE) & 0x0fff;
         }
     }
-
     adc->mode = AUTO1;
 }
 
@@ -177,7 +175,6 @@ void fetch_channel(adc_t* adc, uint8_t c) {
 
     // TODO: This doesn't seem to matter
     // if (adc->mode == AUTO1) send_adc(adc, frame);
-    //--> need to build test for this.
 
     send_adc(adc, frame);
     send_adc(adc, frame);
