@@ -50,9 +50,9 @@ int main(void) {
     print("check VREF (pin 10) = 2.5V\n");
     print("\n");
 
-    dac_set_voltage(&dac, DAC_A, 0.7);
+    set_dac_voltage(&dac, DAC_A, 0.7);
     print("Set VOUTA = 0.7 V\n");
-    dac_set_voltage(&dac, DAC_B, 1.2);
+    set_dac_voltage(&dac, DAC_B, 1.2);
     print("Set VOUTB = 1.2 V\n");
     delay_s(20);
     print("\n");
@@ -63,16 +63,17 @@ int main(void) {
     print("\n");
 
     for (uint8_t i = 0; i < 40; i++) {
-        dac_set_voltage(&dac, DAC_A, i * 0.1);
-        print("Set VOUTA = %u * 0.1V\n", i);
+        double voltage_a = i * 0.1;
+        set_dac_voltage(&dac, DAC_A, voltage_a);
+        print("Set VOUTA = %.1f V\n", voltage_a);
 
-        dac_set_voltage(&dac, DAC_B, (40 - 1 - i) * 0.1);
-        print("Set VOUTB = %u * 0.1V\n", 40 - 1 - i);
+        double voltage_b = (40 - 1 - i) * 0.1;
+        set_dac_voltage(&dac, DAC_B, voltage_b);
+        print("Set VOUTB = %.1f V\n", voltage_b);
 
         delay_s(1);
         print("\n");
     }
 
     print("Done\n");
-    while (1) {}
 }

@@ -5,8 +5,8 @@ A DAC is a device that takes a digital signal (sequence of bits over SPI) as
 input and produces an analog voltage on a pin as output.
 
 This is used in PAY to control the analog hardware involving comparators for
-heater control. This is used in PAY-Optical to set a reference voltage for the ADC
-(Analog to Digital Converter) that converts optical sensor measurements.
+heater control. This is used in PAY-Optical to set a reference voltage for the
+ADC (Analog to Digital Converter) that converts optical sensor measurements.
 
 Datasheet: http://www.ti.com/lit/ds/symlink/dac8162.pdf
 Important pages:
@@ -17,33 +17,21 @@ Important pages:
 - p.36-38 - programming, registers, SPI
 - **p.38 - Table 17** - all SPI commands
 
-Table 16 is somewhat misleading - only applies to writing register values for voltages
+Table 16 is somewhat misleading - only applies to writing register values for
+    voltages
 
-Every SPI communication is 24 bits, with some bits being ignored as don't care bits.
+Every SPI communication is 24 bits, with some bits being ignored as don't care
+    bits.
 
 - internal voltage reference - VREF = 2.5V, gain = 2
 - LDAC disabled/inactive - connected to GND in hardware
     - this is optional functionality to update both voltage outputs simultaneously
 - it appears that the DAC cannot output a voltage higher than AVDD (about 2.9V in testing)
 - "update" means updating the pin output voltage to match its register
-
-TODO - power down/up DAC A/B?
+- Not using power down modes
 */
 
 #include <dac/dac.h>
-
-#ifndef F_CPU
-#define F_CPU 8000000UL
-#endif
-
-#include <util/delay.h>
-
-// Internal voltage reference (V)
-#define DAC_INT_VREF        2.5
-// Internal voltage reference gain
-#define DAC_INT_VREF_GAIN   2
-// Number of bits to represent voltage
-#define DAC_N               12
 
 // SPI commands (pg 38)
 // "Enable internal reference and reset DACs to gain = 2"
@@ -54,16 +42,14 @@ TODO - power down/up DAC A/B?
 
 // Sends a 24 bit DAC command over SPI
 // {xx, C2-0, A2-0, DB15-0} - see Table 17
-void dac_send(dac_t* dac, uint32_t data) {
+void send_dac_spi(dac_t* dac, uint32_t data) {
     uint8_t spi1 = (data >> 16) & 0xFF;
     uint8_t spi2 = (data >> 8) & 0xFF;
     uint8_t spi3 = data & 0xFF;
 
     // Need to set CPHA = 1 since the DAC samples data on the falling edge of
-    // SCLK
-    // TODO: Add support for this in the SPI library itself
-    uint8_t SPCR_old = SPCR;
-    SPCR |= _BV(CPHA);
+    // SCLK (p. 4) (inferred as mode 1)
+    set_spi_mode(1);
 
     set_cs_low(dac->cs->pin, dac->cs->port);
     send_spi(spi1);
@@ -71,28 +57,24 @@ void dac_send(dac_t* dac, uint32_t data) {
     send_spi(spi3);
     set_cs_high(dac->cs->pin, dac->cs->port);
 
-    // Restore old SPCR value
-    SPCR = SPCR_old;
+    // Restore old SPI mode
+    reset_spi_mode();
 }
 
 // Initializes the DAC for use
 void init_dac(dac_t* dac) {
-    // TODO - use generic port commands instead of SPI
-    // Initialize CS and CLR pins
+    // Initialize CS pin, high by default
     init_cs(dac->cs->pin, dac->cs->ddr);
-    set_cs_high(dac->cs->pin, dac->cs->port);
 
-    init_cs(dac->clr->pin, dac->clr->ddr);
-    set_cs_high(dac->clr->pin, dac->clr->port);
+    // Initialize CLR pin, high by default
+    init_output_pin(dac->clr->pin, dac->clr->ddr, 1);
 
     // Enable internal voltage reference
-    dac_send(dac, ENABLE_INT_REF);
+    send_dac_spi(dac, ENABLE_INT_REF);
     // Disable LDAC
-    dac_send(dac, DISABLE_LDAC);
+    send_dac_spi(dac, DISABLE_LDAC);
 
-
-    //reset dac
-    // set raw voltages to 0
+    // reset dac, set raw voltages to 0
     reset_dac(dac);
 }
 
@@ -100,35 +82,36 @@ void init_dac(dac_t* dac) {
 // pg 4, sets output to zero scale
 // pg 34, write to register immediately outputs to zero scale
 void reset_dac(dac_t* dac) {
-    set_cs_low(dac->clr->pin, dac->clr->port);
+    set_pin_low(dac->clr->pin, dac->clr->port);
     _delay_ms(1);
-    set_cs_high(dac->clr->pin, dac->clr->port);
+    set_pin_high(dac->clr->pin, dac->clr->port);
 
     dac->raw_voltage_a = 0;
     dac->raw_voltage_b = 0;
 }
 
 // Sets the output voltage for the specified output pin (C)
-// voltage - in V (after gain, as measured for hardware output)
-void dac_set_voltage(dac_t* dac, dac_chan_t channel, double voltage) {
-    uint16_t raw_data = dac_vol_to_raw_data(voltage);
-    dac_set_voltage_with_12bits(dac, channel, raw_data);
-}
-
-// Sets the output voltage for the specified output pin (C)
 // 12bits = equivalent 12 bit value of output voltage
-void dac_set_voltage_with_12bits(dac_t* dac, dac_chan_t channel, uint16_t raw_data){
-     // "Write to DAC-C input register and update DAC-Channel"
-    uint32_t spi = (0b011UL << 19) | (((uint32_t)channel) << 16) | (raw_data << 4);
-    dac_send(dac, spi);
+void set_dac_raw_voltage(dac_t* dac, dac_chan_t channel, uint16_t raw_data) {
+     // "Write to DAC-C input register and update DAC-Channel"  (Table 17)
+    uint32_t spi = (0b011UL << 19) | (((uint32_t) channel) << 16) |
+        (raw_data << 4);
+    send_dac_spi(dac, spi);
 
-    switch (channel){
-        case (DAC_A):
+    switch (channel) {
+        case DAC_A:
             dac->raw_voltage_a = raw_data;
             break;
 
-        case (DAC_B):
+        case DAC_B:
             dac->raw_voltage_b = raw_data;
             break;
     }
+}
+
+// Sets the output voltage for the specified output pin (C)
+// voltage - in V (after gain, as measured for hardware output)
+void set_dac_voltage(dac_t* dac, dac_chan_t channel, double voltage) {
+    uint16_t raw_data = dac_vol_to_raw_data(voltage);
+    set_dac_raw_voltage(dac, channel, raw_data);
 }
