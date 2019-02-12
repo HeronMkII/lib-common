@@ -9,7 +9,7 @@
 # Includes (header files)
 INCLUDES = -I../../include
 # Libraries from lib-common to link
-LIB = -L../../lib -ladc -lcan -lconversions -ldac -lheartbeat -lpex -lqueue -lspi -lstack -ltest -ltimer -luart -lutilities -lwatchdog -lprintf_flt -lm
+LIB = -L../../lib -ladc -lcan -ldac -lconversions -lheartbeat -lpex -lqueue -lspi -lstack -ltest -ltimer -luart -lutilities -lwatchdog -lprintf_flt -lm
 # Name of microcontroller ("32m1" or "64m1")
 MCU = 64m1
 #-------------------------------------------------------------------------------

@@ -87,6 +87,7 @@ all: $(SRC)
 # TODO - calling make in a subdirectory seems to not pass the `clean` argument -
 #	find a fix for this
 clean:
+	rm -f lib/*.a
 	@for dir in $(BUILD) ; do \
 		echo rm -f $$dir/*.* ; \
 		rm -f $$dir/*.* ; \

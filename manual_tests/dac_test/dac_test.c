@@ -4,11 +4,6 @@
 #include <uart/uart.h>
 #include <dac/dac.h>
 #include <dac/pay.h>
-
-#ifndef F_CPU
-#define F_CPU 8000000UL
-#endif
-
 #include <util/delay.h>
 
 pin_info_t cs = {
@@ -48,11 +43,16 @@ int main(void) {
 
     init_dac(&dac);
     print("DAC Initialized\n");
+    print("VOUTA = pin 1\n");
+    print("VOUTB = pin 2\n");
     print("\n");
 
-    dac_set_voltage(&dac, 0.7, DAC_A);
+    print("check VREF (pin 10) = 2.5V\n");
+    print("\n");
+
+    set_dac_voltage(&dac, DAC_A, 0.7);
     print("Set VOUTA = 0.7 V\n");
-    dac_set_voltage(&dac, 1.2, DAC_B);
+    set_dac_voltage(&dac, DAC_B, 1.2);
     print("Set VOUTB = 1.2 V\n");
     delay_s(20);
     print("\n");
@@ -63,16 +63,17 @@ int main(void) {
     print("\n");
 
     for (uint8_t i = 0; i < 40; i++) {
-        dac_set_voltage(&dac, i * 0.1, DAC_A);
-        print("Set VOUTA = %u * 0.1V\n", i);
+        double voltage_a = i * 0.1;
+        set_dac_voltage(&dac, DAC_A, voltage_a);
+        print("Set VOUTA = %.1f V\n", voltage_a);
 
-        dac_set_voltage(&dac, (40 - 1 - i) * 0.1, DAC_B);
-        print("Set VOUTB = %u * 0.1V\n", 40 - 1 - i);
+        double voltage_b = (40 - 1 - i) * 0.1;
+        set_dac_voltage(&dac, DAC_B, voltage_b);
+        print("Set VOUTB = %.1f V\n", voltage_b);
 
         delay_s(1);
         print("\n");
     }
 
     print("Done\n");
-    while (1) {}
 }
