@@ -4,11 +4,6 @@
 #include <uart/uart.h>
 #include <dac/dac.h>
 #include <dac/pay.h>
-
-#ifndef F_CPU
-#define F_CPU 8000000UL
-#endif
-
 #include <util/delay.h>
 
 pin_info_t cs = {
@@ -48,6 +43,11 @@ int main(void) {
 
     init_dac(&dac);
     print("DAC Initialized\n");
+    print("VOUTA = pin 1\n");
+    print("VOUTB = pin 2\n");
+    print("\n");
+
+    print("check VREF (pin 10) = 2.5V\n");
     print("\n");
 
     dac_set_voltage(&dac, DAC_A, 0.7);
