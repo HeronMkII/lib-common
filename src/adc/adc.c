@@ -35,11 +35,10 @@ look like 12 1's, while an output of "low" would look like 12 0's.
 Usages:
 1. Initialize ADC -> init_adc()
 2. Call a fetch on a particular channel or all the channels to update the values
-on the channel array -> fetch_all() or fetch_channel(c)
+on the channel array -> fetch_all_adc_channels() or fetch_channel(c)
 where c is the channel number
 3. Call read to return the value on a particular channel -> read_channel(c)
 
-note: clarify naming of bits vs channels
 */
 
 #include <adc/adc.h>
@@ -90,7 +89,8 @@ simultaneously, until the full 16 bits are sent and recieved.
 @param adc_t* adc - the ADC
 @param uint16_t frame - the 16 bits of the frame
 */
-uint16_t send_adc(adc_t* adc, uint16_t frame) {
+uint16_t send_adc_frame(adc_t* adc, uint16_t frame) {
+    set_cs_low(adc->cs->pin, adc->cs->port);
     uint8_t d1 = send_spi((uint8_t)(frame >> 8));
     uint8_t d2 = send_spi((uint8_t)(frame));
     set_cs_high(adc->cs->pin, adc->cs->port);
@@ -110,7 +110,7 @@ void init_adc(adc_t* adc) {
     init_spi();
 
     for (uint8_t i = 0; i < ADC_CHANNELS; i++) {
-        adc->channel[i] = 0;
+        adc->channel_data[i] = 0;
     }
 
     adc->mode = MANUAL;
@@ -128,20 +128,20 @@ void init_adc(adc_t* adc) {
 
     // Program auto-1 register
     uint16_t f1 = PGM_AUTO1_REG;//cmd of changing mode to auto-mode- where it fetches all channels
-    uint16_t f2 = adc->channels;
-    send_adc(adc, f1);
-    send_adc(adc, f2);
+    uint16_t f2 = adc->auto_channels;
+    send_adc_frame(adc, f1);
+    send_adc_frame(adc, f2);
 }
 /*
 Resets the ADC: powers it off, then powers it on.
 */
 
 void reset_adc(adc_t* adc){
-  uint16_t frame = START_RESET;
-  send_adc(adc,frame);
-  frame = STOP_RESET;
-  send_adc(adc,frame);
-  //based on table p.33 of datasheet
+    uint16_t frame = START_RESET;
+    send_adc_frame(adc,frame);
+    frame = STOP_RESET;
+    send_adc_frame(adc,frame);
+    //based on table p.33 of datasheet
 }
 
 /*
@@ -149,15 +149,15 @@ Gets the digital data from all channels in the ADC and updates
 the channel array at all indicies.
 @param adc_t* adc - ADC
 */
-void fetch_all(adc_t* adc) {
+void fetch_all_adc_channels(adc_t* adc) {
     if (adc->mode == MANUAL) {
-        send_adc(adc, REQUEST_AUTO1_MODE);
-        send_adc(adc, ENTER_AUTO1_MODE);
+        send_adc_frame(adc, REQUEST_AUTO1_MODE);
+        send_adc_frame(adc, ENTER_AUTO1_MODE);
     }
 
     for (uint8_t i = 0; i < ADC_CHANNELS; i++) {
-        if (adc->channels & _BV(i)) {
-            adc->channel[i] = send_adc(adc, CONTINUE_AUTO1_MODE) & 0x0fff;
+        if (adc->auto_channels & _BV(i)) { //if the bits representing the channel match the auto_channels
+            adc->channel_data[i] = send_adc_frame(adc, CONTINUE_AUTO1_MODE) & 0x0fff;
         }
     }
     adc->mode = AUTO1;
@@ -176,9 +176,9 @@ void fetch_channel(adc_t* adc, uint8_t c) {
     // TODO: This doesn't seem to matter
     // if (adc->mode == AUTO1) send_adc(adc, frame);
 
-    send_adc(adc, frame);
-    send_adc(adc, frame);
-    adc->channel[c] = send_adc(adc, frame) & 0x0fff;
+    send_adc_frame(adc, frame);
+    send_adc_frame(adc, frame);
+    adc->channel_data[c] = send_adc_frame(adc, frame) & 0x0fff;
 
     adc->mode = MANUAL;
 }
@@ -190,5 +190,5 @@ Returns a 16-bit unsigned integer that is stored in the channel array at index c
 @param uint8_t c - the specified channel
 */
 uint16_t read_channel(adc_t* adc, uint8_t c) {
-    return adc->channel[c];
+    return adc->channel_data[c];
 }

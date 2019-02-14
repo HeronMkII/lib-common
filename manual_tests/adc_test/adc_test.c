@@ -17,7 +17,7 @@ pin_info_t cs = {
 };
 
 adc_t adc = {
-    .channels = 0x0c00, // poll pins 10 and 11 of the ADC in auto-1 mode
+    .auto_channels = 0x0c00, // poll pins 10 and 11 of the ADC in auto-1 mode
     .cs = &cs
 };
 
@@ -49,7 +49,7 @@ int main(void) {
         // Fetch all channels at once; using AUTO1 mode under the hood
         // Each fetch takes only 1 frame, so this uses 2 frames total!
         // If we were interested in k channels, this would use k frames.
-        fetch_all(&adc);
+        fetch_all_adc_channels(&adc);
         print_voltage(&adc, 10);
         print_voltage(&adc, 11);
         _delay_ms(200);

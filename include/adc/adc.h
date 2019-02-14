@@ -16,22 +16,23 @@ typedef enum {
 
 // ADC type
 typedef struct {
-    //
-    uint16_t channels;
+    //auto channels
+    uint16_t auto_channels;
 
-    //
+    //not sure what this is
     pin_info_t* cs;
 
     // private
-    //
+    //MANUAL or AUTO1 mode
     adc_mode_t mode;
-    //
-    uint16_t channel[ADC_CHANNELS];
+    //channel data: stores the high/low reading after being fetched.
+    uint16_t channel_data[ADC_CHANNELS];
 } adc_t;
 
-
+uint16_t send_adc_frame(adc_t*, uint16_t);
+void reset_adc(adc_t* adc);
 void init_adc(adc_t*);
-void fetch_all(adc_t*);
+void fetch_all_adc_channels(adc_t*);
 void fetch_channel(adc_t*, uint8_t);
 
 uint16_t read_channel(adc_t*, uint8_t);
