@@ -20,74 +20,81 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 // Byte 1: Message Type
 
 // EPS housekeeping data
-#define CAN_EPS_HK  0x00
+#define CAN_EPS_HK      0x00
+// EPS control
+#define CAN_EPS_CTRL    0x01
 // PAY housekeeping data
-#define CAN_PAY_HK  0x01
+#define CAN_PAY_HK      0x02
 // PAY optical data
-#define CAN_PAY_OPT 0x02
-// PAY experiment
-#define CAN_PAY_EXP 0x03
+#define CAN_PAY_OPT     0x03
+// PAY control
+#define CAN_PAY_CTRL    0x04
 
 
 // Byte 2: Field Number
 
 // EPS housekeeping
-// Field Number = ADC channel number (0 to 11)
-// Should match with channel number constants in <adc/eps.h>
+// 0 to 11: field number = ADC channel number
 #define CAN_EPS_HK_BB_VOL       0
 #define CAN_EPS_HK_BB_CUR       1
-#define CAN_EPS_HK_BT_VOL       2
-#define CAN_EPS_HK_BT_CUR       3
-#define CAN_EPS_HK_PX_CUR       4
+#define CAN_EPS_HK_NY_CUR       2
+#define CAN_EPS_HK_PX_CUR       3
+#define CAN_EPS_HK_PY_CUR       4
 #define CAN_EPS_HK_NX_CUR       5
-#define CAN_EPS_HK_PY_CUR       6
-#define CAN_EPS_HK_NY_CUR       7
+#define CAN_EPS_HK_BAT_TEMP1    6
+#define CAN_EPS_HK_BAT_TEMP2    7
 #define CAN_EPS_HK_BAT_VOL      8
 #define CAN_EPS_HK_BAT_CUR      9
-#define CAN_EPS_HK_BAT_TEMP1    10
-#define CAN_EPS_HK_BAT_TEMP2    11
-#define CAN_EPS_HK_IMU_ACC_X    12
-#define CAN_EPS_HK_IMU_ACC_Y    13
-#define CAN_EPS_HK_IMU_ACC_Z    14
-#define CAN_EPS_HK_IMU_GYR_X    15
-#define CAN_EPS_HK_IMU_GYR_Y    16
-#define CAN_EPS_HK_IMU_GYR_Z    17
-#define CAN_EPS_HK_IMU_MAG_X    18
-#define CAN_EPS_HK_IMU_MAG_Y    19
-#define CAN_EPS_HK_IMU_MAG_Z    20
-#define CAN_EPS_HK_GET_DAC1     21
-#define CAN_EPS_HK_GET_DAC2     22
-#define CAN_EPS_HK_SET_DAC1     23
-#define CAN_EPS_HK_SET_DAC2     24
-// Number of get (not set) fields
-#define CAN_EPS_HK_GET_COUNT 23
+#define CAN_EPS_HK_BT_CUR       10
+#define CAN_EPS_HK_BT_VOL       11
+#define CAN_EPS_HK_HEAT_SP1     12
+#define CAN_EPS_HK_HEAT_SP2     13
+#define CAN_EPS_HK_IMU_ACC_X    14
+#define CAN_EPS_HK_IMU_ACC_Y    15
+#define CAN_EPS_HK_IMU_ACC_Z    16
+#define CAN_EPS_HK_IMU_GYR_X    17
+#define CAN_EPS_HK_IMU_GYR_Y    18
+#define CAN_EPS_HK_IMU_GYR_Z    19
+#define CAN_EPS_HK_IMU_MAG_X    20
+#define CAN_EPS_HK_IMU_MAG_Y    21
+#define CAN_EPS_HK_IMU_MAG_Z    22
+// Number of fields
+#define CAN_EPS_HK_FIELD_COUNT  23
+
+// EPS control
+#define CAN_EPS_CTRL_HEAT_SP1   0
+#define CAN_EPS_CTRL_HEAT_SP2   1
 
 // PAY housekeeping
-#define CAN_PAY_HK_TEMP         0 // Temperature
-#define CAN_PAY_HK_HUM          1 // Humidity
-#define CAN_PAY_HK_PRES         2 // Pressure
-#define CAN_PAY_HK_THERM0       3 // First thermistor
-// ... until Thermistor 9 -> field 12
-#define CAN_PAY_HK_GET_DAC1     13
-#define CAN_PAY_HK_GET_DAC2     14
-#define CAN_PAY_HK_SET_DAC1     15
-#define CAN_PAY_HK_SET_DAC2     16
-// Number of get (not set) fields
-#define CAN_PAY_HK_GET_COUNT    15
+#define CAN_PAY_HK_TEMP         0
+#define CAN_PAY_HK_HUM          1
+#define CAN_PAY_HK_PRES         2
+#define CAN_PAY_HK_THERM0       3
+#define CAN_PAY_HK_THERM1       4
+#define CAN_PAY_HK_THERM2       5
+#define CAN_PAY_HK_THERM3       6
+#define CAN_PAY_HK_THERM4       7
+#define CAN_PAY_HK_THERM5       8
+#define CAN_PAY_HK_THERM6       9
+#define CAN_PAY_HK_THERM7       10
+#define CAN_PAY_HK_THERM8       11
+#define CAN_PAY_HK_THERM9       12
+#define CAN_PAY_HK_HEAT_SP1     13
+#define CAN_PAY_HK_HEAT_SP2     14
+#define CAN_PAY_HK_PROX_LEFT    15
+#define CAN_PAY_HK_PROX_RIGHT   16
+// Number of fields
+#define CAN_PAY_HK_FIELD_COUNT  17
 
 // PAY optical
 // Field Number = Well number (0 to 35)
 // Number of fields
-#define CAN_PAY_SCI_GET_COUNT 36
+#define CAN_PAY_OPT_FIELD_COUNT 36
 
-// PAY experiment
-// Left proximity
-#define CAN_PAY_EXP_PROX_LEFT   0
-// Right proximity
-#define CAN_PAY_EXP_PROX_RIGHT  1
-// Tell PAY to level the motors
-#define CAN_PAY_EXP_LEVEL       2
-// Tell PAY to actuate the motors
-#define CAN_PAY_EXP_POP         3
+// PAY control
+#define CAN_PAY_CTRL_HEAT_SP1   0
+#define CAN_PAY_CTRL_HEAT_SP2   1
+#define CAN_PAY_CTRL_ACT_UP     2
+#define CAN_PAY_CTRL_ACT_DOWN   3
 
 #endif
