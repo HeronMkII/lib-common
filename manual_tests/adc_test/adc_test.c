@@ -17,7 +17,7 @@ pin_info_t cs = {
 };
 
 adc_t adc = {
-    .auto_channels = 0x0300, // poll pins 10 and 11 of the ADC in auto-1 mode
+    .auto_channels = 0x0300, // poll pins 8 and 9 of the ADC in auto-1 mode
     .cs = &cs
 };
 

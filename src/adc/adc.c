@@ -119,10 +119,6 @@ void init_adc(adc_t* adc) {
     init_cs(adc->cs->pin, adc->cs->ddr);
     set_cs_high(adc->cs->pin, adc->cs->port);
 
-    // TODO: Figure out how to reset the ADC. See the power down (PD) pin notes
-    // in the datasheet.
-    //(in response to this...)
-    //idea: power down then restart?
     reset_adc(adc);
 
 
@@ -172,9 +168,6 @@ channel array at index c.
 void fetch_adc_channel(adc_t* adc, uint8_t channel) {
     uint16_t channel_addr = ((uint16_t) channel) << 7;
     uint16_t frame = MANUAL_MODE | EN_PGM | channel_addr | RANGE2;
-
-    // TODO: This doesn't seem to matter
-    // if (adc->mode == AUTO1) send_adc(adc, frame);
 
     send_adc_frame(adc, frame);
     send_adc_frame(adc, frame);
