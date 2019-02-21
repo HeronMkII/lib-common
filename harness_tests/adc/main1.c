@@ -27,18 +27,16 @@ void init_adc_test(void){
 }
 
 //test fetch before reset
-void fetch_channel_test(void){
-    uint16_t prev = adc.channel_data[11];
-
-    fetch_channel(&adc, 11);
+void fetch_adc_channel_test(void){
+    fetch_adc_channel(&adc, 11);
 
     ASSERT_EQ(adc.mode, MANUAL);
-    ASSERT_NEQ(prev, adc.channel_data[11]);
-    //is it correct to assume the value must have changed? check/confirm that fact.
+    //no guaruntee that value at 11 changed/didnt change...
+
 }
 
 void fetch_all_test(void){
-    uint16_t *prev[ADC_CHANNELS];
+    uint16_t prev[ADC_CHANNELS];
     for (uint8_t i = 0; i < ADC_CHANNELS; i++){
         prev[i] = adc.channel_data[i];
     }
@@ -48,20 +46,17 @@ void fetch_all_test(void){
     ASSERT_EQ(adc.mode, AUTO1);
 
     for (uint8_t i = 0; i < ADC_CHANNELS; i++){
-            if (i == 10 || i== 11){
-                ASSERT_NEQ(prev[i], adc.channel_data[i]);
-            } else {
+            if (i!=10 && i!=11){
                 ASSERT_EQ(prev[i], adc.channel_data[i]);
             }
     }
-    //once again, check it's ok to assume the values must have changed.
 }
 
 //test this before init
 void reset_adc_test(void){
     //channel 5, reset, check for channel 0
-    fetch_channel(&adc,5); //reading from channel 5
-    read_channel(&adc,5);
+    fetch_adc_channel(&adc,5); //reading from channel 5
+    read_adc_channel(&adc,5);
 
     uint16_t test = send_adc_frame(&adc,0x0000);
     ASSERT_EQ(test & 0xf000, 0x5000);
@@ -78,7 +73,7 @@ void reset_adc_test(void){
 
 
 test_t t1 = { .name = "init_adc_test", .fn = init_adc_test };
-test_t t2 = { .name = "fetch_channel_test", .fn = fetch_channel_test };
+test_t t2 = { .name = "fetch_adc_channel_test", .fn = fetch_adc_channel_test };
 test_t t3 = { .name = "fetch_all_test", .fn = fetch_all_test };
 test_t t4 = { .name = "reset_adc_test", .fn = reset_adc_test };
 

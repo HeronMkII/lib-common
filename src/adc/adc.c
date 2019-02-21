@@ -35,9 +35,9 @@ look like 12 1's, while an output of "low" would look like 12 0's.
 Usages:
 1. Initialize ADC -> init_adc()
 2. Call a fetch on a particular channel or all the channels to update the values
-on the channel array -> fetch_all_adc_channels() or fetch_channel(c)
+on the channel array -> fetch_all_adc_channels() or fetch_adc_channel(c)
 where c is the channel number
-3. Call read to return the value on a particular channel -> read_channel(c)
+3. Call read to return the value on a particular channel -> read_adc_channel(c)
 
 */
 
@@ -169,8 +169,8 @@ channel array at index c.
 @param adc_t* adc - ADC
 @param uint8_t c - the specified channel
 */
-void fetch_channel(adc_t* adc, uint8_t c) {
-    uint16_t channel_addr = ((uint16_t) c) << 7;
+void fetch_adc_channel(adc_t* adc, uint8_t channel) {
+    uint16_t channel_addr = ((uint16_t) channel) << 7;
     uint16_t frame = MANUAL_MODE | EN_PGM | channel_addr | RANGE2;
 
     // TODO: This doesn't seem to matter
@@ -178,7 +178,7 @@ void fetch_channel(adc_t* adc, uint8_t c) {
 
     send_adc_frame(adc, frame);
     send_adc_frame(adc, frame);
-    adc->channel_data[c] = send_adc_frame(adc, frame) & 0x0fff;
+    adc->channel_data[channel] = send_adc_frame(adc, frame) & 0x0fff;
 
     adc->mode = MANUAL;
 }
@@ -189,6 +189,6 @@ Returns a 16-bit unsigned integer that is stored in the channel array at index c
 @param adc_t* adc - the ADC
 @param uint8_t c - the specified channel
 */
-uint16_t read_channel(adc_t* adc, uint8_t c) {
-    return adc->channel_data[c];
+uint16_t read_adc_channel(adc_t* adc, uint8_t channel) {
+    return adc->channel_data[channel];
 }
