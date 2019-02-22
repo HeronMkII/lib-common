@@ -59,6 +59,7 @@ double hum_raw_data_to_humidity(uint16_t raw_data);
 double pres_raw_data_to_pressure(uint32_t raw_data);
 
 double opt_adc_raw_data_to_vol(uint32_t raw_data, uint8_t gain);
+double opt_adc_raw_data_to_diff_vol(uint32_t raw_data, uint8_t gain);
 
 double therm_res_to_temp(double resistance);
 double therm_temp_to_res(double temp);

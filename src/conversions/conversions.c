@@ -191,6 +191,17 @@ double opt_adc_raw_data_to_vol(uint32_t raw_data, uint8_t gain) {
     return num / denom;
 }
 
+double opt_adc_raw_data_to_diff_vol(uint32_t raw_data, uint8_t gain) {
+  // p.31
+  // Code = 2^(n-1) x [(AIN * Gain / V_REF) + 1]
+  // => AIN = (Code/2^(n-1) - 1) * V_REF/Gain
+  double volt = ((double) raw_data) / (1UL << (OPT_ADC_NUM_BITS - 1));
+  volt -= 1;
+  volt *= ((double) OPT_ADC_V_REF) / ((double) gain);
+
+  return volt;
+}
+
 
 // The following two arrays are lookup tables for the thermistors
 // From manufacturer datasheet (pg 13)
