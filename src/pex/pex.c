@@ -24,12 +24,6 @@ AUTHORS: Dylan Vogel, Shimi Smith, Bruno Almeida, Siddharth Mahendraker
 
 #include <pex/pex.h>
 
-#ifndef F_CPU
-#define F_CPU 8000000UL
-#endif
-
-#include <util/delay.h>
-
 /*
 Initializes port expander reset and chip select pins on the 32M1
 pex - pointer to the pex device

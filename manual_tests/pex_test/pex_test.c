@@ -1,28 +1,22 @@
 #include <uart/uart.h>
 #include <spi/spi.h>
 #include <pex/pex.h>
-#include <pex/pay.h>
 
-#ifndef F_CPU
-#define F_CPU 8000000UL
-#endif
-
-#include <util/delay.h>
-
+// PAY-SSM configuration
 pin_info_t cs = {
-    .port = &PEX_CS_PORT_PAY,
-    .ddr = &PEX_CS_DDR_PAY,
-    .pin = PEX_CS_PIN_PAY
+    .port = &PORTD,
+    .ddr = &DDRD,
+    .pin = PD5
 };
-
 pin_info_t rst = {
-    .port = &PEX_RST_PORT_PAY,
-    .ddr = &PEX_RST_DDR_PAY,
-    .pin = PEX_RST_PIN_PAY
+    .port = &PORTD,
+    .ddr = &DDRD,
+    .pin = PD6
 };
+const uint8_t addr = 1;
 
 pex_t pex = {
-    .addr = PEX_ADDR_PAY,
+    .addr = addr,
     .cs = &cs,
     .rst = &rst
 };

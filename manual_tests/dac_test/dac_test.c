@@ -3,19 +3,17 @@
 
 #include <uart/uart.h>
 #include <dac/dac.h>
-#include <dac/pay.h>
-#include <util/delay.h>
 
+// PAY-SSM configuration
 pin_info_t cs = {
-    .pin = DAC_CS_PIN_PAY,
-    .ddr = &DAC_CS_DDR_PAY,
-    .port = &DAC_CS_PORT_PAY
+    .pin = PD0,
+    .ddr = &DDRD,
+    .port = &PORTD
 };
-
 pin_info_t clr = {
-    .pin = DAC_CLR_PIN_PAY,
-    .ddr = &DAC_CLR_DDR_PAY,
-    .port = &DAC_CLR_PORT_PAY
+    .pin = PD1,
+    .ddr = &DDRD,
+    .port = &PORTD
 };
 
 dac_t dac = {

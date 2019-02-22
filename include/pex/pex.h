@@ -5,11 +5,6 @@
 #include <stdint.h>
 #include <avr/io.h>
 
-// Addresses as set by A2-0 pins in hardware
-#define PEX_ADDR_PAY        1
-#define PEX_ADDR_PAY_OPT    2
-#define PEX_ADDR_EPS        0
-
 // Register addresses
 // Page 12, table 3-1
 #define PEX_IOCON       0x0A  // Assumes bank = 0, such as after reset
