@@ -1,19 +1,20 @@
-#include <uart/uart.h>
 #include <adc/adc.h>
 #include <adc/pay.h>
-
 #include <conversions/conversions.h>
+#include <uart/uart.h>
 
-#ifndef F_CPU
-#define F_CPU 8000000L
-#endif
+// Uncomment to use EPS
+// pin_info_t cs = {
+//     .port = &PORTB,
+//     .ddr = &DDRB,
+//     .pin = PB2
+// };
 
-#include <util/delay.h>
-
+// Uncomment to use PAY
 pin_info_t cs = {
-    .port = &ADC_CS_PORT_PAY,
-    .ddr = &ADC_CS_DDR_PAY,
-    .pin = ADC_CS_PIN_PAY
+    .port = &PORTB,
+    .ddr = &DDRB,
+    .pin = PB6
 };
 
 adc_t adc = {
@@ -24,7 +25,7 @@ adc_t adc = {
 void print_voltage(adc_t* adc, uint8_t c) {
     uint16_t raw_data = read_adc_channel(adc, c);
     double raw_voltage = adc_raw_data_to_raw_vol(raw_data);
-    print("Channel: %u, Raw Data: 0x%.4x, Raw Voltage: %f\n",
+    print("Channel: %u, Raw Data: 0x%.4x, Raw Voltage: %.6f V\n",
             c, raw_data, raw_voltage);
 }
 
@@ -38,18 +39,22 @@ int main(void) {
 
     while (1) {
         // Fetch individual channels; using MANUAL mode under the hood
-        // This ends up using ~3 frames per fetch; thus 6 frames total.
-        fetch_adc_channel(&adc, 8);
-        fetch_adc_channel(&adc, 9);
-
-        print_voltage(&adc, 8);
-        print_voltage(&adc, 9);
+        // This ends up using ~3 frames per fetch; thus 36 frames total.
+        for (uint8_t i = 0; i < ADC_CHANNELS; i++) {
+            // print("manual fetch %u\n", i);
+            fetch_adc_channel(&adc, i);
+        }
+        print("\nManual mode:\n");
+        for (uint8_t i = 0; i < ADC_CHANNELS; i++) {
+            print_voltage(&adc, i);
+        }
         _delay_ms(200);
 
         // Fetch all channels at once; using AUTO1 mode under the hood
         // Each fetch takes only 1 frame, so this uses 2 frames total!
         // If we were interested in k channels, this would use k frames.
         fetch_all_adc_channels(&adc);
+        print("\nAuto mode:\n");
         print_voltage(&adc, 8);
         print_voltage(&adc, 9);
         _delay_ms(200);

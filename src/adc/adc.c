@@ -95,7 +95,9 @@ uint16_t send_adc_frame(adc_t* adc, uint16_t frame) {
     uint8_t d2 = send_spi((uint8_t)(frame));
     set_cs_high(adc->cs->pin, adc->cs->port);
 
-    return ((uint16_t) d1 << 8) | d2;
+    uint16_t received = ((uint16_t) d1 << 8) | ((uint16_t) d2);
+    // print("sent frame 0x%.4x, received 0x%.4x\n", frame, received);
+    return received;
 }
 
 /*
