@@ -14,8 +14,8 @@
 #define DAC_CS_PORT_PAY_OPT     PORTB
 #define DAC_CS_DDR_PAY_OPT      DDRB
 // The DAC_CLR pin on PAY-Optical is not connected
-// Set it to some random pin
-#define DAC_CLR_PIN_PAY_OPT     PB0
+// Set it to an unconnected 32M1 pin
+#define DAC_CLR_PIN_PAY_OPT     PB3
 #define DAC_CLR_PORT_PAY_OPT    PORTB
 #define DAC_CLR_DDR_PAY_OPT     DDRB
 
