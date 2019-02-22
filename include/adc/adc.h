@@ -8,7 +8,7 @@
 // Number channels in the ADC
 #define ADC_CHANNELS 12
 
-//
+// ADC operational modes
 typedef enum {
     MANUAL,
     AUTO1

@@ -1,5 +1,4 @@
 #include <adc/adc.h>
-#include <adc/pay.h>
 #include <conversions/conversions.h>
 #include <uart/uart.h>
 
