@@ -4,6 +4,7 @@
 #include <avr/io.h>
 #include <stdint.h>
 #include <spi/spi.h>
+#include <uart/uart.h>
 
 // Number channels in the ADC
 #define ADC_CHANNELS 12

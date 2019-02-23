@@ -3,18 +3,18 @@
 #include <uart/uart.h>
 
 // Uncomment to use EPS
-// pin_info_t cs = {
-//     .port = &PORTB,
-//     .ddr = &DDRB,
-//     .pin = PB2
-// };
-
-// Uncomment to use PAY
 pin_info_t cs = {
     .port = &PORTB,
     .ddr = &DDRB,
-    .pin = PB6
+    .pin = PB2
 };
+
+// Uncomment to use PAY
+// pin_info_t cs = {
+//     .port = &PORTB,
+//     .ddr = &DDRB,
+//     .pin = PB6
+// };
 
 adc_t adc = {
     .auto_channels = 0x0300, // poll pins 8 and 9 of the ADC in auto-1 mode
@@ -31,7 +31,14 @@ void print_voltage(adc_t* adc, uint8_t c) {
 // This test reads the raw data and voltages on each ADC channel
 int main(void) {
     init_uart();
-    print("UART initialized\n");
+    print("\n\nUART initialized\n");
+
+    // FOR EPS: set the IMU CSn (PD0) high (because it doesn't have a pullup resistor)
+    // so it doesn't interfere with the ADC's output on the MISO line
+    // We can leave this in for PAY because on PAY-SSM, PD0 is connected to the
+    // DAC CSn
+    init_cs(PD0, &DDRD);
+    set_cs_high(PD0, &PORTD);
 
     init_adc(&adc);
     print("ADC initialized\n");
