@@ -123,7 +123,6 @@ void init_adc(adc_t* adc) {
 
     reset_adc(adc);
 
-
     // Program auto-1 register
     uint16_t f1 = PGM_AUTO1_REG;//cmd of changing mode to auto-mode- where it fetches all channels
     uint16_t f2 = adc->auto_channels;
