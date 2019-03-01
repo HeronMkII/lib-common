@@ -143,4 +143,4 @@ endif
 
 # Upload .hex program to device
 upload: $(PROG)
-	avrdude -p $(DEVICE) -c $(PGMR) -P $(PORT) -U flash:w:./$^.hex
+	avrdude -p $(DEVICE) -c $(PGMR) -C ../../avrdude.conf -P $(PORT) -U flash:w:./$^.hex
