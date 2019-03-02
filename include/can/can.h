@@ -8,7 +8,6 @@
 typedef enum {
     TX_MOB,
     RX_MOB,
-    AUTO_MOB
 } mob_type_t;
 
 typedef enum {
@@ -19,6 +18,7 @@ typedef enum {
     CAN_RATE_1000,
 } can_baud_rate_t;
 
+// Define the default baud rate as 100
 #define CAN_DEF_BAUD_RATE CAN_RATE_100
 
 // allows access to the id via table
@@ -41,7 +41,6 @@ typedef struct {
 // TODO: change these; ide_mask SHOULD matter
 #define default_rx_ctrl { 0, 0, 0, 0, 0, 0 }
 #define default_tx_ctrl { 0, 0, 0, 0, 0, 0 }
-#define default_auto_ctrl {1, 0, 0, 0, 0, 0, 1} // RTR, RPLV bits are set
 
 typedef void (*can_rx_callback_t)(const uint8_t*, uint8_t);
 typedef void (*can_tx_callback_t)(uint8_t*, uint8_t*);
@@ -70,7 +69,6 @@ void init_can(void);
 
 void init_rx_mob(mob_t*);
 void init_tx_mob(mob_t*);
-void init_auto_mob(mob_t*);
 
 void pause_mob(mob_t*);
 void resume_mob(mob_t*);
