@@ -120,10 +120,6 @@ void resume_mob(mob_t* mob) {
             CANCDMOB &= ~(_BV(CONMOB1));
             break;
         case RX_MOB:
-        case AUTO_MOB:
-            CANCDMOB |= _BV(CONMOB1);
-            CANCDMOB &= ~(_BV(CONMOB0));
-            break;
     }
 }
 
@@ -161,26 +157,6 @@ void init_tx_mob(mob_t* mob) {
     pause_mob(mob); // tx mobs must be resumed manually
 }
 
-void init_auto_mob(mob_t* mob) {
-    select_mob(mob->mob_num);
-
-    set_id_tag(mob->id_tag);
-    set_id_mask(mob->id_mask);
-    set_ctrl_flags(mob->ctrl);
-
-    // TODO: this data might be stale
-    // ideally, you'd load the data just before the auto-reply was sent
-    // In order to avoid stale data, we should develop a timer-triggered load
-    load_data(mob);
-
-    CANGIE |= _BV(ENTX); /* auto-reply mobs only generate tx interrupts */
-    CANIE2 |= _BV(mob->mob_num);
-
-    mob_array[mob->mob_num] = mob;
-    /* The below line may not be necessary, as it transmits only upon reciept of an appropriate msg
-     and behaves as an rx mob until then.  */
-    //pause_mob(mob);
-}
 
 void handle_rx_interrupt(mob_t* mob) {
     select_mob(mob->mob_num);
@@ -231,40 +207,6 @@ void handle_tx_interrupt(mob_t* mob) {
     // this is why we must resume the mob if there is still data left to send
 
     pause_mob(mob);
-}
-
-void handle_auto_tx_interrupt(mob_t* mob) {
-    select_mob(mob->mob_num);
-
-    // TODO: Many of the variables, including IDTAG, dlc, etc
-    // are copied from the incoming remote frame; thus, they must all be
-    // reset and restored to their original values
-    // In particular, the RTR tag and RPLV bit must be reset to their
-    // original values
-    // as in the TX case, if there is no data left, pause the mob
-    // otherwise, load fresh data via tx callback
-
-    // NOTE: RTR, RPLV are reset automatically
-
-    // TODO: maybe make this work like TX MObs?
-
-    /*load_data(mob);*/
-    // This line likely does not have the intended effect, as the data is  re-loaded
-    // after the message has been transmitted. The data should be updated via other
-    // means, such as being triggered by a timer.
-
-    // clear interrupt flag
-    CANSTMOB &= ~(_BV(TXOK));
-
-    // this should happen all at once (NOTE: This was removed from tx_mob interrupt,
-    // so it is possible that this is not needed here anymore)
-    if (mob->dlc != 0) resume_mob(mob);
-    else pause_mob(mob);
-
-    // TODO: for some reason, we need to set these AFTER
-    set_id_tag(mob->id_tag);
-    set_id_mask(mob->id_mask);
-    set_ctrl_flags(mob->ctrl);
 }
 
 uint8_t mob_status(mob_t* mob) {
@@ -386,9 +328,6 @@ ISR(CAN_INT_vect) {
             switch (mob->mob_type) {
                 case TX_MOB:
                     handle_tx_interrupt(mob);
-                    break;
-                case AUTO_MOB:
-                    handle_auto_tx_interrupt(mob);
                     break;
                 default:
                     // should never get here
