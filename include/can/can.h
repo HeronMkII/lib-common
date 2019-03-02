@@ -18,6 +18,7 @@ typedef enum {
     CAN_RATE_1000,
 } can_baud_rate_t;
 
+// Define the default baud rate as 100
 #define CAN_DEF_BAUD_RATE CAN_RATE_100
 
 // allows access to the id via table
