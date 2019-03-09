@@ -31,6 +31,10 @@ All functions have same structure:
 */
 
 
+typedef void(*watchdog_function)(void);
+
+
+
 /* Triggers interrupts upon timeout */
  #define WDT_ENABLE_INTERRUPT(timeout)\
 __asm__ __volatile__ ( \
