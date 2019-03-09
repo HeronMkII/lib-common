@@ -148,6 +148,7 @@ void pause_mob(mob_t* mob) {
             CANCDMOB &= ~(_BV(CONMOB0) | _BV(CONMOB1));
             break;
         case RX_MOB: // RX mob should not be paused
+            break;
 }
 
 // Resumes the selected mob
@@ -314,19 +315,19 @@ void set_can_rate_reg(uint8_t canbt1, uint8_t canbt2, uint8_t canbt3){
 // Pre-defined settings for baud rate. 100 is the default.
 void set_can_baud_rate(can_baud_rate_t baud_rate){
 switch (baud_rate) {
-    case CAN_RATE_100,:
+    case CAN_RATE_100:
         set_can_rate_reg(8, 12, 55);
         break;
     case CAN_RATE_125:
         set_can_rate_reg(6, 12, 55);
         break;
-    case CAN_RATE_250,:
+    case CAN_RATE_250:
         set_can_rate_reg(2, 12, 55);
         break;
-    case CAN_RATE_500,:
+    case CAN_RATE_500:
         set_can_rate_reg(0, 12, 54);
         break;
-    case CAN_RATE_1000,:
+    case CAN_RATE_1000:
         set_can_rate_reg(0, 4, 18);
         break;
     default:
@@ -337,7 +338,7 @@ switch (baud_rate) {
 // any influence on bus (i.e. entering bus off mode)
 // Reference pg. 237 for error management
 void handle_bus_off_interrupt(mob_t* mob) {
-    select_mob(mob->mob_num) //not sure if this is necessary
+    select_mob(mob->mob_num); //not sure if this is necessary
 
     CANGIT |= _BV(BOFFIT); //setting this bit clears it
 
@@ -350,7 +351,7 @@ void handle_bus_off_interrupt(mob_t* mob) {
         print("Resetting CAN controller...");
         CANGCON |= _BV(SWRES); // Only resets CAN controller
         CANGCON |= _BV(ENASTB); // Enable mode (0x02)
-        while (!(CANGSTA & _BV(ENFG)){ // Wait until enabled
+        while (!(CANGSTA & _BV(ENFG))){ // Wait until enabled
             print("Waiting...");
         }
         print("Node enabled...");
@@ -361,7 +362,7 @@ void handle_bus_off_interrupt(mob_t* mob) {
     }
 
     else {
-        print("Standby mode...")
+        print("Standby mode...");
         CANGCON |= _BV(SWRES); // Only resets CAN controller
         CANGCON |= ~(_BV(ENASTB)); // Disable node (0x02)
     }
