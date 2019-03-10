@@ -68,10 +68,8 @@ raw_voltage - voltage on an ADC input pin (in V)
 returns - current in the EPS circuit (in A)
 */
 double adc_raw_vol_to_eps_cur(double raw_voltage) {
-    double before_ref_voltage = raw_voltage - ADC_EPS_IOUT_VREF;
-
     // Get the voltage across the resistor before amplifier gain
-    double before_gain_voltage = before_ref_voltage / ADC_EPS_IOUT_AMP_GAIN;
+    double before_gain_voltage = raw_voltage / ADC_EPS_IOUT_AMP_GAIN;
     // Ohm's law (I = V / R)
     double current = before_gain_voltage / ADC_EPS_IOUT_RES;
 
