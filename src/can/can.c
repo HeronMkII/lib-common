@@ -1,6 +1,7 @@
 /* https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-8209-8-bit%20AVR%20ATmega16M1-32M1-64M1_Datasheet.pdf */
 
-
+#include <stdio.h> // Need to import these libraries.
+#include <stdlib.h>
 #include <can/can.h>
 #include <uart/uart.h>
 
@@ -113,9 +114,9 @@ uint8_t is_paused(mob_t* mob) {
 // Initializes CAN protocol
 void init_can(void) {
     // Reset CAN controller and set communication baud rate to default (100 kbps)
+    void set_can_baud_rate(can_baud_rate_t baud_rate); // Need to formally declare this function first.
     CANGCON |= _BV(SWRES);
     set_can_baud_rate(CAN_DEF_BAUD_RATE);
-
 
     CANGIE |= _BV(ENIT) | _BV(ENBOFF) | _BV(ENRX) |  _BV(ENTX) |  _BV(ENERR);
     // enable most CAN interrupts, execept the overrun timer, and general errors
@@ -379,13 +380,12 @@ void handle_bus_off_interrupt(mob_t* mob) {
 ISR(CAN_INT_vect) {
     for (uint8_t i = 0; i < 6; i++) {
         mob_t* mob = mob_array[i];
-
-        if (mob == 0) continue;
-        else select_mob(i);
+        if (mob == 0) {continue;}
+        else {select_mob(i);}
 
         uint8_t status = mob_status(mob);
 
-        if (handle_err(mob)) continue;
+        if (handle_err(mob)) {continue;}
 
         // Bus off interrupt
         if (CANGIT & _BV(BOFFIT)){
@@ -396,6 +396,7 @@ ISR(CAN_INT_vect) {
         if (status & _BV(RXOK)) {
             handle_rx_interrupt(mob);
         }
+
         // TX interrupts
         else if (status & _BV(TXOK)) {
             switch (mob->mob_type) {
