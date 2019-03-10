@@ -150,6 +150,7 @@ void pause_mob(mob_t* mob) {
             break;
         case RX_MOB: // RX mob should not be paused
             break;
+        }
 }
 
 // Resumes the selected mob
