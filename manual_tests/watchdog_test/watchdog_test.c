@@ -7,34 +7,27 @@
 int main(void)
 {
   init_uart();
+  WDT_OFF();
   print("STARTING PROGRAM\n");
 
   WDT_ENABLE_SYS_RESET(WDTO_2S);
 
-  //set up an infinite loop
   for(int i = 0; i<5; i++)
   {
     _delay_ms(1500);
     WDT_ENABLE_SYS_RESET(WDTO_2S);
-    print("LOOP%d",i);
+    print("LOOP%d\n",i);
   }
 
+  int counter = 0;
 
+  //set up an infinite loop
   while(1){
-
+      counter++;
+      print("%d\n",counter);
+      _delay_ms(100);
     }
 
 
-    print("FAILED");
-
-  
-
-
-
-  //Alternates LED_PORT between states (i.e. ISR triggering twice will get back to initial state)
-
-  //LED_PORT ^= (1 << LED_PIN);
-  //print("LED_PORT: %d\n", LED_PORT);
-
-
+    print("FAILED\n");
 }
