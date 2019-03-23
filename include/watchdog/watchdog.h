@@ -31,7 +31,7 @@ All functions have same structure:
 */
 
 
-typedef void(*watchdog_function)(void);
+typedef void(*watchdog_function_t)(void);
 
 
 

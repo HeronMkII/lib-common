@@ -1,2 +1,2 @@
-PROG = adc_test
+PROG = watchdog_test
 include ../makefile

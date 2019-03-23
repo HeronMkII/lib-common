@@ -2,32 +2,39 @@
 
 //simulates a timeout
 
-
-volatile int interrupt_count = 0;
-
 //set up watchdog timer
 
 int main(void)
 {
-  print("WATCHDOG TIMER INTERRUPT\n");
+  init_uart();
+  print("STARTING PROGRAM\n");
+
+  WDT_ENABLE_SYS_RESET(WDTO_2S);
 
   //set up an infinite loop
-  while(1){
-    if (interrupt_count == 25) {
-      while(1){};
-    }
-    interrupt_count++;
-    print("%dTH INTERRUPT\n", interrupt_count);
-    //reset watchdog timer
-    wdt_reset();
-    
+  for(int i = 0; i<5; i++)
+  {
+    _delay_ms(1500);
+    WDT_ENABLE_SYS_RESET(WDTO_2S);
+    print("LOOP%d",i);
   }
+
+
+  while(1){
+
+    }
+
+
+    print("FAILED");
+
+  
 
 
 
   //Alternates LED_PORT between states (i.e. ISR triggering twice will get back to initial state)
-  LED_PORT ^= (1 << LED_PIN);
-  print("LED_PORT: %d\n", LED_PORT);
+
+  //LED_PORT ^= (1 << LED_PIN);
+  //print("LED_PORT: %d\n", LED_PORT);
 
 
 }
