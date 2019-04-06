@@ -9,11 +9,11 @@
 
 mob_t* mob_array[6] = {0};
 
-uint8_t boffit_count = 0;
+volatile uint8_t boffit_count = 0;
 
 // Selects the relevant mob from the CANPAGE register, in order to access
 // registers that are duplicated for each mob
-static inline void select_mob(uint8_t mob_num) {
+void select_mob(uint8_t mob_num) {
     CANPAGE = mob_num << 4;
 }
 
@@ -114,21 +114,11 @@ uint8_t is_paused(mob_t* mob) {
 // Initializes CAN protocol
 void init_can(void) {
     // Reset CAN controller and set communication baud rate to default (100 kbps)
-    void set_can_baud_rate(can_baud_rate_t baud_rate); // Need to formally declare this function first.
     CANGCON |= _BV(SWRES);
     set_can_baud_rate(CAN_DEF_BAUD_RATE);
 
-<<<<<<< HEAD
 
-<<<<<<< HEAD
-    CANGIE |= _BV(ENIT) | _BV(ENTX) | _BV(ENRX) | _BV(ENERR);
-=======
     CANGIE |= _BV(ENIT) | _BV(ENBOFF) |_BV(ENTX) | _BV(ENRX) | _BV(ENERR);
-    //TODO: deal with error interrupts? - BOFFIT
->>>>>>> b2507a5... Custom baud rate and BOFFIT Interrupt Handling
-=======
-    CANGIE |= _BV(ENIT) | _BV(ENBOFF) | _BV(ENRX) |  _BV(ENTX) |  _BV(ENERR);
->>>>>>> 802e49e... Added documentation to the CAN library code and removed references to automobs
     // enable most CAN interrupts, execept the overrun timer, and general errors
 
     // disable all mobs, clear all interrupt flags
@@ -143,12 +133,12 @@ void init_can(void) {
 
     // set can to enable mode
     CANGCON |= _BV(ENASTB);
-    while (!(CANGSTA & _BV(ENFG))) {}
+
     // enable CAN and wait for CAN to turn on before returning
-<<<<<<< HEAD
-=======
-    // added a timeout for this infinite loop
->>>>>>> 802e49e... Added documentation to the CAN library code and removed references to automobs
+    uint16_t timeout = UINT16_MAX;
+    while (!(CANGSTA & _BV(ENFG)) && timeout > 0) {
+        timeout--;
+    }
 }
 
 // Pauses the selected mob by setting 2 MSB of CANCDMOB to 0
@@ -160,7 +150,7 @@ void pause_mob(mob_t* mob) {
             break;
         case RX_MOB: // RX mob should not be paused
             break;
-        }
+    }
 }
 
 // Resumes the selected mob
@@ -180,6 +170,7 @@ void resume_mob(mob_t* mob) {
         case RX_MOB:
             CANCDMOB &= ~(_BV(CONMOB0));
             CANCDMOB |= _BV(CONMOB1);
+            break;
     }
 }
 
@@ -311,6 +302,9 @@ uint8_t handle_err(mob_t* mob) {
 
         // Clears CANSTMOB error bits
         CANSTMOB &= ~(0x9f);
+        //print("CANTEC: %d\n", CANTEC);
+        //print("ERRP: %d\n", CANGSTA & _BV(ERRP));
+        //print("BOFF: %d\n", CANGSTA & _BV(BOFF));
         return 1;
     }
 
@@ -326,82 +320,76 @@ void set_can_rate_reg(uint8_t canbt1, uint8_t canbt2, uint8_t canbt3){
 
 // Pre-defined settings for baud rate. 100 is the default.
 void set_can_baud_rate(can_baud_rate_t baud_rate){
-switch (baud_rate) {
-    case CAN_RATE_100:
-        set_can_rate_reg(8, 12, 55);
-        break;
-    case CAN_RATE_125:
-        set_can_rate_reg(6, 12, 55);
-        break;
-    case CAN_RATE_250:
-        set_can_rate_reg(2, 12, 55);
-        break;
-    case CAN_RATE_500:
-        set_can_rate_reg(0, 12, 54);
-        break;
-    case CAN_RATE_1000:
-        set_can_rate_reg(0, 4, 18);
-        break;
-    default:
-        break;
-}
+    switch (baud_rate) {
+        case CAN_RATE_100:
+            set_can_rate_reg(8, 12, 55);
+            break;
+        case CAN_RATE_125:
+            set_can_rate_reg(6, 12, 55);
+            break;
+        case CAN_RATE_250:
+            set_can_rate_reg(2, 12, 55);
+            break;
+        case CAN_RATE_500:
+            set_can_rate_reg(0, 12, 54);
+            break;
+        case CAN_RATE_1000:
+            set_can_rate_reg(0, 4, 18);
+            break;
+        default:
+            break;
+    }
 }
 // Handles the circumstance where the CAN channel is not allowed to have
 // any influence on bus (i.e. entering bus off mode)
 // Reference pg. 237 for error management
-void handle_bus_off_interrupt(mob_t* mob) {
-    select_mob(mob->mob_num); //not sure if this is necessary
+void handle_bus_off_interrupt(void){
 
     CANGIT |= _BV(BOFFIT); //setting this bit clears it
 
-    // do something
-    // i.e. store appropriate information to be retrieved later and modify global variable
-    //   that keeps track of number of BOFFIT interrupts
+    // TODO: store appropriate information to be retrieved later (e.g. last msg sent)
     // handle interrupt by performing a software reset
 
-    if(boffit_count == 0){
-        print("Resetting CAN controller...");
-        CANGCON |= _BV(SWRES); // Only resets CAN controller
-        CANGCON |= _BV(ENASTB); // Enable mode (0x02)
-        while (!(CANGSTA & _BV(ENFG))){ // Wait until enabled
-            print("Waiting...");
-        }
-        print("Node enabled...");
-    }
-    else if (boffit_count < 3){
-        print("Aborting message...");
-        CANGCON |= _BV(ABRQ); // Disable pending and terminate current communications
-    }
+    print("Resetting CAN controller...\n");
+    CANGCON |= _BV(SWRES); // Only resets CAN controller
+    CANGCON |= _BV(ENASTB); // Enable mode (0x02)
 
-    else {
-        print("Standby mode...");
-        CANGCON |= _BV(SWRES); // Only resets CAN controller
-        CANGCON |= ~(_BV(ENASTB)); // Disable node (0x02)
+    uint16_t timeout = UINT16_MAX;
+    while (!(CANGSTA & _BV(ENFG)) && timeout > 0){ // Wait until enabled
+        print("Waiting...\n");
+        timeout--;
     }
+    print("Node enabled...\n");
 
-    // NOTE:
-    // Force enable mode: CANGCON |= _BV(ENASTB);
-    // Current status of bus: CANGSTA & _BV(BOFF);
-    // Error passive mode: CANGSTA & _BV(ERRP);
-    // Software reset: CANGCON |= _BV(SWRES); (this resets CAN controller)
-
+    /* NOTE (for reference)
+    Disable pending and terminate current communications (Abort msg) CANGCON |= _BV(ABRQ);
+    Only resets CAN controller: CANGCON |= _BV(SWRES);
+    Disable node (0x02)CANGCON |= ~(_BV(ENASTB));
+    Force enable mode: CANGCON |= _BV(ENASTB);
+    Current status of bus: CANGSTA & _BV(BOFF);
+    Error passive mode: CANGSTA & _BV(ERRP);
+    Software reset: CANGCON |= _BV(SWRES); (this resets CAN controller) */
 }
 
 // ISR routine for CAN to handle various interrupts
 ISR(CAN_INT_vect) {
+    //print("CANTEC: %x\n", CANTEC);
+    // Bus off interrupt
+    if (CANGIT & _BV(BOFFIT)){
+        print(ERR_MSG, "BOFFIT");
+        handle_bus_off_interrupt();
+        boffit_count++;
+        print("BOFFIT COUNT: %d\n",boffit_count);
+    }
+    //print("CANREC: %x\n", CANREC);
+    //print("CANGIT: %x\n", CANGIT);
     for (uint8_t i = 0; i < 6; i++) {
         mob_t* mob = mob_array[i];
         if (mob == 0) {continue;}
         else {select_mob(i);}
-
         uint8_t status = mob_status(mob);
 
         if (handle_err(mob)) {continue;}
-
-        // Bus off interrupt
-        if (CANGIT & _BV(BOFFIT)){
-            handle_bus_off_interrupt(mob);
-        }
 
         // RX interrupts
         if (status & _BV(RXOK)) {
@@ -416,6 +404,7 @@ ISR(CAN_INT_vect) {
                     break;
                 default:
                     // should never get here
+                    print("ERR\n");
                     handle_err(mob);
                     break;
             }

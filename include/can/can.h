@@ -62,7 +62,7 @@ typedef struct {
     uint8_t data[8];
 } mob_t;
 
-extern uint8_t boffit_count;
+extern volatile uint8_t boffit_count;
 
 
 void init_can(void);
@@ -75,5 +75,8 @@ void resume_mob(mob_t*);
 uint8_t is_paused(mob_t*);
 
 uint8_t mob_status(mob_t*);
+void select_mob(uint8_t);
+
+void set_can_baud_rate(can_baud_rate_t);
 
 #endif
