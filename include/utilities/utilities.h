@@ -28,6 +28,7 @@ void set_pin_low(uint8_t pin, port_t port);
 void set_pin_high(uint8_t pin, port_t port);
 
 void init_input_pin(uint8_t pin, ddr_t ddr);
+void set_pin_pullup(uint8_t pin, port_t port, uint8_t value);
 uint8_t get_pin_val(uint8_t pin, port_t port);
 
 #endif // UTILITIES_H
