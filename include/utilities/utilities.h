@@ -10,6 +10,14 @@
 #endif
 #include <util/delay.h>
 
+// Default values in EEPROM for different sizes
+// Byte (1 byte)
+#define EEPROM_DEF_BYTE 0xFF
+// Word (2 bytes)
+#define EEPROM_DEF_WORD 0xFFFF
+// Double word (4 bytes)
+#define EEPROM_DEF_DWORD 0xFFFFFFFF
+
 
 // Memory-mapped register types for PORTx and DDRx
 // Volatile because the register hardware can change without the program knowing
