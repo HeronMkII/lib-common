@@ -10,6 +10,14 @@
 #endif
 #include <util/delay.h>
 
+// Default values in EEPROM for different sizes
+// Byte (1 byte)
+#define EEPROM_DEF_BYTE 0xFF
+// Word (2 bytes)
+#define EEPROM_DEF_WORD 0xFFFF
+// Double word (4 bytes)
+#define EEPROM_DEF_DWORD 0xFFFFFFFF
+
 
 // Memory-mapped register types for PORTx and DDRx
 // Volatile because the register hardware can change without the program knowing
@@ -28,6 +36,7 @@ void set_pin_low(uint8_t pin, port_t port);
 void set_pin_high(uint8_t pin, port_t port);
 
 void init_input_pin(uint8_t pin, ddr_t ddr);
+void set_pin_pullup(uint8_t pin, port_t port, uint8_t value);
 uint8_t get_pin_val(uint8_t pin, port_t port);
 
 #endif // UTILITIES_H
