@@ -1,6 +1,6 @@
 # All libraries (subdirectories/folders) in lib-common
 # Need to put uart first because other libraries depend on it (otherwise get error of "No rule to make target...")
-LIBNAMES = uart adc can conversions dac heartbeat pex queue spi stack test timer utilities watchdog
+LIBNAMES = uart adc can conversions dac heartbeat pex queue spi stack test timer uptime utilities watchdog
 # Subfolders in src folder
 SRC = $(addprefix src/,$(LIBNAMES))
 # Subfolders in build folder
