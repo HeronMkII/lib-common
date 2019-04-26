@@ -1,0 +1,2 @@
+LIBNAME = uptime
+include ../makefile
