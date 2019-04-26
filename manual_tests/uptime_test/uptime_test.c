@@ -1,9 +1,9 @@
 /*
 This program tests initialization of the restart count (read EEPROM, increment,
-write EEPROM) and continuous updating of the OBC uptime.
+write EEPROM) and continuous updating of the MCU uptime.
 */
 
-#include "../../src/uptime.h"
+#include <uptime/uptime.h>
 
 uint8_t counts[6] = {0};
 
@@ -52,14 +52,10 @@ int main(void) {
     init_uart();
 
     print("\n\n\nStarting uptime test\n\n");
-    rtc_date_t date = { .yy = 03, .mm = 11, .dd = 21 };
-    rtc_time_t time = { .hh = 07, .mm = 03, .ss = 59 };
-    init_uptime(date, time);
+    init_uptime();
     print("Initialized uptime\n");
 
     print("restart_count = %lu\n", restart_count);
-    print("restart_date = %u:%u:%u\n", restart_date.yy, restart_date.mm, restart_date.dd);
-    print("restart_time = %u:%u:%u\n", restart_time.hh, restart_time.mm, restart_time.ss);
     print("uptime_s = %lu\n", uptime_s);
 
     wait();

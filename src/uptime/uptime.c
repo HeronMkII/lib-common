@@ -1,28 +1,24 @@
 /*
 Functionality to track a global uptime (in seconds since last restart) across
-all of OBC using the 8-bit timer. Also tracks the number of times OBC has
-restarted using EEPROM.
+the microcontroller (MCU) using the 8-bit timer. Also tracks the number of times
+the MCU has restarted using EEPROM.
 
 This library basically multiplexes a set of timer callbacks onto a single timer
-(the 8-bit timer). You can add multiple callbcaks, which will all be called
-around the same time every second. They can read the `uptime_s` variable to
-decide what to do.
+(the 8-bit timer). You can add multiple callbacks, which will all be called
+at the same time (in order) every second. They can read the `uptime_s` variable
+to decide what to do.
 */
 
-#include "uptime.h"
+#include <uptime/uptime.h>
 
-// Variables  modified inside the timer interrupt must be volatile
+// Variables modified inside the timer interrupt must be volatile
 // Note that 1 billion seconds is about 31.7 years (reasoning for using 32-bit
 // uptime_s variable)
 
-// Number of times OBC has started up, i.e. how many times the program has
+// Number of times the MCU has started up, i.e. how many times the program has
 // started from the beginning (includes 1 for the first time)
 uint32_t restart_count = 0;
-// Date and time of the most recent restart
-rtc_date_t restart_date = { .yy = 0, .mm = 0, .dd  = 0 };
-rtc_time_t restart_time = { .hh = 0, .mm = 0, .ss  = 0 };
-
-// OBC uptime (in seconds) - since most recent restart
+// Uptime (in seconds) - since most recent restart
 volatile uint32_t uptime_s = 0;
 
 // No-op default callbacks
@@ -34,13 +30,9 @@ uptime_fn_t uptime_callbacks[UPTIME_NUM_CALLBACKS] = {uptime_fn_nop};
 void uptime_timer_cb(void);
 
 
-void init_uptime(rtc_date_t date, rtc_time_t time) {
+void init_uptime(void) {
     // Update restart count
     update_restart_count();
-
-    // Set the date and time
-    restart_date = date;
-    restart_time = time;
 
     // Set all callbacks to no-op initially, just in case
     for (uint8_t i = 0; i < UPTIME_NUM_CALLBACKS; i++) {
