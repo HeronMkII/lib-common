@@ -1,0 +1,107 @@
+/*
+Just test the ability for each MCU to trigger the resets on the other two MCUs.
+*/
+
+#include <heartbeat/heartbeat.h>
+#include <uart/uart.h>
+
+// NOTE: Change this variable before re-compiling and re-uploading to match the
+// subsystem of the board you are uploading to
+uint8_t id = OBC;
+
+void print_cmds(void) {
+    switch (id) {
+        case OBC:
+            print("1. Reset EPS\n");
+            print("2. Reset PAY\n");
+            break;
+        case EPS:
+            print("1. Reset OBC\n");
+            print("2. Reset PAY\n");
+            break;
+        case PAY:
+            print("1. Reset OBC\n");
+            print("2. Reset EPS\n");
+            break;
+        default:
+            break;
+    }
+}
+
+uint8_t uart_cb(uint8_t* data, uint8_t len) {
+    uint8_t c = data[0];
+
+    if (c == 'h') {
+        print_cmds();
+        return 1;
+    }
+    
+    else if (c == '1') {
+        switch (id) {
+            case OBC:
+                print("Resetting EPS");
+                send_heartbeat_reset(EPS);
+                break;
+            case EPS:
+                print("Resetting OBC");
+                send_heartbeat_reset(OBC);
+                break;
+            case PAY:
+                print("Resetting OBC");
+                send_heartbeat_reset(OBC);
+                break;
+            default:
+                break;
+        }
+    }
+    
+    else if (c == '2') {
+        switch (id) {
+            case OBC:
+                print("Resetting PAY");
+                send_heartbeat_reset(PAY);
+                break;
+            case EPS:
+                print("Resetting PAY");
+                send_heartbeat_reset(PAY);
+                break;
+            case PAY:
+                print("Resetting EPS");
+                send_heartbeat_reset(EPS);
+                break;
+            default:
+                break;
+        }
+    }
+    
+    else {
+        print("Invalid command\n");
+    }
+
+    return 1;
+}
+
+int main() {
+    init_uart();
+    print("Starting hearbeat reset test\n");
+
+    print("Self ID = ");
+    if (id == OBC) {
+        print("OBC");
+    } else if (id == EPS) {
+        print("EPS");
+    } else if (id == PAY) {
+        print("PAY");
+    }
+    print("\n");
+
+    print("Initializing heartbeat...\n");
+    init_heartbeat(id);
+    print("Done init\n");
+
+    print_cmds();
+    print("Press 'h' at any time to list the commands\n");
+    while (1) {}
+    
+    return 0;
+}

@@ -20,9 +20,10 @@ being sent to the parent.
 
 // Assume init_uart() and init_can() have been called in SSM main program
 #include <avr/eeprom.h>
-#include <can/can.h>
+
 #include <uart/uart.h>
 #include <heartbeat/heartbeat.h>
+#include <utilities/utilities.h>
 
 // EEPROM address assignment to store status of each SSM
 // EEPROM address starts from 0x0000. Use const uint16_t to declare the address
@@ -51,11 +52,45 @@ uint8_t* child_status = 0x00;
 // ssm_id will be defined in the SSM main program
 // obc {0x00} eps {0x02} pay {0x01}
 // (i.e. heartbeat_test.c in the example folder)
-extern uint8_t ssm_id; // Will be changed by each SSM
+uint8_t ssm_id; // Will be changed by each SSM
 uint8_t receiving_id = 0xff;
 
 // Pre-define fresh_start. Will be re-defined as the mission progresses
 uint8_t fresh_start = 1; // 1 is true. 0 is false
+
+
+pin_info_t obc_rst_eps = {
+    .pin = HB_OBC_RST_EPS_PIN,
+    .port = &HB_OBC_RST_EPS_PORT,
+    .ddr = &HB_OBC_RST_EPS_DDR
+};
+pin_info_t obc_rst_pay = {
+    .pin = HB_OBC_RST_PAY_PIN,
+    .port = &HB_OBC_RST_PAY_PORT,
+    .ddr = &HB_OBC_RST_PAY_DDR
+};
+
+pin_info_t eps_rst_obc = {
+    .pin = HB_EPS_RST_OBC_PIN,
+    .port = &HB_EPS_RST_OBC_PORT,
+    .ddr = &HB_EPS_RST_OBC_DDR
+};
+pin_info_t eps_rst_pay = {
+    .pin = HB_EPS_RST_PAY_PIN,
+    .port = &HB_OBC_RST_PAY_PORT,
+    .ddr = &HB_OBC_RST_PAY_DDR
+};
+
+pin_info_t pay_rst_obc = {
+    .pin = HB_PAY_RST_OBC_PIN,
+    .port = &HB_PAY_RST_OBC_PORT,
+    .ddr = &HB_PAY_RST_OBC_DDR
+};
+pin_info_t pay_rst_eps = {
+    .pin = HB_PAY_RST_EPS_PIN,
+    .port = &HB_PAY_RST_EPS_PORT,
+    .ddr = &HB_PAY_RST_EPS_DDR
+};
 
 
 void rx_callback(const uint8_t*, uint8_t);
@@ -138,7 +173,27 @@ void assign_status_message_objects() {
     }
 }
 
-void init_heartbeat() {
+void init_heartbeat(uint8_t id) {
+    // Store ID in the global variable
+    ssm_id = id;
+
+    switch (ssm_id) {
+        case OBC:
+            init_output_pin(obc_rst_eps.pin, obc_rst_eps.ddr, 1);
+            init_output_pin(obc_rst_pay.pin, obc_rst_pay.ddr, 1);
+            break;
+        case EPS:
+            init_output_pin(eps_rst_obc.pin, eps_rst_obc.ddr, 1);
+            init_output_pin(eps_rst_pay.pin, eps_rst_pay.ddr, 1);
+            break;
+        case PAY:
+            init_output_pin(pay_rst_obc.pin, pay_rst_obc.ddr, 1);
+            init_output_pin(pay_rst_eps.pin, pay_rst_eps.ddr, 1);
+            break;
+        default:
+            return;
+    }
+
     assign_heartbeat_status();
     assign_status_message_objects();
 
@@ -215,4 +270,32 @@ void rx_callback(const uint8_t* data, uint8_t len) {
 
 void heartbeat() {
     resume_mob(&status_tx_mob);
+}
+
+bool send_heartbeat_reset(uint8_t id) {
+    pin_info_t rst_pin;
+
+    if        (ssm_id == OBC && id == EPS) {
+        rst_pin = obc_rst_eps;
+    } else if (ssm_id == OBC && id == PAY) {
+        rst_pin = obc_rst_pay;
+    } else if (ssm_id == EPS && id == OBC) {
+        rst_pin = eps_rst_obc;
+    } else if (ssm_id == EPS && id == PAY) {
+        rst_pin = eps_rst_pay;
+    } else if (ssm_id == PAY && id == OBC) {
+        rst_pin = pay_rst_obc;
+    } else if (ssm_id == PAY && id == EPS) {
+        rst_pin = pay_rst_eps;
+    } else {
+        return false;
+    }
+
+    // Assert the reset
+    // TODO - how long?
+    set_pin_low(rst_pin.pin, rst_pin.port);
+    _delay_ms(100);
+    set_pin_high(rst_pin.pin, rst_pin.port);
+
+    return true;
 }

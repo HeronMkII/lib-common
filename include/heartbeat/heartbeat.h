@@ -1,6 +1,11 @@
 #ifndef HEARTBEAT_H
 #define HEARTBEAT_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
+#include <can/can.h>
+
 // CAN ids of each SSMs.
 // Currently DOES NOT follow the convention of can_ids in lib-common master
 #define OBC_STATUS_RX_MOB_ID 0x001c
@@ -17,6 +22,39 @@
 #define OBC 0x00
 #define EPS 0x02
 #define PAY 0x01
+
+// OBC resets EPS
+#define HB_OBC_RST_EPS_PIN  PC4
+#define HB_OBC_RST_EPS_PORT PORTC
+#define HB_OBC_RST_EPS_DDR  DDRC
+
+// OBC resets PAY
+#define HB_OBC_RST_PAY_PIN  PC5
+#define HB_OBC_RST_PAY_PORT PORTC
+#define HB_OBC_RST_PAY_DDR  DDRC
+
+// EPS resets OBC
+#define HB_EPS_RST_OBC_PIN  PC6
+#define HB_EPS_RST_OBC_PORT PORTC
+#define HB_EPS_RST_OBC_DDR  DDRC
+
+// EPS resets PAY
+#define HB_EPS_RST_PAY_PIN  PC5
+#define HB_EPS_RST_PAY_PORT PORTC
+#define HB_EPS_RST_PAY_DDR  DDRC
+
+// TODO - update pin definitions from PAY outputs
+
+// PAY resets OBC
+#define HB_PAY_RST_OBC_PIN  PD7
+#define HB_PAY_RST_OBC_PORT PORTD
+#define HB_PAY_RST_OBC_DDR  DDRD
+
+// PAY resets EPS
+#define HB_PAY_RST_EPS_PIN  PD7
+#define HB_PAY_RST_EPS_PORT PORTD
+#define HB_PAY_RST_EPS_DDR  DDRD
+
 
 // Store SSM status as global variables
 extern uint8_t obc_status;
@@ -42,7 +80,9 @@ extern mob_t status_tx_mob;
 extern uint8_t fresh_start; // 1 when board has a fresh start, 0 otherwise
 
 // Declare heartbeat functions (Users only use the first 2)
-void init_heartbeat();
+void init_heartbeat(uint8_t id);
 void heartbeat();
+
+bool send_heartbeat_reset(uint8_t id);
 
 #endif // HEARTBEAT_H
