@@ -1,6 +1,6 @@
 /*
     Heartbeat Protocol:
-        (1) In SSM main program, input ssm_id,(OBC, PAY, EPS)
+        (1) In SSM main program, input hb_self_id,(OBC, PAY, EPS)
         as per line 37
         (2) Call init_heartbeat() to set up heartbeat SSM
         configuration. See documented details in heartbeat.c
@@ -27,7 +27,7 @@ extern uint8_t* child_status;
 extern uint8_t receiving_id; // obc {0x00} eps {0x02} pay {0x01}
 extern uint8_t fresh_start;
 
-uint8_t ssm_id; // User define ssm_id in main program
+uint8_t hb_self_id; // User define hb_self_id in main program
 
 // This main function simulates the example file in lib-common
 int main() {
@@ -35,9 +35,7 @@ int main() {
     init_can();
 
     // Input SSM_ID: vital to heartbeat
-    ssm_id = OBC;
-
-    init_heartbeat();
+    init_heartbeat(HB_OBC);
     print("heartbeat initialized\n");
     print("obc %d, pay %d, eps %d\n", obc_status, pay_status, eps_status);
 

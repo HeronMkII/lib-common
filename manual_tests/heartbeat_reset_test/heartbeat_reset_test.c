@@ -7,19 +7,19 @@ Just test the ability for each MCU to trigger the resets on the other two MCUs.
 
 // NOTE: Change this variable before re-compiling and re-uploading to match the
 // subsystem of the board you are uploading to
-uint8_t id = OBC;
+uint8_t id = HB_OBC;
 
 void print_cmds(void) {
     switch (id) {
-        case OBC:
+        case HB_OBC:
             print("1. Reset EPS\n");
             print("2. Reset PAY\n");
             break;
-        case EPS:
+        case HB_EPS:
             print("1. Reset OBC\n");
             print("2. Reset PAY\n");
             break;
-        case PAY:
+        case HB_PAY:
             print("1. Reset OBC\n");
             print("2. Reset EPS\n");
             break;
@@ -38,17 +38,17 @@ uint8_t uart_cb(uint8_t* data, uint8_t len) {
     
     else if (c == '1') {
         switch (id) {
-            case OBC:
+            case HB_OBC:
                 print("Resetting EPS");
-                send_heartbeat_reset(EPS);
+                send_heartbeat_reset(HB_EPS);
                 break;
-            case EPS:
+            case HB_EPS:
                 print("Resetting OBC");
-                send_heartbeat_reset(OBC);
+                send_heartbeat_reset(HB_OBC);
                 break;
-            case PAY:
+            case HB_PAY:
                 print("Resetting OBC");
-                send_heartbeat_reset(OBC);
+                send_heartbeat_reset(HB_OBC);
                 break;
             default:
                 break;
@@ -57,17 +57,17 @@ uint8_t uart_cb(uint8_t* data, uint8_t len) {
     
     else if (c == '2') {
         switch (id) {
-            case OBC:
+            case HB_OBC:
                 print("Resetting PAY");
-                send_heartbeat_reset(PAY);
+                send_heartbeat_reset(HB_PAY);
                 break;
-            case EPS:
+            case HB_EPS:
                 print("Resetting PAY");
-                send_heartbeat_reset(PAY);
+                send_heartbeat_reset(HB_PAY);
                 break;
-            case PAY:
+            case HB_PAY:
                 print("Resetting EPS");
-                send_heartbeat_reset(EPS);
+                send_heartbeat_reset(HB_EPS);
                 break;
             default:
                 break;
@@ -86,11 +86,11 @@ int main() {
     print("Starting hearbeat reset test\n");
 
     print("Self ID = ");
-    if (id == OBC) {
+    if (id == HB_OBC) {
         print("OBC");
-    } else if (id == EPS) {
+    } else if (id == HB_EPS) {
         print("EPS");
-    } else if (id == PAY) {
+    } else if (id == HB_PAY) {
         print("PAY");
     }
     print("\n");
