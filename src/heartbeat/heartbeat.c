@@ -16,13 +16,16 @@ EPS.
 
 When a status is updated, the new status is first written to EEPROM, before
 being sent to the parent.
+
+TODO - test resets with 3 MCUs connected together (i.e. tristating works)
 */
 
 // Assume init_uart() and init_can() have been called in SSM main program
 #include <avr/eeprom.h>
-#include <can/can.h>
+
 #include <uart/uart.h>
 #include <heartbeat/heartbeat.h>
+#include <utilities/utilities.h>
 
 // EEPROM address assignment to store status of each SSM
 // EEPROM address starts from 0x0000. Use const uint16_t to declare the address
@@ -48,14 +51,49 @@ uint8_t* self_status = 0x00;
 uint8_t* parent_status = 0x00;
 uint8_t* child_status = 0x00;
 
-// ssm_id will be defined in the SSM main program
+// hb_self_id will be defined in the SSM main program
 // obc {0x00} eps {0x02} pay {0x01}
 // (i.e. heartbeat_test.c in the example folder)
-extern uint8_t ssm_id; // Will be changed by each SSM
+uint8_t hb_self_id; // Will be changed by each SSM
+
 uint8_t receiving_id = 0xff;
 
 // Pre-define fresh_start. Will be re-defined as the mission progresses
 uint8_t fresh_start = 1; // 1 is true. 0 is false
+
+
+pin_info_t obc_rst_eps = {
+    .pin = HB_OBC_RST_EPS_PIN,
+    .port = &HB_OBC_RST_EPS_PORT,
+    .ddr = &HB_OBC_RST_EPS_DDR
+};
+pin_info_t obc_rst_pay = {
+    .pin = HB_OBC_RST_PAY_PIN,
+    .port = &HB_OBC_RST_PAY_PORT,
+    .ddr = &HB_OBC_RST_PAY_DDR
+};
+
+pin_info_t eps_rst_obc = {
+    .pin = HB_EPS_RST_OBC_PIN,
+    .port = &HB_EPS_RST_OBC_PORT,
+    .ddr = &HB_EPS_RST_OBC_DDR
+};
+pin_info_t eps_rst_pay = {
+    .pin = HB_EPS_RST_PAY_PIN,
+    .port = &HB_OBC_RST_PAY_PORT,
+    .ddr = &HB_OBC_RST_PAY_DDR
+};
+
+pin_info_t pay_rst_obc = {
+    .pin = HB_PAY_RST_OBC_PIN,
+    .port = &HB_PAY_RST_OBC_PORT,
+    .ddr = &HB_PAY_RST_OBC_DDR
+};
+pin_info_t pay_rst_eps = {
+    .pin = HB_PAY_RST_EPS_PIN,
+    .port = &HB_PAY_RST_EPS_PORT,
+    .ddr = &HB_PAY_RST_EPS_DDR
+};
 
 
 void rx_callback(const uint8_t*, uint8_t);
@@ -82,63 +120,37 @@ mob_t status_tx_mob = {
     .tx_data_cb = tx_callback
 };
 
-// Implement heartbeat functions
-void assign_heartbeat_status() {
-    switch (ssm_id) {
-        case OBC:
-            SELF_STATUS_EEMEM = OBC_STATUS_EEMEM;
-            self_status = &obc_status;
-            parent_status = &eps_status;
-            child_status = &pay_status;
-            receiving_id = 0x02;
+
+void init_heartbeat(uint8_t self_id) {
+    // Store ID in the global variable
+    hb_self_id = self_id;
+
+    pin_info_t rst_pin_1;
+    pin_info_t rst_pin_2;
+
+    switch (hb_self_id) {
+        case HB_OBC:
+            rst_pin_1 = obc_rst_eps;
+            rst_pin_2 = obc_rst_pay;
             break;
-        case EPS:
-            SELF_STATUS_EEMEM = EPS_STATUS_EEMEM;
-            self_status = &eps_status;
-            parent_status = &pay_status;
-            child_status = &obc_status;
-            receiving_id = 0x01;
+        case HB_EPS:
+            rst_pin_1 = eps_rst_obc;
+            rst_pin_2 = eps_rst_pay;
             break;
-        case PAY:
-            SELF_STATUS_EEMEM = PAY_STATUS_EEMEM;
-            self_status = &pay_status;
-            parent_status = &obc_status;
-            child_status = &eps_status;
-            receiving_id = 0x00;
+        case HB_PAY:
+            rst_pin_1 = pay_rst_obc;
+            rst_pin_2 = pay_rst_eps;
             break;
         default:
-            print("INVALID SSM ID");
-            break;
+            return;
     }
-}
 
-void assign_status_message_objects() {
-    switch (ssm_id) {
-        case OBC:
-            status_rx_mob.mob_num = 1;
-            status_rx_mob.id_tag.std = OBC_STATUS_RX_MOB_ID;
-            status_tx_mob.mob_num = 0;
-            status_tx_mob.id_tag.std = OBC_STATUS_TX_MOB_ID;
-            break;
-        case EPS:
-            status_rx_mob.mob_num = 0;
-            status_rx_mob.id_tag.std = EPS_STATUS_RX_MOB_ID;
-            status_tx_mob.mob_num = 1;
-            status_tx_mob.id_tag.std = EPS_STATUS_TX_MOB_ID;
-            break;
-        case PAY:
-            status_rx_mob.mob_num = 0;
-            status_rx_mob.id_tag.std = PAY_STATUS_RX_MOB_ID;
-            status_tx_mob.mob_num = 1;
-            status_tx_mob.id_tag.std = PAY_STATUS_TX_MOB_ID;
-            break;
-        default:
-            print("INVALID SSM ID");
-            break;
-    }
-}
+    // See table on p.96 - by default, need tri-state input with pullup (DDR = 0, PORT = 1)
+    init_input_pin(rst_pin_1.pin, rst_pin_1.ddr);
+    set_pin_pullup(rst_pin_1.pin, rst_pin_1.port, 1);
+    init_input_pin(rst_pin_2.pin, rst_pin_2.ddr);
+    set_pin_pullup(rst_pin_2.pin, rst_pin_2.port, 1);
 
-void init_heartbeat() {
     assign_heartbeat_status();
     assign_status_message_objects();
 
@@ -154,18 +166,18 @@ void init_heartbeat() {
     } else {
         // Retrieve most recent status prior to restart from EEPROM
         print("SSM RESTART -> RETRIEVE STATUS\n");
-        switch (ssm_id) {
-            case OBC:
+        switch (hb_self_id) {
+            case HB_OBC:
                 *self_status = eeprom_read_byte((uint8_t*) OBC_STATUS_EEMEM);
                 *parent_status = eeprom_read_byte((uint8_t*) EPS_STATUS_EEMEM);
                 *child_status = eeprom_read_byte((uint8_t*) PAY_STATUS_EEMEM);
                 break;
-            case EPS:
+            case HB_EPS:
                 *self_status = eeprom_read_byte((uint8_t*) EPS_STATUS_EEMEM);
                 *parent_status = eeprom_read_byte((uint8_t*) PAY_STATUS_EEMEM);
                 *child_status = eeprom_read_byte((uint8_t*) OBC_STATUS_EEMEM);
                 break;
-            case PAY:
+            case HB_PAY:
                 *self_status = eeprom_read_byte((uint8_t*) PAY_STATUS_EEMEM);
                 *parent_status = eeprom_read_byte((uint8_t*) OBC_STATUS_EEMEM);
                 *child_status = eeprom_read_byte((uint8_t*) EPS_STATUS_EEMEM);
@@ -181,12 +193,69 @@ void init_heartbeat() {
     }
 }
 
+// Implement heartbeat functions
+void assign_heartbeat_status(void) {
+    switch (hb_self_id) {
+        case HB_OBC:
+            SELF_STATUS_EEMEM = OBC_STATUS_EEMEM;
+            self_status = &obc_status;
+            parent_status = &eps_status;
+            child_status = &pay_status;
+            receiving_id = 0x02;
+            break;
+        case HB_EPS:
+            SELF_STATUS_EEMEM = EPS_STATUS_EEMEM;
+            self_status = &eps_status;
+            parent_status = &pay_status;
+            child_status = &obc_status;
+            receiving_id = 0x01;
+            break;
+        case HB_PAY:
+            SELF_STATUS_EEMEM = PAY_STATUS_EEMEM;
+            self_status = &pay_status;
+            parent_status = &obc_status;
+            child_status = &eps_status;
+            receiving_id = 0x00;
+            break;
+        default:
+            print("INVALID SSM ID");
+            break;
+    }
+}
+
+void assign_status_message_objects(void) {
+    switch (hb_self_id) {
+        case HB_OBC:
+            status_rx_mob.mob_num = 1;
+            status_rx_mob.id_tag.std = OBC_STATUS_RX_MOB_ID;
+            status_tx_mob.mob_num = 0;
+            status_tx_mob.id_tag.std = OBC_STATUS_TX_MOB_ID;
+            break;
+        case HB_EPS:
+            status_rx_mob.mob_num = 0;
+            status_rx_mob.id_tag.std = EPS_STATUS_RX_MOB_ID;
+            status_tx_mob.mob_num = 1;
+            status_tx_mob.id_tag.std = EPS_STATUS_TX_MOB_ID;
+            break;
+        case HB_PAY:
+            status_rx_mob.mob_num = 0;
+            status_rx_mob.id_tag.std = PAY_STATUS_RX_MOB_ID;
+            status_tx_mob.mob_num = 1;
+            status_tx_mob.id_tag.std = PAY_STATUS_TX_MOB_ID;
+            break;
+        default:
+            print("INVALID SSM ID");
+            break;
+    }
+}
+
+
 void tx_callback(uint8_t* data, uint8_t* len) {
     // Update its own EEPROM status first before sending a CAN message to parent
     eeprom_update_byte((uint8_t*) SELF_STATUS_EEMEM, *self_status);
     // Set up CAN message data to be sent to parent
     *len = 8;
-    data[0] = ssm_id;
+    data[0] = hb_self_id;
     data[1] = receiving_id;
     data[2] = 2;
     data[3] = obc_status;
@@ -215,4 +284,35 @@ void rx_callback(const uint8_t* data, uint8_t len) {
 
 void heartbeat() {
     resume_mob(&status_tx_mob);
+}
+
+bool send_heartbeat_reset(uint8_t other_id) {
+    pin_info_t rst_pin;
+
+    if        (hb_self_id == HB_OBC && other_id == HB_EPS) {
+        rst_pin = obc_rst_eps;
+    } else if (hb_self_id == HB_OBC && other_id == HB_PAY) {
+        rst_pin = obc_rst_pay;
+    } else if (hb_self_id == HB_EPS && other_id == HB_OBC) {
+        rst_pin = eps_rst_obc;
+    } else if (hb_self_id == HB_EPS && other_id == HB_PAY) {
+        rst_pin = eps_rst_pay;
+    } else if (hb_self_id == HB_PAY && other_id == HB_OBC) {
+        rst_pin = pay_rst_obc;
+    } else if (hb_self_id == HB_PAY && other_id == HB_EPS) {
+        rst_pin = pay_rst_eps;
+    } else {
+        return false;
+    }
+
+    // Assert the reset
+    // TODO - how long?
+    // See table on p.96 - for reset, need to output low (DDR = 1, PORT = 0)
+    // Then go back to tri-state input with pullup (DDR = 0, PORT = 1)
+    init_output_pin(rst_pin.pin, rst_pin.ddr, 0);
+    _delay_ms(100);
+    init_input_pin(rst_pin.pin, rst_pin.ddr);
+    set_pin_pullup(rst_pin.pin, rst_pin.port, 1);
+
+    return true;
 }
