@@ -28,7 +28,7 @@ void print_cmds(void) {
     }
 }
 
-uint8_t uart_cb(uint8_t* data, uint8_t len) {
+uint8_t uart_cb(const uint8_t* data, uint8_t len) {
     uint8_t c = data[0];
 
     if (c == 'h') {
@@ -39,15 +39,15 @@ uint8_t uart_cb(uint8_t* data, uint8_t len) {
     else if (c == '1') {
         switch (id) {
             case HB_OBC:
-                print("Resetting EPS");
+                print("Resetting EPS\n");
                 send_heartbeat_reset(HB_EPS);
                 break;
             case HB_EPS:
-                print("Resetting OBC");
+                print("Resetting OBC\n");
                 send_heartbeat_reset(HB_OBC);
                 break;
             case HB_PAY:
-                print("Resetting OBC");
+                print("Resetting OBC\n");
                 send_heartbeat_reset(HB_OBC);
                 break;
             default:
@@ -58,15 +58,15 @@ uint8_t uart_cb(uint8_t* data, uint8_t len) {
     else if (c == '2') {
         switch (id) {
             case HB_OBC:
-                print("Resetting PAY");
+                print("Resetting PAY\n");
                 send_heartbeat_reset(HB_PAY);
                 break;
             case HB_EPS:
-                print("Resetting PAY");
+                print("Resetting PAY\n");
                 send_heartbeat_reset(HB_PAY);
                 break;
             case HB_PAY:
-                print("Resetting EPS");
+                print("Resetting EPS\n");
                 send_heartbeat_reset(HB_EPS);
                 break;
             default:
@@ -83,7 +83,9 @@ uint8_t uart_cb(uint8_t* data, uint8_t len) {
 
 int main() {
     init_uart();
-    print("Starting hearbeat reset test\n");
+    print("\n\n\nStarting hearbeat reset test\n");
+    set_uart_rx_cb(uart_cb);
+    print("Set UART RX CB\n");
 
     print("Self ID = ");
     if (id == HB_OBC) {

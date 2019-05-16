@@ -46,14 +46,14 @@
 // TODO - update pin definitions from PAY outputs
 
 // PAY resets OBC
-#define HB_PAY_RST_OBC_PIN  PD7
-#define HB_PAY_RST_OBC_PORT PORTD
-#define HB_PAY_RST_OBC_DDR  DDRD
+#define HB_PAY_RST_OBC_PIN  PC5
+#define HB_PAY_RST_OBC_PORT PORTC
+#define HB_PAY_RST_OBC_DDR  DDRC
 
 // PAY resets EPS
-#define HB_PAY_RST_EPS_PIN  PD7
-#define HB_PAY_RST_EPS_PORT PORTD
-#define HB_PAY_RST_EPS_DDR  DDRD
+#define HB_PAY_RST_EPS_PIN  PC4
+#define HB_PAY_RST_EPS_PORT PORTC
+#define HB_PAY_RST_EPS_DDR  DDRC
 
 
 // Store SSM status as global variables
