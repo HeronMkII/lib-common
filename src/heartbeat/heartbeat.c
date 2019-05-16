@@ -145,7 +145,7 @@ void init_heartbeat(uint8_t self_id) {
             return;
     }
 
-    // See table on p.96 - by default, need tri-state (DDR = 0, PORT = 0)
+    // See table on p.96 - by default, need tri-state input with pullup (DDR = 0, PORT = 1)
     init_input_pin(rst_pin_1.pin, rst_pin_1.ddr);
     set_pin_pullup(rst_pin_1.pin, rst_pin_1.port, 1);
     init_input_pin(rst_pin_2.pin, rst_pin_2.ddr);
@@ -308,14 +308,11 @@ bool send_heartbeat_reset(uint8_t other_id) {
     // Assert the reset
     // TODO - how long?
     // See table on p.96 - for reset, need to output low (DDR = 1, PORT = 0)
-    // Then go back to tri-state (DDR = 0, PORT = 0)
-    print("DDRC = %.2x, PORTC = %.2x\n", DDRC, PORTC);
+    // Then go back to tri-state input with pullup (DDR = 0, PORT = 1)
     init_output_pin(rst_pin.pin, rst_pin.ddr, 0);
-    print("DDRC = %.2x, PORTC = %.2x\n", DDRC, PORTC);
     _delay_ms(100);
     init_input_pin(rst_pin.pin, rst_pin.ddr);
     set_pin_pullup(rst_pin.pin, rst_pin.port, 1);
-    print("DDRC = %.2x, PORTC = %.2x\n", DDRC, PORTC);
 
     return true;
 }
