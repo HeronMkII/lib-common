@@ -16,6 +16,8 @@ EPS.
 
 When a status is updated, the new status is first written to EEPROM, before
 being sent to the parent.
+
+TODO - test resets with 3 MCUs connected together (i.e. tristating works)
 */
 
 // Assume init_uart() and init_can() have been called in SSM main program
@@ -123,22 +125,31 @@ void init_heartbeat(uint8_t self_id) {
     // Store ID in the global variable
     hb_self_id = self_id;
 
+    pin_info_t rst_pin_1;
+    pin_info_t rst_pin_2;
+
     switch (hb_self_id) {
         case HB_OBC:
-            init_output_pin(obc_rst_eps.pin, obc_rst_eps.ddr, 1);
-            init_output_pin(obc_rst_pay.pin, obc_rst_pay.ddr, 1);
+            rst_pin_1 = obc_rst_eps;
+            rst_pin_2 = obc_rst_pay;
             break;
         case HB_EPS:
-            init_output_pin(eps_rst_obc.pin, eps_rst_obc.ddr, 1);
-            init_output_pin(eps_rst_pay.pin, eps_rst_pay.ddr, 1);
+            rst_pin_1 = eps_rst_obc;
+            rst_pin_2 = eps_rst_pay;
             break;
         case HB_PAY:
-            init_output_pin(pay_rst_obc.pin, pay_rst_obc.ddr, 1);
-            init_output_pin(pay_rst_eps.pin, pay_rst_eps.ddr, 1);
+            rst_pin_1 = pay_rst_obc;
+            rst_pin_2 = pay_rst_eps;
             break;
         default:
             return;
     }
+
+    // See table on p.96 - by default, need tri-state (DDR = 0, PORT = 0)
+    init_input_pin(rst_pin_1.pin, rst_pin_1.ddr);
+    set_pin_pullup(rst_pin_1.pin, rst_pin_1.port, 1);
+    init_input_pin(rst_pin_2.pin, rst_pin_2.ddr);
+    set_pin_pullup(rst_pin_2.pin, rst_pin_2.port, 1);
 
     assign_heartbeat_status();
     assign_status_message_objects();
@@ -296,9 +307,15 @@ bool send_heartbeat_reset(uint8_t other_id) {
 
     // Assert the reset
     // TODO - how long?
-    set_pin_low(rst_pin.pin, rst_pin.port);
+    // See table on p.96 - for reset, need to output low (DDR = 1, PORT = 0)
+    // Then go back to tri-state (DDR = 0, PORT = 0)
+    print("DDRC = %.2x, PORTC = %.2x\n", DDRC, PORTC);
+    init_output_pin(rst_pin.pin, rst_pin.ddr, 0);
+    print("DDRC = %.2x, PORTC = %.2x\n", DDRC, PORTC);
     _delay_ms(100);
-    set_pin_high(rst_pin.pin, rst_pin.port);
+    init_input_pin(rst_pin.pin, rst_pin.ddr);
+    set_pin_pullup(rst_pin.pin, rst_pin.port, 1);
+    print("DDRC = %.2x, PORTC = %.2x\n", DDRC, PORTC);
 
     return true;
 }
