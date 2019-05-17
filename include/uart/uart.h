@@ -47,6 +47,7 @@ void put_uart_char(uint8_t c);
 void get_uart_char(uint8_t* c);
 void send_uart(const uint8_t* msg, uint8_t len);
 void set_uart_rx_cb(uart_rx_cb_t cb);
+uint8_t get_uart_rx_buf_count(void);
 void clear_uart_rx_buf(void);
 
 // Printing (from log.c)

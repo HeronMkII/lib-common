@@ -20,11 +20,11 @@ volatile uint8_t uart_rx_buf[UART_MAX_RX_BUF_SIZE];
 volatile uint8_t uart_rx_buf_count;
 
 // default rx callback (no operation)
-uint8_t _nop(const uint8_t* c, uint8_t len) {
+uint8_t _uart_rx_cb_nop(const uint8_t* c, uint8_t len) {
     return 0;
 }
 // Global RX callback function
-uart_rx_cb_t uart_rx_cb = _nop;
+uart_rx_cb_t uart_rx_cb = _uart_rx_cb_nop;
 
 
 
@@ -53,7 +53,7 @@ void init_uart(void) {
     // reset RX buffer and counter
     clear_uart_rx_buf();
     // Set default (no operation) RX callback
-    uart_rx_cb = _nop;
+    uart_rx_cb = _uart_rx_cb_nop;
 
     // globally enable interrupts
     sei();
@@ -172,12 +172,22 @@ void set_uart_rx_cb(uart_rx_cb_t cb) {
 }
 
 /*
+Gets the number of characters that are currently in the UART RX buffer but have
+not been processed yet.
+*/
+uint8_t get_uart_rx_buf_count(void) {
+    return uart_rx_buf_count;
+}
+
+/*
 Clears the RX buffer (sets all values in the array to 0, sets counter to 0).
 */
 void clear_uart_rx_buf(void) {
-    uart_rx_buf_count = 0;
-    for (uint8_t i = 0; i < UART_MAX_RX_BUF_SIZE; i++) {
-        uart_rx_buf[i] = 0;
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        uart_rx_buf_count = 0;
+        for (uint8_t i = 0; i < UART_MAX_RX_BUF_SIZE; i++) {
+            uart_rx_buf[i] = 0;
+        }
     }
 }
 
