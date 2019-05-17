@@ -1,3 +1,5 @@
+#include <uart/uart.h>
+#include <utilities/utilities.h>
 #include <watchdog/watchdog.h>
 
 //simulates a timeout

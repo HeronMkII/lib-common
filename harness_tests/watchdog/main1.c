@@ -11,16 +11,33 @@
 #include <watchdog/watchdog.h>
 #include <test/test.h>
 
+#define LED_PIN PB4
+#define LED_DDR DDRB
+#define LED_PORT PORTB
+
+volatile uint8_t test_count = 0;
+
+void test_cb(void) {
+    test_count++;
+}
+
+void set_callback_test(void) {
+    set_wdt_cb(test_cb);
+    // Compare function pointers - casting 16-bit address to uint16_t should be OK
+    ASSERT_EQ((uint16_t) wdt_cb, (uint16_t) test_cb);
+}
+
 void interrupt_test(void) {
     /*Enables interrupt-mode watchdog timer for 1s*/
     WDT_OFF();
     WDT_ENABLE_INTERRUPT(WDTO_1S); //wdt_enable_interrupt(WDTO_1S);
-    uint8_t led_port = LED_PORT;
-    while(led_port == LED_PORT){
+    uint8_t count = test_count;
+    while(count == test_count){
       //do nothing (should be changed when WDT goes off)
     }
-    //verify that interrupt occurs by checking LED_PORT
-    ASSERT_EQ(led_port ^ _BV(LED_PIN), LED_PORT);
+    //verify that interrupt occurs by checking the count
+    ASSERT_EQ(test_count, count + 1);
+    ASSERT_EQ(wdt_int_count, count + 1);
 }
 
 void disable_test(void) {
@@ -35,22 +52,22 @@ void set_2s_timeout(void) {
     /*Sets timeout to 2s, tests time to exit loop*/
     WDT_OFF();
     WDT_ENABLE_INTERRUPT(WDTO_2S);
-    uint8_t led_port = LED_PORT;
-    while(led_port == LED_PORT){
-    //do nothing (should be changed when WDT goes off)
+    uint8_t count = test_count;
+    while(count == test_count){
+      //do nothing (should be changed when WDT goes off)
     }
-    ASSERT_EQ(led_port ^ _BV(LED_PIN), LED_PORT);
+    ASSERT_EQ(test_count, count + 1);
 }
 
 void set_250ms_timeout(void) {
     /*Sets timeout to 250ms, tests time to exit loop*/
     WDT_OFF();
     WDT_ENABLE_INTERRUPT(WDTO_250MS);
-    uint8_t led_port = LED_PORT;
-    while(led_port == LED_PORT){
-    //do nothing (should be changed when WDT goes off)
+    uint8_t count = test_count;
+    while(count == test_count){
+      //do nothing (should be changed when WDT goes off)
     }
-    ASSERT_EQ(led_port ^ _BV(LED_PIN), LED_PORT);
+    ASSERT_EQ(test_count, count + 1);
 }
 
 void init_test(void){
@@ -72,18 +89,19 @@ void init_test(void){
 }
 
 /* Times are not exact, but are determined through testing. Some variance is normal. */
-test_t t1 = { .name = "Interrupt Mode (1.0s)", .fn = interrupt_test, .time = 1.217 };
-test_t t2 = { .name = "Disable WDT", .fn = disable_test };
-test_t t3 = { .name = "Set 2.0s timeout", .fn = set_2s_timeout, .time = 2.32};
-test_t t4 = { .name = "Set 0.25s timeout", .fn = set_250ms_timeout, .time = 0.373};
-test_t t5 = { .name = "Initialization Test", .fn = init_test};
+test_t t1 = { .name = "Set callback", .fn = set_callback_test };
+test_t t2 = { .name = "Interrupt Mode (1.0s)", .fn = interrupt_test, .time = 1.217 };
+test_t t3 = { .name = "Disable WDT", .fn = disable_test };
+test_t t4 = { .name = "Set 2.0s timeout", .fn = set_2s_timeout, .time = 2.32};
+test_t t5 = { .name = "Set 0.25s timeout", .fn = set_250ms_timeout, .time = 0.373};
+test_t t6 = { .name = "Initialization Test", .fn = init_test};
 
-test_t* suite[5] = { &t1, &t2, &t3, &t4, &t5};
+test_t* suite[] = { &t1, &t2, &t3, &t4, &t5, &t6 };
 
 int main(void) {
     //ensure that the watchdog timer is disabled before running tests
     WDT_OFF();
-    run_tests(suite, 5);
+    run_tests(suite, sizeof(suite) / sizeof(suite[0]));
     print("TESTS COMPLETE\n");
     return 0;
 }

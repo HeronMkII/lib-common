@@ -1,12 +1,6 @@
 #include <stdint.h>
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
-#include <spi/spi.h>
-#include <uart/uart.h>
-
-#define LED_PIN PB4
-#define LED_DDR DDRB
-#define LED_PORT PORTB
 
 /* Macros written in assembly are used to guarantee that the WDTCSR register is reset within 4 clock cycles of
     WDCE and WDE being set, as per the data sheet. Functions contain more overhead and take longer to execute,
@@ -30,8 +24,14 @@ All functions have same structure:
   5) Re-enable interrupts
 */
 
+// Watchdog timer callback function signature
+typedef void(*wdt_cb_t)(void);
 
-typedef void(*watchdog_function_t)(void);
+extern wdt_cb_t wdt_cb;
+
+extern volatile uint32_t wdt_int_count;
+
+void set_wdt_cb(wdt_cb_t cb);
 
 
 
