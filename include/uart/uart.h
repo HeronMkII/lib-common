@@ -51,6 +51,6 @@ void clear_uart_rx_buf(void);
 
 // Printing (from log.c)
 int16_t print(char* fmt, ...);
-void print_bytes(uint8_t* data, uint8_t len);
+void print_bytes(uint8_t* data, uint16_t len);
 
 #endif // UART_H
