@@ -1,23 +1,25 @@
 #include <watchdog/watchdog.h>
-#ifndef F_CPU
-#define F_CPU 8000000UL
-#endif
-
-/*volatile ints can be changed at any time (i.e. during ISR)*/
-volatile int LED_ON = 0;
-volatile int interrupt_count = 0;
 
 /* default callback function */
-void cb(void){
-
+void _wdt_cb_nop(void){
 }
 
-
 /* Global variable specifiying callback function */
-watchdog_function_t wdt_function = cb;
+wdt_cb_t wdt_cb = _wdt_cb_nop;
 
+/*
+How many times the interrupt has occurred (restarts from 0 when the
+microcontroller resets)
+volatile ints can be changed at any time (i.e. during ISR)
+*/
+volatile uint32_t wdt_int_count = 0;
+
+void set_wdt_cb(wdt_cb_t cb) {
+    wdt_cb = cb;
+}
 
 /* Watchdog interrupt handler: Interrupt triggers when WDIE is set */
 ISR(WDT_vect){
-  wdt_function();
+    wdt_int_count++;
+    wdt_cb();
 }
