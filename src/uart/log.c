@@ -44,10 +44,13 @@ Prints an array of bytes in hex format on the same line.
 data - pointer to beginning of array
 len - number of bytes in array
 */
-void print_bytes(uint8_t* data, uint8_t len) {
-    for (uint8_t i = 0; i < len; i++) {
-        print("0x%.2x ", data[i]);
+void print_bytes(uint8_t* data, uint16_t len) {
+    if (len == 0) {
+        return;
     }
-
+    print("%.2x", data[0]);
+    for (uint16_t i = 1; i < len; i++) {
+        print(":%.2x", data[i]);
+    }
     print("\n");
 }
