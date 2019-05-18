@@ -24,12 +24,12 @@ int main(void)
   int counter = 0;
 
   //set up an infinite loop
+  // Should print aaround 20 times (observed printing 1 to 22 in testing)
   while(1){
-      counter++;
-      print("%d\n",counter);
-      _delay_ms(100);
-    }
+    counter++;
+    print("%d\n",counter);
+    _delay_ms(100);
+  }
 
-
-    print("FAILED\n");
+  print("FAILED\n");
 }

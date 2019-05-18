@@ -11,10 +11,6 @@
 #include <watchdog/watchdog.h>
 #include <test/test.h>
 
-#define LED_PIN PB4
-#define LED_DDR DDRB
-#define LED_PORT PORTB
-
 volatile uint8_t test_count = 0;
 
 void test_cb(void) {
