@@ -49,21 +49,20 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_EPS_HK_BT_VOL       11
 #define CAN_EPS_HK_HEAT_SP1     12
 #define CAN_EPS_HK_HEAT_SP2     13
-#define CAN_EPS_HK_IMU_ACC_X    14
-#define CAN_EPS_HK_IMU_ACC_Y    15
-#define CAN_EPS_HK_IMU_ACC_Z    16
-#define CAN_EPS_HK_IMU_GYR_X    17
-#define CAN_EPS_HK_IMU_GYR_Y    18
-#define CAN_EPS_HK_IMU_GYR_Z    19
-#define CAN_EPS_HK_IMU_MAG_X    20
-#define CAN_EPS_HK_IMU_MAG_Y    21
-#define CAN_EPS_HK_IMU_MAG_Z    22
+#define CAN_EPS_HK_GYR_UNCAL_X  14
+#define CAN_EPS_HK_GYR_UNCAL_Y  15
+#define CAN_EPS_HK_GYR_UNCAL_Z  16
+#define CAN_EPS_HK_GYR_CAL_X    17
+#define CAN_EPS_HK_GYR_CAL_Y    18
+#define CAN_EPS_HK_GYR_CAL_Z    19
 // Number of fields
-#define CAN_EPS_HK_FIELD_COUNT  23
+#define CAN_EPS_HK_FIELD_COUNT  20
 
 // EPS control
-#define CAN_EPS_CTRL_HEAT_SP1   0
-#define CAN_EPS_CTRL_HEAT_SP2   1
+#define CAN_EPS_CTRL_HEAT_SP1       1
+#define CAN_EPS_CTRL_HEAT_SP2       2
+#define CAN_EPS_CTRL_RESET          3
+#define CAN_EPS_CTRL_READ_EEPROM    4
 
 // PAY housekeeping
 #define CAN_PAY_HK_TEMP         0
@@ -92,9 +91,11 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_PAY_OPT_FIELD_COUNT 36
 
 // PAY control
-#define CAN_PAY_CTRL_HEAT_SP1   0
-#define CAN_PAY_CTRL_HEAT_SP2   1
-#define CAN_PAY_CTRL_ACT_UP     2
-#define CAN_PAY_CTRL_ACT_DOWN   3
+#define CAN_PAY_CTRL_HEAT_SP1       1
+#define CAN_PAY_CTRL_HEAT_SP2       2
+#define CAN_PAY_CTRL_ACT_UP         3
+#define CAN_PAY_CTRL_ACT_DOWN       4
+#define CAN_PAY_CTRL_RESET          5
+#define CAN_PAY_CTRL_READ_EEPROM    6
 
 #endif
