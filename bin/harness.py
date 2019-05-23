@@ -424,9 +424,15 @@ if __name__ == "__main__":
 
     # Converts strings to objects, which are then assigned to variables below
     args = parser.parse_args()
-    test_path = args.test_dir
+    root_path = args.test_dir
     port = args.prog
     uart = args.uart
+
+    folder = input("Type name of test folder or 'all' for all: ")
+    if folder == "all":
+        test_path = args.test_dir
+    else:
+        test_path = args.test_dir + "/" + folder
 
     # Creates TestHarness object
     harness = TestHarness(port, uart)
@@ -434,7 +440,7 @@ if __name__ == "__main__":
     # Number of boards is initialized at 0, then incremented when os.walk finds
     # mainx.c file
     for path, _, files in os.walk(test_path):
-        if path == test_path:
+        if path == root_path:
             continue
         boards = 0
         regex = r"main\d.c"
