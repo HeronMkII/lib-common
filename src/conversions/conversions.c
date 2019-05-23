@@ -34,6 +34,11 @@ Digikey link: https://www.digikey.ca/product-detail/en/murata-electronics-north-
 Datasheet (page 13. Part # NCU__XH103):
 https://www.murata.com/~/media/webrenewal/support/library/catalog/products/thermistor/r03e.ashx?la=en-us
 Datasheet (NCU18XH103F60RB): https://www.murata.com/en-us/api/pdfdownloadapi?cate=luNTCforTempeSenso&partno=NCU18XH103F60RB
+
+IMU - BNO080
+https://cdn.sparkfun.com/assets/1/3/4/5/9/BNO080_Datasheet_v1.3.pdf
+https://cdn.sparkfun.com/assets/4/d/9/3/8/SH-2-Reference-Manual-v1.2.pdf
+https://cdn.sparkfun.com/assets/7/6/9/3/c/Sensor-Hub-Transport-Protocol-v1.7.pdf
 */
 
 #include <conversions/conversions.h>
@@ -304,4 +309,28 @@ returns - resistance (in kilo-ohms)
 */
 double therm_vol_to_res(double voltage) {
     return THERM_R_REF * (THERM_V_REF / voltage - 1);
+}
+
+
+/*
+IMU Q-point
+Converts the raw 16-bit signed fixed-point value from the input report to the actual floating-point measurement using the Q point.
+Q point - number of fractional digits after (to the right of) the decimal point, i.e. higher Q point means smaller/more precise number (#1 p.22)
+https://en.wikipedia.org/wiki/Q_(number_format)
+Similar to reference library qToFloat()
+raw_data - 16 bit raw value
+q_point - number of binary digits to shift
+*/
+double imu_raw_data_to_double(uint16_t raw_data, uint8_t q_point) {
+    // Implement power of 2 with a bitshift instead of pow(), which links to the
+    // math library and increases the binary size by ~1.3kB
+    int16_t raw_signed = (int16_t) raw_data;
+    return ((double) raw_signed) / ((double) (1 << q_point));
+}
+
+/*
+Converts the raw 16-bit value to a gyroscope measurement (in rad/s).
+*/
+double imu_raw_data_to_gyro(uint16_t raw_data) {
+    return imu_raw_data_to_double(raw_data, IMU_GYRO_Q);
 }

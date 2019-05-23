@@ -22,6 +22,13 @@ void test_therm(void) {
     print("therm_vol_to_res: 2.3 V -> %.3f k\n", therm_vol_to_res(2.3));
 }
 
+void test_imu(void) {
+    print("\nIMU:\n");
+
+    print("imu_raw_data_to_gyro: 0x943A -> %.3f rad/s\n", imu_raw_data_to_gyro(0x943A));
+    print("imu_raw_data_to_gyro: 0x21F0 -> %.3f rad/s\n", imu_raw_data_to_gyro(0x21F0));
+}
+
 
 int main(void) {
     init_uart();
@@ -29,6 +36,7 @@ int main(void) {
     print("\n\nStarting test\n");
     test_dac();
     test_therm();
+    test_imu();
     print("\nDone test\n\n");
 
     while (1) {}
