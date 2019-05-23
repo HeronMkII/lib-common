@@ -86,9 +86,9 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_PAY_HK_FIELD_COUNT  17
 
 // PAY optical
-// Field Number = Well number (0 to 35)
+// Field Number = Well number (0 to 31)
 // Number of fields
-#define CAN_PAY_OPT_FIELD_COUNT 36
+#define CAN_PAY_OPT_FIELD_COUNT 32
 
 // PAY control
 #define CAN_PAY_CTRL_HEAT_SP1       1

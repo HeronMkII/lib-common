@@ -44,6 +44,11 @@ extern const int16_t THERM_TEMP[];
 #define THERM_LUT_COUNT 34
 
 
+// IMU Q points
+#define IMU_ACCEL_Q 8
+#define IMU_GYRO_Q  9
+
+
 double adc_raw_data_to_raw_vol(uint16_t raw_data);
 double adc_raw_vol_to_eps_vol(double raw_voltage);
 double adc_raw_vol_to_eps_cur(double raw_voltage);
@@ -65,5 +70,8 @@ double therm_res_to_temp(double resistance);
 double therm_temp_to_res(double temp);
 double therm_res_to_vol(double resistance);
 double therm_vol_to_res(double voltage);
+
+double imu_raw_data_to_double(uint16_t raw_data, uint8_t q_point);
+double imu_raw_data_to_gyro(uint16_t raw_data);
 
 #endif
