@@ -35,6 +35,9 @@
 #define ASSERT_FP_LESS(a, b) (print("AS FP LT %.3f %.3f (%s) (%d)\r\n",\
     (float)(a), (float)(b), __FUNCTION__, (int16_t)__LINE__))
 
+#define ASSERT_STR_EQ(a, b) (print("AS STR EQ %s %s (%s) (%d)\r\n",\
+    (char*)(a), (char*)(b), __FUNCTION__, (int16_t)__LINE__))
+
 typedef void(*test_fn_t)(void);
 
 typedef struct {

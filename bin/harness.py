@@ -222,6 +222,8 @@ class Test:
             self.handle_name(line)
         elif line[:4] == "TIME":
             self.handle_time(line)
+        elif line.startswith("AS STR EQ"):
+            self.handle_assert_two_strings(line)
         elif line.startswith("AS EQ"):
             self.handle_assert_two_nums(line)
         elif line.startswith("AS NEQ"):
@@ -280,6 +282,21 @@ class Test:
                 else:
                     self.assert_passed += 1
             self.time_cb = fn
+
+    # Extracts line for assertion with two string inputs
+    # Prints out error message if it fails
+    def handle_assert_two_strings(self, line):
+        regex = r"AS STR EQ (\w+) (\w+) \((.+)\) \((.+)\)\r\n"
+        match = re.search(regex, line)
+        a, b = str(match.group(1)), str(match.group(2))
+
+        if a == b:
+            self.assert_passed += 1
+        else:
+            self.assert_failed += 1
+            fn, line = str(match.group(3)), int(match.group(4))
+            print("In function '%s', line %d" % (fn, line))
+            print("    Error: ASSERT_FALSE failed")
 
     # Extracts line for assertion with two integer inputs
     # Prints out error message if it fails
@@ -430,15 +447,10 @@ if __name__ == "__main__":
 
     # Converts strings to objects, which are then assigned to variables below
     args = parser.parse_args()
-    root_path = args.test_dir
+    root_path = "harness_tests"
+    test_path = args.test_dir
     port = args.prog
     uart = args.uart
-
-    folder = input("Type name of test folder or 'all' for all: ")
-    if folder == "all":
-        test_path = args.test_dir
-    else:
-        test_path = args.test_dir + "/" + folder
 
     # Creates TestHarness object
     harness = TestHarness(port, uart)

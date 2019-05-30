@@ -13,6 +13,8 @@ MANUAL_TESTS = $(dir $(wildcard manual_tests/*/.))
 MCU = 64m1
 # AVR device for avrdude uploading - must be prefixed with "m"
 DEVICE = m$(MCU)
+# Harness testing folder
+TEST = harness_tests
 
 export CC = avr-gcc
 export AR = avr-ar
@@ -141,7 +143,7 @@ examples:
 	done
 
 harness:
-	$(PYTHON) ./bin/harness.py -p $(PORT) -u $(UART) -d harness_tests
+	$(PYTHON) ./bin/harness.py -p $(PORT) -u $(UART) -d $(TEST)
 
 help:
 	@echo "usage: make [all | clean | debug | examples | harness | help | manual_tests | read-eeprom]"
