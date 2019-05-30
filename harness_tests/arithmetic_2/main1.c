@@ -48,6 +48,20 @@ void assert_pass(void) { //Assert pass
     ASSERT_FP_GREATER(1.001, 1.000);
     ASSERT_FP_LESS(0.05, 0.09);
 }
+void str_equal(void) {
+    // If you're asserting an array of characters, ensure there
+    // is a terminating character at the end '\0'
+    // Also, use double quotes
+    char* testStr = "greetings";
+    char testStr2[3] = {'a', 'b', '\0'};
+    ASSERT_STR_EQ("utat", "utat"); //Assert true
+    ASSERT_STR_EQ(testStr, "greetings"); //Assert true
+    ASSERT_STR_EQ(testStr2, "ab"); //Assert true
+    ASSERT_STR_EQ(testStr, "hello"); //Assert false
+    ASSERT_STR_EQ(testStr2, "cd"); //Assert false
+    ASSERT_STR_EQ("space", "rocketry"); //Assert false
+    ASSERT_STR_EQ("A", "a"); //Assert false
+}
 
 test_t t1 = { .name = "not equal assert test", .fn = not_equal };
 test_t t2 = { .name = "greater than assert test", .fn = greater };
@@ -57,10 +71,11 @@ test_t t5 = { .name = "float not equal assert test", .fn = float_not_equal };
 test_t t6 = { .name = "float greater than assert test", .fn = float_greater };
 test_t t7 = { .name = "float less than assert test", .fn = float_less };
 test_t t8 = { .name = "float assert pass", .fn = assert_pass };
+test_t t9 = { .name = "string assert test", .fn = str_equal };
 
-test_t* suite[8] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8 };
+test_t* suite[9] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8, &t9 };
 
 int main() {
-    run_tests(suite, 8);
+    run_tests(suite, 9);
     return 0;
 }

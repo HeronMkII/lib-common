@@ -13,6 +13,8 @@ MANUAL_TESTS = $(dir $(wildcard manual_tests/*/.))
 MCU = 64m1
 # AVR device for avrdude uploading - must be prefixed with "m"
 DEVICE = m$(MCU)
+# Harness testing folder
+TEST = harness_tests
 
 export CC = avr-gcc
 export AR = avr-ar
@@ -46,15 +48,19 @@ endif
 ifeq ($(WINDOWS), true)
 	# higher number
 	PORT = $(shell powershell "[System.IO.Ports.SerialPort]::getportnames() | sort | select -First 2 | select -Last 1")
+	# TODO Not sure if this actually works for windows
+	UART = $(shell powershell "[System.IO.Ports.SerialPort]::getportnames() | sort | select -First 1")
 endif
 ifeq ($(MAC_OS), true)
 	# lower number
 	PORT = $(shell find /dev -name 'tty.usbmodem[0-9]*' | sort | head -n1)
+	UART = $(shell find /dev -name 'tty.usbmodem[0-9]*' | sort | sed -n 2p)
 endif
 ifeq ($(LINUX), true)
 	# lower number
 	# TODO - test this
 	PORT = $(shell find /dev -name 'ttyS[0-9]*' | sort | head -n1)
+	UART = $(shell find /dev -name 'ttyS[0-9]*' | sort | sed -n 2p)
 endif
 
 # If automatic port detection fails,
@@ -137,7 +143,7 @@ examples:
 	done
 
 harness:
-	$(PYTHON) ./bin/harness.py -p $(PORT) -d harness_tests
+	$(PYTHON) ./bin/harness.py -p $(PORT) -u $(UART) -d $(TEST)
 
 help:
 	@echo "usage: make [all | clean | debug | examples | harness | help | manual_tests | read-eeprom]"

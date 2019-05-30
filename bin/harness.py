@@ -27,17 +27,6 @@ harness_description = ("This test harness runs tests built using the libtest " +
 
 sep = 80*"-"
 
-# This function assumes an offset between the programming and uart ports of 2 for
-# mac or linux devices (posix)(i.e. uart is 2 more than programming port), or -1 for windows (nt)
-# devices. Mac USB serial ports should be of the form /dev/tty.usbmodem00xxxxxx,
-# while windows ports have the form COMx.
-def uart_offset():
-    if os.name == 'posix':
-        return 2
-    elif os.name == 'nt':
-        return -1
-
-
 class TestHarness:
     # Baud Rate specified by 32m1 data sheet
     baud_rate = 9600
@@ -104,6 +93,11 @@ class TestHarness:
 
     # Runs tests for each suite member
     def run_harness(self):
+        # Call "make" in the lib-common root folder
+        # Calls cmd using shell
+        print("    Compiling libraries...")
+        subprocess.call("make", shell=True)
+        print()
         for suite in self.suites:
             suite.run_suite()
 
@@ -133,6 +127,7 @@ class TestSuite:
     # Compiles code for each board
     def compile_upload(self):
         print("    Compiling and uploading program...")
+
         for i in range(1, self.boards + 1):
             # Call "make upload" in the specific test suite's directory
             cmd = " ".join(["make", "upload", "-C", self.path,
@@ -227,6 +222,8 @@ class Test:
             self.handle_name(line)
         elif line[:4] == "TIME":
             self.handle_time(line)
+        elif line.startswith("AS STR EQ"):
+            self.handle_assert_two_strings(line)
         elif line.startswith("AS EQ"):
             self.handle_assert_two_nums(line)
         elif line.startswith("AS NEQ"):
@@ -285,6 +282,21 @@ class Test:
                 else:
                     self.assert_passed += 1
             self.time_cb = fn
+
+    # Extracts line for assertion with two string inputs
+    # Prints out error message if it fails
+    def handle_assert_two_strings(self, line):
+        regex = r"AS STR EQ (\w+) (\w+) \((.+)\) \((.+)\)\r\n"
+        match = re.search(regex, line)
+        a, b = str(match.group(1)), str(match.group(2))
+
+        if a == b:
+            self.assert_passed += 1
+        else:
+            self.assert_failed += 1
+            fn, line = str(match.group(3)), int(match.group(4))
+            print("In function '%s', line %d" % (fn, line))
+            print("    Error: ASSERT_FALSE failed")
 
     # Extracts line for assertion with two integer inputs
     # Prints out error message if it fails
@@ -426,8 +438,8 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--prog', nargs='+', required=True,
             metavar=('port1', 'port2'),
             help='list of programming ports')
-    parser.add_argument('-u', '--uart', nargs='+', required=False,
-            metavar=('uart1', 'uart2'), default=[],
+    parser.add_argument('-u', '--uart', nargs='+', required=True,
+            metavar=('uart1', 'uart2'),
             help='list of UART ports')
     parser.add_argument('-d', '--test-dir', required=True,
             metavar='test_dir',
@@ -435,19 +447,10 @@ if __name__ == "__main__":
 
     # Converts strings to objects, which are then assigned to variables below
     args = parser.parse_args()
+    root_path = "harness_tests"
     test_path = args.test_dir
     port = args.prog
     uart = args.uart
-
-    # If there is no uart argument, add port using uart offset
-    # This is done by removing the last digit and adding uart_offset()
-    # Then, it adds it to the uart variable (list)
-    # However, this will not work for cases when port ends in 8 or 9
-    if len(uart) == 0:
-        for p in port:
-            (head, tail) = os.path.split(p)
-            tail = tail[:-1] + str(int(tail[-1]) + uart_offset())
-            uart.append(os.path.join(head, tail))
 
     # Creates TestHarness object
     harness = TestHarness(port, uart)
@@ -455,7 +458,7 @@ if __name__ == "__main__":
     # Number of boards is initialized at 0, then incremented when os.walk finds
     # mainx.c file
     for path, _, files in os.walk(test_path):
-        if path == test_path:
+        if path == root_path:
             continue
         boards = 0
         regex = r"main\d.c"
