@@ -93,6 +93,11 @@ class TestHarness:
 
     # Runs tests for each suite member
     def run_harness(self):
+        # Call "make" in the lib-common root folder
+        # Calls cmd using shell
+        print("    Compiling libraries...")
+        subprocess.call("make", shell=True)
+        print()
         for suite in self.suites:
             suite.run_suite()
 
@@ -122,6 +127,7 @@ class TestSuite:
     # Compiles code for each board
     def compile_upload(self):
         print("    Compiling and uploading program...")
+
         for i in range(1, self.boards + 1):
             # Call "make upload" in the specific test suite's directory
             cmd = " ".join(["make", "upload", "-C", self.path,
