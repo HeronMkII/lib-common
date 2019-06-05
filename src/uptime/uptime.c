@@ -7,6 +7,9 @@ This library basically multiplexes a set of timer callbacks onto a single timer
 (the 8-bit timer). You can add multiple callbacks, which will all be called
 at the same time (in order) every second. They can read the `uptime_s` variable
 to decide what to do.
+
+This library also has the capability for the microcontroller to reset itself if
+it wants to. It uses EEPROM to keep track of the reason for the most recent reset.
 */
 
 #include <uptime/uptime.h>
@@ -20,6 +23,9 @@ to decide what to do.
 uint32_t restart_count = 0;
 // Uptime (in seconds) - since most recent restart
 volatile uint32_t uptime_s = 0;
+// The restart reason loaded from EEPROM on startup (when init_uptime() is called)
+// The EEPROM will be cleared after setting this value
+uint32_t restart_reason = UPTIME_RESTART_REASON_UNKNOWN;
 
 // No-op default callbacks
 void uptime_fn_nop(void) {}
@@ -28,11 +34,19 @@ void uptime_fn_nop(void) {}
 uptime_fn_t uptime_callbacks[UPTIME_NUM_CALLBACKS] = {uptime_fn_nop};
 
 void uptime_timer_cb(void);
+void uptime_wdt_cb(void);
 
 
 void init_uptime(void) {
     // Update restart count
     update_restart_count();
+
+    // Read restart reason
+    restart_reason = eeprom_read_dword(RESTART_REASON_EEPROM_ADDR);
+    // Clear reset reason (set EEPROM to default value)
+    write_restart_reason(UPTIME_RESTART_REASON_UNKNOWN);
+    // Set the callback function for WDT reset
+    set_wdt_cb(uptime_wdt_cb);
 
     // Set all callbacks to no-op initially, just in case
     for (uint8_t i = 0; i < UPTIME_NUM_CALLBACKS; i++) {
@@ -80,4 +94,28 @@ void uptime_timer_cb(void) {
     for (uint8_t i = 0; i < UPTIME_NUM_CALLBACKS; i++) {
         uptime_callbacks[i]();
     }
+}
+
+void write_restart_reason(uint32_t reason) {
+    eeprom_write_dword(RESTART_REASON_EEPROM_ADDR, reason);
+}
+
+void uptime_wdt_cb(void) {
+    write_restart_reason(UPTIME_RESTART_REASON_WDT_TIMEOUT);
+}
+
+/*
+Intentionally times out the watchdog timer to reset the microcontroller running
+this program.
+NOTE: The program will not continue after calling this function. It will restart
+from the beginning.
+*/
+void reset_self_mcu(uint32_t reason) {
+    // Only enable the system reset, not the interrupt
+    // If we use the interrupt, it will write the restart reason as an
+    // uninteniontal WDT timeout
+    // Write the restart reason as whatever we intentionally specify
+    write_restart_reason(reason);
+    WDT_ENABLE_SYS_RESET(WDTO_15MS);
+    _delay_ms(100);
 }
