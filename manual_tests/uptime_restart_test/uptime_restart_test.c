@@ -26,7 +26,7 @@ void print_reason_string(void) {
 }
 
 void print_reason(void) {
-    print("Restart reason: 0x%x (", restart_reason);
+    print("Restart reason: 0x%lx (", restart_reason);
     print_reason_string();
     print(")\n");
 }
@@ -69,6 +69,11 @@ uint8_t uart_cb(const uint8_t* data, uint8_t len) {
 }
 
 int main(void) {
+    // Turn off watchdog
+    // If we just restarted because the WDT timed out, it will immediately
+    // activate the reset again if we don't turn it off
+    WDT_OFF();
+
     init_uart();
     
     print("\n\n\nStarting uptime test\n\n");
