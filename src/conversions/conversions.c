@@ -69,6 +69,7 @@ double adc_raw_vol_to_eps_vol(double raw_voltage) {
 /*
 Converts a raw voltage on an ADC pin to a current in the EPS electronics using
     the known current monitoring circuit.
+NOTE: this does not apply to battery current
 raw_voltage - voltage on an ADC input pin (in V)
 returns - current in the EPS circuit (in A)
 */
@@ -77,6 +78,24 @@ double adc_raw_vol_to_eps_cur(double raw_voltage) {
     double before_gain_voltage = raw_voltage / ADC_EPS_IOUT_AMP_GAIN;
     // Ohm's law (I = V / R)
     double current = before_gain_voltage / ADC_EPS_IOUT_RES;
+
+    return current;
+}
+
+/*
+Converts a raw voltage on an ADC pin to the battery current in the EPS
+    electronics using the known current monitoring circuit.
+This conversion is different from `eps_cur` because the shunt resistor has
+    a different resistance
+raw_voltage - voltage on an ADC input pin (in V)
+returns - battery current in the EPS circuit (in A)
+*/
+double adc_raw_vol_to_bat_cur(double raw_voltage) {
+    // Get the voltage across the resistor before amplifier gain
+    double before_gain_voltage =
+        (raw_voltage - ADC_EPS_BAT_IOUT_VREF) / ADC_EPS_IOUT_AMP_GAIN;
+    // Ohm's law (I = V / R)
+    double current = before_gain_voltage / ADC_EPS_BAT_IOUT_RES;
 
     return current;
 }
@@ -97,6 +116,15 @@ returns - in A
 */
 double adc_raw_data_to_eps_cur(uint16_t raw_data) {
     return adc_raw_vol_to_eps_cur(adc_raw_data_to_raw_vol(raw_data));
+}
+
+/*
+Converts raw 12 bit data from an ADC channel to the battery current in the EPS circuit.
+raw_data - 12 bits
+returns - in A
+*/
+double adc_raw_data_to_bat_cur(uint16_t raw_data) {
+    return adc_raw_vol_to_bat_cur(adc_raw_data_to_raw_vol(raw_data));
 }
 
 /*

@@ -5,6 +5,14 @@ Test the data conversion functions in the conversions library.
 #include <conversions/conversions.h>
 #include <uart/uart.h>
 
+void test_adc(void) {
+    print("\nADC:\n");
+    print("adc_raw_data_to_raw_vol: 0x3F7 -> %.3f V\n", adc_raw_data_to_raw_vol(0x3F7));
+    print("adc_raw_data_to_raw_vol: 0x9E1 -> %.3f V\n", adc_raw_data_to_raw_vol(0x9E1));
+    print("adc_raw_data_to_bat_cur: 0x3F7 -> %.3f A\n", adc_raw_data_to_bat_cur(0x3F7));
+    print("adc_raw_data_to_bat_cur: 0x9E1 -> %.3f A\n", adc_raw_data_to_bat_cur(0x9E1));
+}
+
 // DAC conversions
 void test_dac(void) {
     print("\nDAC:\n");
@@ -34,6 +42,7 @@ int main(void) {
     init_uart();
 
     print("\n\nStarting test\n");
+    test_adc();
     test_dac();
     test_therm();
     test_imu();

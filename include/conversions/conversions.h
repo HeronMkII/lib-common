@@ -19,6 +19,8 @@
 #define ADC_EPS_IOUT_AMP_GAIN   100.0   // 100x voltage gain
 #define ADC_EPS_IOUT_VREF       3.3     // 3.3V reference
 
+#define ADC_EPS_BAT_IOUT_RES    0.002   // 2 mohm resistor
+#define ADC_EPS_BAT_IOUT_VREF   2.5     // 2.5V REF (bidirectional)
 
 // Internal voltage reference (V)
 #define DAC_VREF        2.5
@@ -52,8 +54,10 @@ extern const int16_t THERM_TEMP[];
 double adc_raw_data_to_raw_vol(uint16_t raw_data);
 double adc_raw_vol_to_eps_vol(double raw_voltage);
 double adc_raw_vol_to_eps_cur(double raw_voltage);
+double adc_raw_vol_to_bat_cur(double raw_voltage);
 double adc_raw_data_to_eps_vol(uint16_t raw_data);
 double adc_raw_data_to_eps_cur(uint16_t raw_data);
+double adc_raw_data_to_bat_cur(uint16_t raw_data);
 double adc_raw_data_to_therm_temp(uint16_t raw_data);
 
 double dac_raw_data_to_vol(uint16_t raw_data);
