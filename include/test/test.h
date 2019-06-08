@@ -43,7 +43,8 @@ typedef void(*test_fn_t)(void);
 typedef struct {
     char name[30];
     test_fn_t fn;
-    float time;
+    float time_min;
+    float time_max;
 } test_t;
 
 void run_tests(test_t**, uint8_t);

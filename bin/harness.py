@@ -258,13 +258,14 @@ class Test:
 
     # Calculate elapsed time, if necessary
     def handle_time(self, line):
-        regex = r"TIME ([-+]?\d*\.\d+|\d+)\r\n"
+        regex = r"TIME MIN ([-+]?\d*\.\d+|\d+) MAX ([-+]?\d*\.\d+|\d+)\r\n"
         match = re.search(regex, line)
         # In some cases, random data is output here, use try/except
         # to ensure that the test harness does not error out
         try:
-            expected = float(match.group(1))
-            if expected == 0:
+            expected_min = float(match.group(1))
+            expected_max = float(match.group(2))
+            if (expected_min == 0 || expected_max == 0):
                 return
         except:
             return
@@ -274,11 +275,16 @@ class Test:
             def fn():
                 e = time.time()
                 elapsed = e - s
-                if abs(elapsed - expected) >= 10e-2:
+                if abs(elapsed - expected_max) >= 10e-2:
                     self.assert_failed += 1
                     print("    Error: " +
                         "expected test to complete in %.3f s, took %.3f s"
-                        % (expected, elapsed))
+                        % (expected_max, elapsed))
+                else if abs(expected_min - elapsed ) >= 10e-2:
+                    self.assert_failed += 1
+                    print("    Error: " +
+                        "expected test to take at least %.3f s, took %.3f s"
+                        % (expected_min, elapsed))
                 else:
                     self.assert_passed += 1
             self.time_cb = fn

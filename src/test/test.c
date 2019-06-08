@@ -84,7 +84,7 @@ void run_tests(test_t** suite, uint8_t len) {
 
 void run_test(test_t* test) {
     print("TEST NAME %s\r\n", test->name);
-    print("TIME %f\r\n", test->time);
+    print("TIME MIN %f MAX %f\r\n", test->time_min, test->time_max);
     (test->fn)();
     print("DONE\r\n");
 }
