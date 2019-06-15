@@ -4,6 +4,7 @@
 #include <uart/uart.h>
 #include <avr/io.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define ASSERT_EQ(a, b) (print("AS EQ %ld %ld (%s) (%d)\r\n",\
     (int32_t)(a), (int32_t)(b), __FUNCTION__, (int16_t)__LINE__))
@@ -50,5 +51,7 @@ typedef struct {
 void run_tests(test_t**, uint8_t);
 
 void run_slave(void);
+
+extern bool enable_time;
 
 #endif // TEST_H

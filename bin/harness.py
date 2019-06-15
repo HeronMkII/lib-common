@@ -193,6 +193,9 @@ class Test:
         self.assert_failed = 0
         self.time_cb = lambda *x: None
         self.done = False
+        self.s = time.time()
+        self.expected_max = None
+        self.expected_min = None 
 
     # Checks to see if test is done (would be set by handle_line)
     def is_done(self):
@@ -210,7 +213,23 @@ class Test:
         print("UART RX:", line.strip())
 
         if line == "DONE\r\n":
-            (self.time_cb)()
+            
+            if (enable_time == True):
+                e = time.time()
+                elapsed = e - self.s
+                if abs(elapsed - self.expected_max) >= 10e-2:
+                    self.assert_failed += 1
+                    print("    Error: " +
+                          "expected test to complete in %.3f s, took %.3f s"
+                          % (self.expected_max, elapsed))
+                else if abs(self.expected_min - elapsed) >= 10e-2:
+                    self.assert_failed += 1
+                    print("    Error: " +
+                          "expected test to take at least %.3f s, took %.3f s"
+                          % (self.expected_min, elapsed))
+                else:
+                    self.assert_passed += 1
+                    
             self.done = True
             if self.assert_failed > 0:
                 print("Test complete - Failed")
@@ -221,7 +240,7 @@ class Test:
         elif line[:9] == "TEST NAME":
             self.handle_name(line)
         elif line[:4] == "TIME":
-            self.handle_time(line)
+            if (enable_time == True) self.handle_time(line)
         elif line.startswith("AS STR EQ"):
             self.handle_assert_two_strings(line)
         elif line.startswith("AS EQ"):
@@ -266,28 +285,14 @@ class Test:
             expected_min = float(match.group(1))
             expected_max = float(match.group(2))
             if (expected_min == 0 || expected_max == 0):
+                print("    Error: " +
+                          "either expected_min or expected_max is 0 which it shouldn't be")
                 return
         except:
             return
-        # Assert failure if outside of acceptable timer range
         else:
-            s = time.time()
-            def fn():
-                e = time.time()
-                elapsed = e - s
-                if abs(elapsed - expected_max) >= 10e-2:
-                    self.assert_failed += 1
-                    print("    Error: " +
-                        "expected test to complete in %.3f s, took %.3f s"
-                        % (expected_max, elapsed))
-                else if abs(expected_min - elapsed ) >= 10e-2:
-                    self.assert_failed += 1
-                    print("    Error: " +
-                        "expected test to take at least %.3f s, took %.3f s"
-                        % (expected_min, elapsed))
-                else:
-                    self.assert_passed += 1
-            self.time_cb = fn
+            self.expected_min = expected_min
+            self.expected_max = expected_max
 
     # Extracts line for assertion with two string inputs
     # Prints out error message if it fails
