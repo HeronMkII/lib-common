@@ -18,16 +18,17 @@ AUTHORS: Dylan Vogel, Ali Haydaroglu
 
 // TODO fix 'X' hex digits
 // Currently assumed X as 0
+// TODO - fix use of {}
 
 // OBC MOB IDs
-#define OBC_STATUS_TX_MOB_ID    { 0x0008 }
-// 0b0 XX0 0000 1000
+#define OBC_OBC_HB_RX_MOB_ID      0x0009
+// 0b0 000 0000 1XX1
 
-#define OBC_STATUS_RX_MOB_ID    { 0x0011 }
-// 0b0 000 0001 0XX1
+#define OBC_PAY_HB_TX_MOB_ID      0x0210
+// 0b0 010 0001 0000
 
-#define OBC_CMD_RX_MOB_ID       { 0x0021 }
-// 0b0 000 0010 0XX1
+#define OBC_EPS_HB_TX_MOB_ID      0x0420
+// 0b0 100 0010 0000
 
 #define OBC_PAY_CMD_TX_MOB_ID   { 0x0240 }
 // 0b0 010 0100 0000
@@ -45,14 +46,18 @@ AUTHORS: Dylan Vogel, Ali Haydaroglu
 ################################################################################
 */
 // EPS MOB IDS
-#define EPS_STATUS_RX_MOB_ID    { 0x0409 }
-// 0b0 100 0000 1001
-#define EPS_STATUS_TX_MOB_ID    { 0x0014 }
-// 0b0 000 0001 0100
-#define EPS_CMD_TX_MOB_ID       { 0x0024 }
-// 0b0 000 0010 0100
+#define EPS_OBC_HB_TX_MOB_ID      0x000C
+// 0b0 000 0000 1100
+
+#define EPS_PAY_HB_TX_MOB_ID      0x0214
+// 0b0 010 0001 0100
+
+#define EPS_EPS_HB_RX_MOB_ID      0x0421
+// 0b0 100 0010 0XX1
+
 #define EPS_CMD_RX_MOB_ID       { 0x0481 }
 // 0b0 100 1000 0001
+
 #define EPS_DATA_TX_MOB_ID      { 0x0104 }
 // 0b0 001 0000 0100
 
@@ -64,14 +69,19 @@ AUTHORS: Dylan Vogel, Ali Haydaroglu
 */
 
 // PAY MOB IDS
-#define PAY_STATUS_RX_MOB_ID    { 0x0209 }    // RX MObs should have reciever ID of board
-//0b 0 010 0000 1001
-#define PAY_STATUS_TX_MOB_ID    { 0x0012 }
-//0b 0 000 0001 0010
-#define PAY_CMD_TX_MOB_ID       { 0x0022 }
-// 0b 0 000 0010 0010
+// RX MObs should have reciever ID of board
+#define PAY_OBC_HB_TX_MOB_ID      0x000A
+// 0b 0 000 0000 1010
+
+#define PAY_PAY_HB_RX_MOB_ID      0x0211
+// 0b 0 010 0001 0XX1
+
+#define PAY_EPS_HB_TX_MOB_ID      0x0422
+// 0b 0 100 0010 0010
+
 #define PAY_CMD_RX_MOB_ID       { 0x0241 }
 // 0b 0 010 0100 0001
+
 #define PAY_DATA_TX_MOB_ID      { 0x0102 }
 // 0b 0 001 0000 0010
 
