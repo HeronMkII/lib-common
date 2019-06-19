@@ -20,6 +20,14 @@ void test_dac(void) {
     print("dac_vol_to_raw_data: 2.1 V -> 0x%.3X\n", dac_vol_to_raw_data(2.1));
 }
 
+void test_heaters(void) {
+    print("\nHeaters:\n");
+    print("dac_raw_data_to_heater_setpoint: 0x4AE -> %.3f C\n",
+        dac_raw_data_to_heater_setpoint(0x4AE));
+    print("heater_setpoint_to_dac_raw_data: 27.679 C -> 0x%.3X\n",
+        heater_setpoint_to_dac_raw_data(27.679));
+}
+
 // thermistor conversions
 void test_therm(void) {
     print("\nThermistors:\n");
@@ -44,6 +52,7 @@ int main(void) {
     print("\n\nStarting test\n");
     test_adc();
     test_dac();
+    test_heaters();
     test_therm();
     test_imu();
     print("\nDone test\n\n");

@@ -169,6 +169,23 @@ uint16_t dac_vol_to_raw_data(double voltage) {
 }
 
 
+double dac_raw_data_to_heater_setpoint(uint16_t raw_data) {
+    double vol = dac_raw_data_to_vol(raw_data);
+    double res = therm_vol_to_res(vol);
+    double temp = therm_res_to_temp(res);
+    return temp;
+}
+
+// temp - in C
+// Returns - raw (12 bits)
+uint16_t heater_setpoint_to_dac_raw_data(double temp) {
+    double res = therm_temp_to_res(temp);
+    double vol = therm_res_to_vol(res);
+    uint16_t raw_data = dac_vol_to_raw_data(vol);
+    return raw_data;
+}
+
+
 /*
 Converts raw data to a temperature from the temperature sensor
 raw_data - 16 bits (INCLUDING the 0b11 on the right that is always there)
