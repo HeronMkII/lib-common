@@ -56,6 +56,15 @@ double adc_raw_data_to_raw_vol(uint16_t raw_data) {
 }
 
 /*
+Converts the voltage on an ADC input pin to raw data from an ADC channel.
+raw_data - raw voltage on ADC input channel pin (in V)
+returns - 12 bit ADC data
+*/
+uint16_t adc_raw_vol_to_raw_data(double raw_voltage) {
+    return (uint16_t) ((raw_voltage / (double) ADC_V_REF) * 0x0FFF);
+}
+
+/*
 Converts a raw voltage on an ADC pin to a voltage in the EPS electronics using
     the known voltage divider.
 raw_voltage - voltage on an ADC input pin (in V)
@@ -80,6 +89,21 @@ double adc_raw_vol_to_eps_cur(double raw_voltage) {
     double current = before_gain_voltage / ADC_EPS_IOUT_RES;
 
     return current;
+}
+
+/*
+Converts a current in the EPS electronics to a raw voltage on an ADC pin using
+    the known current monitoring circuit.
+NOTE: this does not apply to battery current
+current - current in the EPS circuit (in A)
+returns - voltage on an ADC input pin (in V)
+*/
+double adc_eps_cur_to_raw_vol(double current) {
+    // Ohm's law (I = V / R)
+    double before_gain_voltage = current * ADC_EPS_IOUT_RES;
+    // Get the voltage to the ADC input after amplifier gain
+    double after_gain_voltage = before_gain_voltage * ADC_EPS_IOUT_AMP_GAIN;
+    return after_gain_voltage;
 }
 
 /*
@@ -116,6 +140,15 @@ returns - in A
 */
 double adc_raw_data_to_eps_cur(uint16_t raw_data) {
     return adc_raw_vol_to_eps_cur(adc_raw_data_to_raw_vol(raw_data));
+}
+
+/*
+Converts a current in the EPS circuit to raw 12 bit data from an ADC channel.
+current - in A
+returns - 12 bits
+*/
+uint16_t adc_eps_cur_to_raw_data(double current) {
+    return adc_raw_vol_to_raw_data(adc_eps_cur_to_raw_vol(current));
 }
 
 /*

@@ -52,11 +52,14 @@ extern const int16_t THERM_TEMP[];
 
 
 double adc_raw_data_to_raw_vol(uint16_t raw_data);
+uint16_t adc_raw_vol_to_raw_data(double raw_voltage);
 double adc_raw_vol_to_eps_vol(double raw_voltage);
 double adc_raw_vol_to_eps_cur(double raw_voltage);
+double adc_eps_cur_to_raw_vol(double current);
 double adc_raw_vol_to_bat_cur(double raw_voltage);
 double adc_raw_data_to_eps_vol(uint16_t raw_data);
 double adc_raw_data_to_eps_cur(uint16_t raw_data);
+uint16_t adc_eps_cur_to_raw_data(double current);
 double adc_raw_data_to_bat_cur(uint16_t raw_data);
 double adc_raw_data_to_therm_temp(uint16_t raw_data);
 

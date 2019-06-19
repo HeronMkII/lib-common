@@ -9,6 +9,7 @@ void test_adc(void) {
     print("\nADC:\n");
     print("adc_raw_data_to_raw_vol: 0x3F7 -> %.3f V\n", adc_raw_data_to_raw_vol(0x3F7));
     print("adc_raw_data_to_raw_vol: 0x9E1 -> %.3f V\n", adc_raw_data_to_raw_vol(0x9E1));
+    print("adc_eps_cur_to_raw_data: 0.95 A -> 0x%.3X\n", adc_eps_cur_to_raw_data(0.95));
     print("adc_raw_data_to_bat_cur: 0x3F7 -> %.3f A\n", adc_raw_data_to_bat_cur(0x3F7));
     print("adc_raw_data_to_bat_cur: 0x9E1 -> %.3f A\n", adc_raw_data_to_bat_cur(0x9E1));
 }
