@@ -63,6 +63,9 @@ double adc_raw_data_to_therm_temp(uint16_t raw_data);
 double dac_raw_data_to_vol(uint16_t raw_data);
 uint16_t dac_vol_to_raw_data(double voltage);
 
+double dac_raw_data_to_heater_setpoint(uint16_t raw_data);
+uint16_t heater_setpoint_to_dac_raw_data(double temp);
+
 double temp_raw_data_to_temperature(uint16_t raw_data);
 double hum_raw_data_to_humidity(uint16_t raw_data);
 double pres_raw_data_to_pressure(uint32_t raw_data);
