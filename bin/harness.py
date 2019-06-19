@@ -222,7 +222,7 @@ class Test:
                     print("    Error: " +
                           "expected test to complete in %.3f s, took %.3f s"
                           % (self.expected_max, elapsed))
-                else if abs(self.expected_min - elapsed) >= 10e-2:
+                elif abs(self.expected_min - elapsed) >= 10e-2:
                     self.assert_failed += 1
                     print("    Error: " +
                           "expected test to take at least %.3f s, took %.3f s"
@@ -240,7 +240,8 @@ class Test:
         elif line[:9] == "TEST NAME":
             self.handle_name(line)
         elif line[:4] == "TIME":
-            if (enable_time == True) self.handle_time(line)
+            if (enable_time == True):
+                self.handle_time(line)
         elif line.startswith("AS STR EQ"):
             self.handle_assert_two_strings(line)
         elif line.startswith("AS EQ"):
@@ -284,7 +285,7 @@ class Test:
         try:
             expected_min = float(match.group(1))
             expected_max = float(match.group(2))
-            if (expected_min == 0 || expected_max == 0):
+            if (expected_min == 0 or expected_max == 0):
                 print("    Error: " +
                           "either expected_min or expected_max is 0 which it shouldn't be")
                 return
