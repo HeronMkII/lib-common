@@ -5,6 +5,8 @@
 #include <stdint.h>
 
 #include <can/can.h>
+#include <can/ids.h>
+#include <uptime/uptime.h>
 
 
 // Define SSM ids
@@ -44,12 +46,22 @@
 #define HB_PAY_RST_EPS_PORT PORTC
 #define HB_PAY_RST_EPS_DDR  DDRC
 
+// Default 1 hour
+#define HB_RESET_UPTIME_THRESH (1UL * 60UL * 60UL)
+
 
 extern uint8_t hb_self_id;
 
+extern volatile uint32_t hb_ping_period_s;
 
-void init_heartbeat(uint8_t id);
-bool send_heartbeat_reset(uint8_t id);
+
+void init_hb(uint8_t self_id);
+bool wait_for_hb_mob_not_paused(mob_t* mob);
+bool wait_for_hb_resp(volatile bool* received_resp);
+void send_hb_resp(mob_t* mob, volatile bool* send_resp);
+void send_hb_ping(mob_t* mob, uint8_t other_id, volatile bool* send_ping, volatile bool* received_resp);
+bool send_hb_reset(uint8_t other_id);
+void run_hb(void);
 
 
 
