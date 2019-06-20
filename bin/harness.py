@@ -214,7 +214,7 @@ class Test:
 
         if line == "DONE\r\n":
             
-            if (enable_time == True):
+            if (self.expected_min != None or self.expected_max != None):
                 e = time.time()
                 elapsed = e - self.s
                 if abs(elapsed - self.expected_max) >= 10e-2:
@@ -239,9 +239,8 @@ class Test:
         # Handle different cases based on input read
         elif line[:9] == "TEST NAME":
             self.handle_name(line)
-        elif line[:4] == "TIME":
-            if (enable_time == True):
-                self.handle_time(line)
+        elif line[:4] == "TIME": #this line would only exist on console if enable_time is determined to be true by test.c
+            self.handle_time(line)
         elif line.startswith("AS STR EQ"):
             self.handle_assert_two_strings(line)
         elif line.startswith("AS EQ"):
