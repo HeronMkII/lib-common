@@ -18,7 +18,7 @@ void hund_ms(void) {
 
 test_t t1 = { .name = "Add 1 and 1", .fn = addition_test };
 test_t t2 = { .name = "Assert true", .fn = one_test };
-test_t t3 = { .name = "100 ms", .fn = hund_ms, .time = 0.1 };
+test_t t3 = { .name = "100 ms", .fn = hund_ms };
 
 test_t* suite[3] = { &t1, &t2, &t3 };
 

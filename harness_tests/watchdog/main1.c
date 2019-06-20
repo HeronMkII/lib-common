@@ -86,10 +86,10 @@ void init_test(void){
 
 /* Times are not exact, but are determined through testing. Some variance is normal. */
 test_t t1 = { .name = "Set callback", .fn = set_callback_test };
-test_t t2 = { .name = "Interrupt Mode (1.0s)", .fn = interrupt_test, .time = 1.217 };
+test_t t2 = { .name = "Interrupt Mode (1.0s)", .fn = interrupt_test, .time_min = 1.217 };
 test_t t3 = { .name = "Disable WDT", .fn = disable_test };
-test_t t4 = { .name = "Set 2.0s timeout", .fn = set_2s_timeout, .time = 2.32};
-test_t t5 = { .name = "Set 0.25s timeout", .fn = set_250ms_timeout, .time = 0.373};
+test_t t4 = { .name = "Set 2.0s timeout", .fn = set_2s_timeout, .time_min = 2.32};
+test_t t5 = { .name = "Set 0.25s timeout", .fn = set_250ms_timeout, .time_min = 0.373};
 test_t t6 = { .name = "Initialization Test", .fn = init_test};
 
 test_t* suite[] = { &t1, &t2, &t3, &t4, &t5, &t6 };

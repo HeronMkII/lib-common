@@ -26,6 +26,7 @@ void fun2(void) {
 }
 
 void fun3(void) {
+    _delay_ms(100);
     print("Hello Test 3!\n");
 }
 
