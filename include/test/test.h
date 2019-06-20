@@ -52,6 +52,6 @@ void run_tests(test_t**, uint8_t);
 
 void run_slave(void);
 
-extern bool enable_time;
+extern bool test_enable_time;
 
 #endif // TEST_H

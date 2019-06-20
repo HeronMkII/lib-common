@@ -1,9 +1,8 @@
 #include <test/test.h>
 #include <uart/uart.h>
+#include <utilities/utilities.h>
 
 #define TEST_NO 4
-
-enable_time = true;
 
 void fun1(void);
 void fun2(void);
@@ -35,6 +34,7 @@ void fun4(void) {
 }
 
 int main() {
+    test_enable_time = true;
     run_tests(suite, TEST_NO);
     return 0;
 }

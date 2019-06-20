@@ -18,7 +18,7 @@ uint8_t test_num;
 
 volatile uint8_t curr_test = 0;
 
-bool enable_time = false;
+bool test_enable_time = false;
 
 void run_test(test_t*);
 
@@ -87,7 +87,7 @@ void run_tests(test_t** suite, uint8_t len) {
 
 void run_test(test_t* test) {
     print("TEST NAME %s\r\n", test->name);
-    if (enable_time == true) print("TIME MIN %f MAX %f\r\n", test->time_min, test->time_max);
+    if (test_enable_time == true) print("TIME MIN %f MAX %f\r\n", test->time_min, test->time_max);
     (test->fn)();
     print("DONE\r\n");
 }
