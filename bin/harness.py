@@ -191,9 +191,8 @@ class Test:
         self.name = "Unknown"
         self.assert_passed = 0
         self.assert_failed = 0
-        self.time_cb = lambda *x: None
         self.done = False
-        self.s = time.time()
+        self.start_time = None
         self.expected_max = None
         self.expected_min = None 
 
@@ -215,18 +214,17 @@ class Test:
         if line == "DONE\r\n":
             
             if (self.expected_min != None or self.expected_max != None):
-                e = time.time()
-                elapsed = e - self.s
-                if abs(elapsed - self.expected_max) >= 10e-2:
+                elapsed_time = time.time() - self.start_time
+                if elapsed_time > self.expected_max:
                     self.assert_failed += 1
                     print("    Error: " +
                           "expected test to complete in %.3f s, took %.3f s"
-                          % (self.expected_max, elapsed))
-                elif abs(self.expected_min - elapsed) >= 10e-2:
+                          % (self.expected_max, elapsed_time))
+                elif elapsed_time < self.expected_min:
                     self.assert_failed += 1
                     print("    Error: " +
                           "expected test to take at least %.3f s, took %.3f s"
-                          % (self.expected_min, elapsed))
+                          % (self.expected_min, elapsed_time))
                 else:
                     self.assert_passed += 1
                     
@@ -269,6 +267,10 @@ class Test:
 
     # Searches for match anywhere in string and returns first subgroup
     def handle_name(self, line):
+        # Reset time before every test
+        self.start_time = None
+        self.expected_max = None
+        self.expected_min = None
         regex = r"TEST NAME (.+)\r\n"
         match = re.search(regex, line)
         name = str(match.group(1))
@@ -277,22 +279,20 @@ class Test:
 
     # Calculate elapsed time, if necessary
     def handle_time(self, line):
+        self.start_time = time.time()
         regex = r"TIME MIN ([-+]?\d*\.\d+|\d+) MAX ([-+]?\d*\.\d+|\d+)\r\n"
         match = re.search(regex, line)
         # In some cases, random data is output here, use try/except
         # to ensure that the test harness does not error out
         try:
-            expected_min = float(match.group(1))
-            expected_max = float(match.group(2))
-            if (expected_min == 0 or expected_max == 0):
+            self.expected_min = float(match.group(1))
+            self.expected_max = float(match.group(2))
+            if (self.expected_min == 0 or self.expected_max == 0):
                 print("    Error: " +
                           "either expected_min or expected_max is 0 which it shouldn't be")
                 return
         except:
             return
-        else:
-            self.expected_min = expected_min
-            self.expected_max = expected_max
 
     # Extracts line for assertion with two string inputs
     # Prints out error message if it fails
