@@ -108,7 +108,8 @@ void hb_rx_cb(const uint8_t* data, uint8_t len);
 void hb_uptime_cb(void);
 
 
-// Assumes init_uptime() and init_can() have already been called
+// Assumes init_uptime() and init_can() have already been called,
+// but init_rx_mob() and init_tx_mob() have NOT been called on the HB MOBs
 void init_hb(uint8_t self_id) {
     // Store ID in the global variable
     hb_self_id = self_id;

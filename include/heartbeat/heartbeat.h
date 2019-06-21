@@ -52,6 +52,18 @@
 
 extern uint8_t hb_self_id;
 
+extern volatile bool hb_send_obc_ping;
+extern volatile bool hb_send_eps_ping;
+extern volatile bool hb_send_pay_ping;
+extern volatile bool hb_received_obc_resp;
+extern volatile bool hb_received_eps_resp;
+extern volatile bool hb_received_pay_resp;
+
+extern volatile bool hb_send_obc_resp;
+extern volatile bool hb_send_eps_resp;
+extern volatile bool hb_send_pay_resp;
+
+extern volatile uint32_t hb_ping_prev_uptime_s;
 extern volatile uint32_t hb_ping_period_s;
 
 
