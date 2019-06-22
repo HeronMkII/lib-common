@@ -8,8 +8,18 @@
 typedef enum {
     TX_MOB,
     RX_MOB,
-    AUTO_MOB
 } mob_type_t;
+
+typedef enum {
+    CAN_RATE_100,
+    CAN_RATE_125,
+    CAN_RATE_250,
+    CAN_RATE_500,
+    CAN_RATE_1000,
+} can_baud_rate_t;
+
+// Define the default baud rate as 100
+#define CAN_DEF_BAUD_RATE CAN_RATE_100
 
 // allows access to the id via table
 typedef union {
@@ -52,16 +62,21 @@ typedef struct {
     uint8_t data[8];
 } mob_t;
 
+extern volatile uint8_t boffit_count;
+
+
 void init_can(void);
 
 void init_rx_mob(mob_t*);
 void init_tx_mob(mob_t*);
-void init_auto_mob(mob_t*);
 
 void pause_mob(mob_t*);
 void resume_mob(mob_t*);
 uint8_t is_paused(mob_t*);
 
 uint8_t mob_status(mob_t*);
+void select_mob(uint8_t);
+
+void set_can_baud_rate(can_baud_rate_t);
 
 #endif
