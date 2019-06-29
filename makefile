@@ -15,6 +15,7 @@ MCU = 64m1
 DEVICE = m$(MCU)
 # Harness testing folder
 TEST = harness_tests
+# HARNESS_ARGS - can specify from the command line when calling `make`
 
 export CC = avr-gcc
 export AR = avr-ar
@@ -119,6 +120,12 @@ debug:
 	@echo ------------
 	@echo $(MANUAL_TESTS)
 	@echo ------------
+	@echo $(MCU)
+	@echo ------------
+	@echo $(DEVICE)
+	@echo ------------
+	@echo $(TEST)
+	@echo ------------
 	@echo $(WINDOWS)
 	@echo ------------
 	@echo $(MAC_OS)
@@ -143,7 +150,7 @@ examples:
 	done
 
 harness:
-	$(PYTHON) ./bin/harness.py -p $(PORT) -u $(UART) -d $(TEST)
+	$(PYTHON) ./bin/harness.py -p $(PORT) -u $(UART) -d $(TEST) $(HARNESS_ARGS)
 
 help:
 	@echo "usage: make [all | clean | debug | examples | harness | help | manual_tests | read-eeprom]"

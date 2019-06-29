@@ -32,7 +32,7 @@ class TestHarness:
     baud_rate = 9600
 
     # port and serial_port are passed in as port, uart (see code at bottom)
-    def __init__(self, port, serial_port):
+    def __init__(self, port, serial_port, verbose):
         self.port = port
         self.serial_port = serial_port
         self.serial = []
@@ -40,6 +40,7 @@ class TestHarness:
         self.total_passed = 0
         self.total_failed = 0
         self.timeout = 10
+        self.verbose = verbose
 
     # Adds suites to suite class variable in TestHarness object
     def add_suite(self, suite):
@@ -143,7 +144,7 @@ class TestSuite:
             # Gets count of tests to be run, then appends it
             count = self.harness.recv_count(self)
             for _ in range(count):
-                self.tests.append(Test())
+                self.tests.append(Test(self.harness))
 
             # Returns current time (i.e. start time)
             s = time.time()
@@ -187,14 +188,15 @@ class TestSuite:
             self.harness.send_end()
 
 class Test:
-    def __init__(self):
+    def __init__(self, harness):
         self.name = "Unknown"
         self.assert_passed = 0
         self.assert_failed = 0
         self.done = False
         self.start_time = None
         self.expected_max = None
-        self.expected_min = None 
+        self.expected_min = None
+        self.harness = harness
 
     # Checks to see if test is done (would be set by handle_line)
     def is_done(self):
@@ -209,7 +211,8 @@ class Test:
     def handle_line(self, line):
         # Print the raw characters received
         # print("UART RX (%d characters)" % len(line))
-        print("UART RX:", line.strip())
+        if self.harness.verbose:
+            print("UART RX (%d bytes):" % len(line), line.strip())
 
         if line == "DONE\r\n":
             
@@ -263,7 +266,9 @@ class Test:
             self.handle_assert_two_float_nums(line)
         else:
             # Execute line in code if no other conditions are true
-            sys.stdout.write(line)
+            # Don't double print UART if in verbose mode
+            if not self.harness.verbose:
+                print("Unrecognized UART RX (%d bytes):" % len(line), line.strip())
 
     # Searches for match anywhere in string and returns first subgroup
     def handle_name(self, line):
@@ -307,7 +312,7 @@ class Test:
             self.assert_failed += 1
             fn, line = str(match.group(3)), int(match.group(4))
             print("In function '%s', line %d" % (fn, line))
-            print("    Error: ASSERT_FALSE failed")
+            print("    Error: ASSERT_STR_EQ failed: %s, %s" % (a, b))
 
     # Extracts line for assertion with two integer inputs
     # Prints out error message if it fails
@@ -348,7 +353,7 @@ class Test:
             self.assert_failed += 1
             fn, line = str(match.group(4)), int(match.group(5))
             print("In function '%s', line %d" % (fn, line))
-            print("    Error: ASSERT_%s failed" % (operation))
+            print("    Error: ASSERT_%s failed: %d, %d" % (operation, a, b))
 
     # Extracts line for assertion with two float inputs
     # Prints out error message if it fails
@@ -360,8 +365,8 @@ class Test:
         match = re.search(regex, line)
         operation = str(match.group(1)) # Type of assertion
         a, b = float(match.group(2)), float(match.group(3))
-        a = "%.3f" % a # Truncating to three decimal places
-        b = "%.3f" % b
+        a = float("%.3f" % a) # Truncating to three decimal places
+        b = float("%.3f" % b)
         failure = False # Flag for if assertion failed
         # Passes if both sides are equivalent
         if operation == "EQ":
@@ -393,7 +398,7 @@ class Test:
             self.assert_failed += 1
             fn, line = str(match.group(4)), int(match.group(5))
             print("In function '%s', line %d" % (fn, line))
-            print("    Error: ASSERT_FP_%s failed" % (operation))
+            print("    Error: ASSERT_FP_%s failed: %f, %f" % (operation, a, b))
 
     # Extracts line and passes if it evaluates to true
     # Prints out error message if it fails
@@ -446,6 +451,7 @@ if __name__ == "__main__":
     # Method arguments include (in order), expected shell text, name of that argument (used below),
     # nargs specifies the number of arguments, with '+' inserting arguments of that type into a list
     # required is self-explanatory, metavar assigns a displayed name to each argument when using the help argument
+    # See https://docs.python.org/2/howto/argparse.html for flag example
     parser.add_argument('-p', '--prog', nargs='+', required=True,
             metavar=('port1', 'port2'),
             help='list of programming ports')
@@ -455,6 +461,9 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--test-dir', required=True,
             metavar='test_dir',
             help='directory in which to search for tests')
+    # Will be True or False
+    parser.add_argument('-v', '--verbose', action='store_true',
+            help='increase output verbosity')
 
     # Converts strings to objects, which are then assigned to variables below
     args = parser.parse_args()
@@ -462,9 +471,10 @@ if __name__ == "__main__":
     test_path = args.test_dir
     port = args.prog
     uart = args.uart
+    verbose = args.verbose
 
     # Creates TestHarness object
-    harness = TestHarness(port, uart)
+    harness = TestHarness(port, uart, verbose)
     # Generates file names in directory specified by test_path (above)
     # Number of boards is initialized at 0, then incremented when os.walk finds
     # mainx.c file
