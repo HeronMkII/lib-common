@@ -74,9 +74,10 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_EPS_CTRL_HEAT_CUR_THRESH_UPPER  6
 #define CAN_EPS_CTRL_RESET                  7
 #define CAN_EPS_CTRL_READ_EEPROM            8
-#define CAN_EPS_CTRL_RESTART_COUNT          9
-#define CAN_EPS_CTRL_RESTART_REASON         10
-#define CAN_EPS_CTRL_UPTIME                 11
+#define CAN_EPS_CTRL_ERASE_EEPROM           9
+#define CAN_EPS_CTRL_RESTART_COUNT          10
+#define CAN_EPS_CTRL_RESTART_REASON         11
+#define CAN_EPS_CTRL_UPTIME                 12
 
 // PAY housekeeping
 #define CAN_PAY_HK_TEMP         0
@@ -113,5 +114,8 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_PAY_CTRL_RESET          5
 #define CAN_PAY_CTRL_READ_EEPROM    6
 #define CAN_PAY_CTRL_ERASE_EEPROM   7
+#define CAN_PAY_CTRL_RESTART_COUNT  8
+#define CAN_PAY_CTRL_RESTART_REASON 9
+#define CAN_PAY_CTRL_UPTIME         10
 
 #endif
