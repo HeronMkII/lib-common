@@ -21,6 +21,10 @@ CAN Message Format:
 Byte 0: 1 (ping) or 2 (response)
 Byte 1: Sender
 Byte 2: Receiver
+
+TODO - test what happens when sending/receiving 2 messages at the same time from different subsystems
+TODO - to simulate a subsystem not responding to HB pings, set its RX MOB masks to 0xFFFF
+TODO - figure out better testing modes (e.g. not responding to all HB pings, randomly responding to some pings but not others)
 */
 
 // Assume init_uart() and init_can() have been called in SSM main program
@@ -30,6 +34,9 @@ Byte 2: Receiver
 #include <uart/uart.h>
 #include <heartbeat/heartbeat.h>
 #include <utilities/utilities.h>
+
+// Extra debugging logs
+// #define HB_DEBUG
 
 
 // The current MCU's ID
@@ -164,6 +171,8 @@ void init_hb_rx_mob(mob_t* mob, uint8_t mob_num, uint16_t id_tag) {
     mob->id_mask = hb_id_mask;
     mob->ctrl = hb_rx_ctrl;
     mob->rx_cb = hb_rx_cb;
+
+    init_rx_mob(mob);
 }
 
 void init_hb_tx_mob(mob_t* mob, uint8_t mob_num, uint16_t id_tag) {
@@ -172,6 +181,8 @@ void init_hb_tx_mob(mob_t* mob, uint8_t mob_num, uint16_t id_tag) {
     mob->id_tag.std = id_tag;
     mob->ctrl = hb_tx_ctrl;
     mob->tx_data_cb = hb_tx_cb;
+
+    init_tx_mob(mob);
 }
 
 void init_hb_mobs(void) {
@@ -242,18 +253,18 @@ void hb_tx_cb(uint8_t* data, uint8_t* len) {
         data[5] = 0x00;
         data[6] = 0x00;
         data[7] = 0x00;
-
-        print("Sending HB: ");
-        print_bytes(data, *len);
     }
+    
+    print("HB TX: ");
+    print_bytes(data, *len);
 }
 
 // This function will be called within an ISR when we receive a message
 void hb_rx_cb(const uint8_t* data, uint8_t len) {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        print("Received HB: ");
-        print_bytes((uint8_t*) data, len);
+    print("HB RX: ");
+    print_bytes((uint8_t*) data, len);
 
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         if (len != 8) {
             return;
         }
@@ -296,7 +307,9 @@ void hb_rx_cb(const uint8_t* data, uint8_t len) {
 
 // This will be atomic (in timer ISR)
 void hb_uptime_cb(void) {
+#ifdef HB_DEBUG
     print("%s\n", __FUNCTION__);
+#endif
 
     // If it is time to send another ping
     // Need to set the flags - can't send CAN directly because we are inside an ISR
@@ -316,9 +329,8 @@ void hb_uptime_cb(void) {
 
 
 bool wait_for_hb_mob_not_paused(mob_t* mob) {
-    // Wait up to 100 ms
-    // TODO - how long is appropriate?
-    for (uint8_t i = 0; i < 100; i++) {
+    // Wait up to 10 ms
+    for (uint16_t i = 0; i < 10; i++) {
         if (is_paused(mob)) {
             return true;
         }
@@ -329,7 +341,6 @@ bool wait_for_hb_mob_not_paused(mob_t* mob) {
 
 bool wait_for_hb_resp(volatile bool* received_resp) {
     // Wait up to 1 s
-    // TODO - how long is appropriate?
     for (uint16_t i = 0; i < 1000; i++) {
         if (*received_resp) {
             return true;
@@ -366,6 +377,11 @@ void send_hb_ping(mob_t* mob, uint8_t other_id, volatile bool* send_ping, volati
 }
 
 bool send_hb_reset(uint8_t other_id) {
+#ifdef HB_DEBUG
+    print("%s: other_id = %u\n", __FUNCTION__, other_id);
+#endif
+    print("Sending HB reset to #%u\n", other_id);
+
     pin_info_t rst_pin;
 
     if        (hb_self_id == HB_OBC && other_id == HB_EPS) {
@@ -385,11 +401,10 @@ bool send_hb_reset(uint8_t other_id) {
     }
 
     // Assert the reset
-    // TODO - how long?
     // See table on p.96 - for reset, need to output low (DDR = 1, PORT = 0)
     // Then go back to tri-state input with pullup (DDR = 0, PORT = 1)
     init_output_pin(rst_pin.pin, rst_pin.ddr, 0);
-    _delay_ms(100);
+    _delay_ms(10);
     init_input_pin(rst_pin.pin, rst_pin.ddr);
     set_pin_pullup(rst_pin.pin, rst_pin.port, 1);
 

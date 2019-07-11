@@ -52,6 +52,10 @@
 
 extern uint8_t hb_self_id;
 
+extern mob_t obc_hb_mob;
+extern mob_t eps_hb_mob;
+extern mob_t pay_hb_mob;
+
 extern volatile bool hb_send_obc_ping;
 extern volatile bool hb_send_eps_ping;
 extern volatile bool hb_send_pay_ping;
