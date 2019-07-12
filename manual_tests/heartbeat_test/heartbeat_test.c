@@ -42,6 +42,8 @@ int main() {
         hb_ping_period_s = 15;
     } else if (SELF_ID == HB_EPS) {
         hb_ping_period_s = 20;
+    } else if (SELF_ID == HB_PAY) {
+        hb_ping_period_s = 25;
     }
 
 #ifdef PING_PERIOD

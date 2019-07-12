@@ -4,8 +4,9 @@ Byte 0: 1 (ping) or 2 (response)
 Byte 1: Sender
 Byte 2: Receiver
 
-TODO - test what happens when sending/receiving 2 messages at the same time from different subsystems
+TODO - fix race conditions when 2 heartbeat pings are sent around the same time
 TODO - figure out better testing modes (e.g. not responding to all HB pings, randomly responding to some pings but not others)
+TODO - test with flight model PAY with proper reset hardware
 */
 
 #include <avr/eeprom.h>
