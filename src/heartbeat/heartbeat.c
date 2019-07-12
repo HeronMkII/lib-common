@@ -367,7 +367,12 @@ void send_hb_ping(mob_t* mob, uint8_t other_id, volatile bool* send_ping, volati
     wait_for_hb_mob_not_paused(mob);
     *send_ping = false;
     
-    if (!wait_for_hb_resp(received_resp)) {
+    bool success = wait_for_hb_resp(received_resp);
+    print("Heartbeat to #%u - ", other_id);
+    if (success) {
+        print("success\n");
+    } else {
+        print("failed\n");
         send_hb_reset(other_id);
     }
 
