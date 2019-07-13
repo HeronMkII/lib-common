@@ -8,6 +8,8 @@
 #define COUNT_LEN 7
 #define START_MSG "START\r\n"
 #define START_LEN 7
+#define SEED_MSG "SEED \r\n" /* Expects "SEED" plus 4 additional digits */
+#define SEED_LEN 11
 #define KILL_MSG "KILL\r\n"
 #define KILL_LEN 6
 
@@ -42,6 +44,39 @@ uint8_t test_count_cb(const uint8_t* data, uint8_t len){
 
     return COUNT_LEN;
 }
+
+
+uint8_t test_seed_cb(const uint8_t* data, uint8_t len) {
+    char* seed = SEED_MSG;
+    if (len < 11) return 0;
+
+    uint8_t flag = 1;
+    for (uint8_t i = 0; i < 4; i++) {
+        if (data[i] != seed[i]) {
+            flag = 0;
+            break;
+        }
+    }
+
+    if (flag == 1)
+    {
+        int random_seed;
+        random_seed = atoi((const char *)(&data[5]));
+
+        srand(random_seed);
+        print("RANDOM SEED IS %d\r\n", random_seed);
+
+
+        run_test(test_suite[curr_test]);
+        curr_test += 1;
+        set_uart_rx_cb(test_start_cb);
+        return len;
+    } else {
+        clear_uart_rx_buf();
+        return 0;
+    }
+}
+
 uint8_t test_start_cb(const uint8_t* data, uint8_t len){
     char* start = START_MSG;
     if (len < START_LEN) return 0;

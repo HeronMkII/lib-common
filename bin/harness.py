@@ -12,6 +12,9 @@ import time
 import sys
 import os
 import re
+import random
+
+random_seed = random.randint(1,9999)
 
 try:
     import serial
@@ -83,6 +86,8 @@ class TestHarness:
     # Writes 'START' to serial port
     def send_start(self):
         self.serial[0].write(b"START\r\n")
+        self.serial[0].write(b"SEED %d\r\n" %random_seed)
+        
 
     # Closes serial ports when tests are complete
     def send_end(self):
@@ -478,6 +483,8 @@ if __name__ == "__main__":
     # Will be True or False
     parser.add_argument('-v', '--verbose', action='store_true',
             help='increase output verbosity')
+    parser.add_argument('-s', '--random_seed',
+        help='custom random seed')
 
     # Converts strings to objects, which are then assigned to variables below
     args = parser.parse_args()
@@ -486,6 +493,7 @@ if __name__ == "__main__":
     port = args.prog
     uart = args.uart
     verbose = args.verbose
+    random_seed = args.random_seed
 
     # Creates TestHarness object
     harness = TestHarness(port, uart, verbose)
