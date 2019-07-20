@@ -26,12 +26,18 @@ void float_equal(void) {
     ASSERT_FP_EQ(1.121, 1.121); //Assert true
     ASSERT_FP_EQ(-1.234, -1.2341); //Assert true due to 3 decimal truncation
     ASSERT_FP_EQ(1.876, 1.234); //Assert false
+    ASSERT_FP_EQ(1.0 / 0.0, 5.0);    // Assert false with inf
+    ASSERT_FP_EQ(-1.0 / 0.0, 12.0);    // Assert false with -inf
+    ASSERT_FP_EQ(-1.0 / 0.0, -5.0 / 0.0);    // Assert false with -inf and -inf
 }
 void float_not_equal(void) {
     ASSERT_FP_NEQ(2.946, 2.123); //Assert true
     ASSERT_FP_NEQ(10.987, 10.9876); //Assert true due to rounding
     ASSERT_FP_NEQ(10.987, 10.987); //Assert false
     ASSERT_FP_NEQ(10.23, 10.23); //Assert false
+    ASSERT_FP_NEQ(1.0 / 0.0, 5.0);    // Assert false with inf
+    ASSERT_FP_NEQ(-1.0 / 0.0, 12.0);    // Assert false with -inf
+    ASSERT_FP_NEQ(1.0 / 0.0, 5.0 / 0.0);    // Assert false with inf and inf
 }
 void float_greater(void) {
     ASSERT_FP_GREATER(2.117, 2.116); //Assert true

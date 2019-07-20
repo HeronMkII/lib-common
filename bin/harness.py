@@ -360,16 +360,25 @@ class Test:
     # Accurate to 3 decimal places. Code will round for the 6th decimal place
     # Note: If program fails here, check to make sure that function name is not long
     def handle_assert_two_float_nums(self, line):
-        regex = r"AS FP (\w+) (-?\d+\.\d+) (-?\d+\.\d+) \((.+)\) \((.+)\)\r\n"
+        # Regex will fail if we get "inf" or "-inf" in string, so check it before
+        # TODO - kind of hacky, find a better way
+        has_inf = False
+        if "inf" in line:
+            has_inf = True
+        else:
+            regex = r"AS FP (\w+) (-?\d+\.\d+) (-?\d+\.\d+) \((.+)\) \((.+)\)\r\n"
+            match = re.search(regex, line)
+            operation = str(match.group(1)) # Type of assertion
+            a, b = float(match.group(2)), float(match.group(3))
+            a = float("%.3f" % a) # Truncating to three decimal places
+            b = float("%.3f" % b)
 
-        match = re.search(regex, line)
-        operation = str(match.group(1)) # Type of assertion
-        a, b = float(match.group(2)), float(match.group(3))
-        a = float("%.3f" % a) # Truncating to three decimal places
-        b = float("%.3f" % b)
         failure = False # Flag for if assertion failed
+        # Always fail the assertion if we get inf or -inf
+        if has_inf:
+            failure = True
         # Passes if both sides are equivalent
-        if operation == "EQ":
+        elif operation == "EQ":
             if a == b:
                 self.assert_passed += 1
             else:
@@ -396,9 +405,14 @@ class Test:
         # Printing failure message
         if failure == True:
             self.assert_failed += 1
-            fn, line = str(match.group(4)), int(match.group(5))
-            print("In function '%s', line %d" % (fn, line))
-            print("    Error: ASSERT_FP_%s failed: %f, %f" % (operation, a, b))
+            if has_inf:
+                # TODO - clean up
+                print("In function ?, line ?")
+                print("    Error: ASSERT failed: %s" % line.strip())
+            else:
+                fn, line = str(match.group(4)), int(match.group(5))
+                print("In function '%s', line %d" % (fn, line))
+                print("    Error: ASSERT_FP_%s failed: %f, %f" % (operation, a, b))
 
     # Extracts line and passes if it evaluates to true
     # Prints out error message if it fails
