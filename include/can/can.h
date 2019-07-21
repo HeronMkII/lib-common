@@ -38,7 +38,8 @@ typedef struct {
     uint8_t rplv; // RPLV bit
 } mob_ctrl_t;
 
-// TODO: change these; ide_mask SHOULD matter
+// Default values for a `mob_ctrl_t` struct
+// Don't care about ide_msk (identifier extension mask, see CANIDM/IDEMSK, p.269)
 #define default_rx_ctrl { 0, 0, 0, 0, 0, 0 }
 #define default_tx_ctrl { 0, 0, 0, 0, 0, 0 }
 

@@ -301,7 +301,6 @@ const float THERM_RES[THERM_LUT_COUNT] PROGMEM = {
 };
 
 // Temperatures (in C)
-// TODO - should it be int8_t?
 const int16_t THERM_TEMP[THERM_LUT_COUNT] PROGMEM = {
     -40,        -35,        -30,        -25,        -20,
     -15,        -10,        -5,         0,          5,

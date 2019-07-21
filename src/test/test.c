@@ -80,7 +80,7 @@ void run_tests(test_t** suite, uint8_t len) {
         }
     } while (curr_test != len);
 
-    // TODO: This is unnecessary for the harness, but might be useful when
+    // This is unnecessary for the harness, but might be useful when
     // running a test by hand over UART
     print("END\r\n");
 }

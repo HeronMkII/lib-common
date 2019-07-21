@@ -64,8 +64,6 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 
 // EPS control
 #define CAN_EPS_CTRL_PING                   0
-#define CAN_EPS_CTRL_HEAT_SP1               1   // TODO - remove
-#define CAN_EPS_CTRL_HEAT_SP2               2   // TODO - remove
 #define CAN_EPS_CTRL_HEAT_SHADOW_SP1        1
 #define CAN_EPS_CTRL_HEAT_SHADOW_SP2        2
 #define CAN_EPS_CTRL_HEAT_SUN_SP1           3

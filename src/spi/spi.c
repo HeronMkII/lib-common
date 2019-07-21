@@ -22,8 +22,6 @@ Mode    CPOL    CPHA
 Clock speed:
 
 The default is F_osc / 64. This is expected when code calls send_spi() without changing the clock speed. If a device uses a different frequency, it must change the frequency, send its messages(s), then change the frequency back immediately after.
-
-TODO - test more thoroughly - modes and clock frequencies
 */
 
 #include <spi/spi.h>
@@ -60,7 +58,6 @@ void init_spi(void) {
     DDRB |= _BV(CLK) | _BV(MOSI);
     DDRD |= _BV(SS);
     // enable SPI, set mode to master, set SCK freq to f_io/64
-    // TODO - can we run SPI faster? check each SPI device's datasheet for max frequency
     SPCR |= _BV(SPE) | _BV(MSTR) | _BV(SPR1);
 }
 

@@ -40,6 +40,8 @@ static inline void set_ctrl_flags(mob_ctrl_t ctrl) {
     }
 
     // RB0 bit of the remote or data frame to send (updated with value of received frame)
+    // CANIDM4 refers to the lowest 8 bits of the 32-bit CANIDM register,
+    // i.e. CANIDM[7:0] (p.270) or at address 0xF4 (p.418)
     if (ctrl.ide_mask) {
         CANIDM4 |= _BV(IDEMSK); // Bit comparison enabled
     }

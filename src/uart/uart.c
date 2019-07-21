@@ -135,7 +135,6 @@ void put_uart_char(uint8_t c) {
 /*
 Gets one (received) character from UART (RX).
 c - will be set by this function to the received character
-TODO - Maybe change to uint8_t get_uart_char(uint8_t*) and write value directly?
 Frees up ret val for error handling
 */
 void get_uart_char(uint8_t* c) {

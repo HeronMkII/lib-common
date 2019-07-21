@@ -72,8 +72,6 @@ is never set, nor are the GPIO pins used.
 #define POWER_DN 0x0020
 #define POWER_UP 0x0000
 
-// TODO: Verify that these are actually correct
-// --> build test for this.
 #define REQUEST_AUTO1_MODE (AUTO1_MODE | EN_PGM | RANGE2 | CHAN_CTR_RST)
 #define ENTER_AUTO1_MODE (AUTO1_MODE | EN_PGM | RANGE2)
 #define CONTINUE_AUTO1_MODE (AUTO1_MODE | EN_PGM | RANGE2)

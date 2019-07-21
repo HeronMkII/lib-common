@@ -65,7 +65,7 @@ int main(void) {
         print_voltage(&adc, 9);
         _delay_ms(200);
 
-        // TODO: At the moment, swapping between manual and auto works, but this
-        // needs to be investigated further.
+        // Swapping between manual and auto works, but could be investigated
+        // further.
     }
 }

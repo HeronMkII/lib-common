@@ -16,9 +16,8 @@ void init_output_pin(uint8_t pin, ddr_t ddr, uint8_t init_val) {
     // Set DDR (data direction register) bit to 1 (output)
     *ddr |= _BV(pin);
 
-    // We should try to not have an extra `port` function parameter, so match it
-    // from `ddr`
-    // TODO - is there a better way to do this?
+    // We should try not to break code by having an extra `port` function
+    // parameter, so match it from `ddr`
     port_t port;
     if (ddr == &DDRB) {
         port = &PORTB;
@@ -90,7 +89,7 @@ port - PORT register
 Returns - 0 (low) or 1 (high)
 */
 uint8_t get_pin_val(uint8_t pin, port_t port) {
-    // TODO - better way to do this?
+    // We should try not to break code by switching `port` to `pin`, so match it
     if        (port == &PORTB) {
         return (PINB & _BV(pin)) ? 1 : 0;
     } else if (port == &PORTC) {
