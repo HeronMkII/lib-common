@@ -29,6 +29,14 @@
 #define UPTIME_RESTART_REASON_RESET_CMD     0x02
 // Have not received a command for some amount of time (e.g. 6 hours)
 #define UPTIME_RESTART_REASON_NO_CMD        0x03
+//Watchdog System Reset
+#define UPTIME_RESTART_REASON_WDRF          0x04 //WDRF  is 00001000 or 0x08
+//Brown-out Reset
+#define UPTIME_RESTART_REASON_BORF          0x05 //BORF  is 00000100 or 0x04
+//External Reset
+#define UPTIME_RESTART_REASON_EXTRF         0x06 //EXTRF is 00000010 or 0x02
+//Power-on Reset
+#define UPTIME_RESTART_REASON_PORF          0x07 //PORF  is 00000001 or 0x01
 // Was not able to record the reason for reset
 // Generally when the external reset pin is driven low
 // This is also the default value in EEPROM

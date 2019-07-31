@@ -16,6 +16,18 @@ void print_reason_string(void) {
         case UPTIME_RESTART_REASON_NO_CMD:
             print("No cmd");
             break;
+        case UPTIME_RESTART_REASON_WDRF:
+            print("Watchdog System Reset");
+            break;
+        case UPTIME_RESTART_REASON_BORF:
+            print("Brown-out Reset");
+            break;
+        case UPTIME_RESTART_REASON_EXTRF:
+            print("External Reset");
+            break;
+        case UPTIME_RESTART_REASON_PORF:
+            print("Power-on Reset");
+            break;
         case UPTIME_RESTART_REASON_UNKNOWN:
             print("Unknown");
             break;

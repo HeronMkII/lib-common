@@ -43,6 +43,13 @@ void init_uptime(void) {
 
     // Read restart reason
     restart_reason = eeprom_read_dword(RESTART_REASON_EEPROM_ADDR);
+    //If there's no restart reason, read the MCUSR for a restart reason
+    if (restart_reason == EEPROM_DEF_DWORD) {
+        if (MCUSR & _BV(WDRF)) restart_reason = UPTIME_RESTART_REASON_WDRF;
+        if (MCUSR & _BV(BORF)) restart_reason = UPTIME_RESTART_REASON_BORF;
+        if (MCUSR & _BV(EXTRF)) restart_reason = UPTIME_RESTART_REASON_EXTRF;
+        if (MCUSR & _BV(PORF)) restart_reason = UPTIME_RESTART_REASON_PORF;
+    }
     // Clear reset reason (set EEPROM to default value)
     write_restart_reason(UPTIME_RESTART_REASON_UNKNOWN);
     // Set the callback function for WDT reset
