@@ -50,6 +50,7 @@ void init_uptime(void) {
         if (MCUSR & _BV(EXTRF)) restart_reason = UPTIME_RESTART_REASON_EXTRF;
         if (MCUSR & _BV(PORF)) restart_reason = UPTIME_RESTART_REASON_PORF;
     }
+    MCUSR = 0;
     // Clear reset reason (set EEPROM to default value)
     write_restart_reason(UPTIME_RESTART_REASON_UNKNOWN);
     // Set the callback function for WDT reset
