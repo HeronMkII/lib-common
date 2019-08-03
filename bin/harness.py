@@ -86,7 +86,7 @@ class TestHarness:
     # Writes 'START' to serial port
     def send_start(self):
         self.serial[0].write(b"START\r\n")
-        self.serial[0].write(b"SEED %d\r\n" %random_seed)
+        self.serial[0].write(b"SEED %04d\r\n" %random_seed)
         
 
     # Closes serial ports when tests are complete
@@ -493,7 +493,8 @@ if __name__ == "__main__":
     port = args.prog
     uart = args.uart
     verbose = args.verbose
-    random_seed = args.random_seed
+    if args.random_seed:
+        random_seed = args.random_seed
 
     # Creates TestHarness object
     harness = TestHarness(port, uart, verbose)
