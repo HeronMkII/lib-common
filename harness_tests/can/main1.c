@@ -8,10 +8,9 @@
 
 #include <util/delay.h>
 
+// Function headers necessary for compilation
 void tx_callback(uint8_t*, uint8_t*);
 void rx_callback(const uint8_t*, uint8_t);
-void select_mob(uint8_t);
-uint8_t load_data(mob_t*);
 void handle_rx_interrupt(mob_t*);
 void handle_tx_interrupt(mob_t*);
 
@@ -50,10 +49,6 @@ void tx_callback(uint8_t* data, uint8_t* len) {
         print("%3d",data_s[i]);
     }
     print("\nTX sent\n");
-}
-
-void select_mob(uint8_t mob_num) {
-    CANPAGE = mob_num << 4;
 }
 
 void init_can_test(void) {
@@ -135,8 +130,6 @@ void error_handle_test(void) {
 
     tx_mob.dlc = 10; // Set incorrect length and send msg
     resume_mob(&tx_mob);
-
-    // print("CANSTMOB: %x\n", CANSTMOB);
 
     handle_rx_interrupt(&rx_mob);
     ASSERT_EQ(CANSTMOB & _BV(RXOK), 0x00);
