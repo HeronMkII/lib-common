@@ -17,105 +17,112 @@ test_t** test_suite;
 uint8_t test_num;
 
 volatile uint8_t curr_test = 0;
+volatile uint8_t start_cb_flag = 0;
+volatile uint8_t count_cb_flag = 0;
+volatile uint8_t kill_cb_flag = 0;
 
 bool test_enable_time = false;
 
 void run_test(test_t*);
 
-// FIXME: this code is very precarious
-uint8_t test_start_cb(const uint8_t* data, uint8_t len) {
-    char* start = START_MSG;
-    if (len < START_LEN) return 0;
+//TODO: Change cb functions to only set flags, execute code in main loop instead
+//Send data, len to other function as args
 
-    uint8_t flag = 1;
-    for (uint8_t i = 0; i < START_LEN - 1; i++) {
-        if (data[i] != start[i]) {
-            flag = 0;
-            break;
-        }
-    }
-
-    if (flag == 1) {
-        run_test(test_suite[curr_test]);
-        curr_test += 1;
-        return START_LEN;
-    } else {
-        clear_uart_rx_buf();
-        return 0;
-    }
-}
-
-uint8_t test_count_cb(const uint8_t* data, uint8_t len) {
+uint8_t test_count_cb(const uint8_t* data, uint8_t len){
     char* count = COUNT_MSG;
     if (len < COUNT_LEN) return 0;
 
-    uint8_t flag = 1;
+    count_cb_flag = 1;
     for (uint8_t i = 0; i < COUNT_LEN - 1; i++) {
         if (data[i] != count[i]) {
-            flag = 0;
+            count_cb_flag = 0;
             break;
         }
     }
 
-    if (flag == 1) {
-        print("%d\r\n", test_num);
-        set_uart_rx_cb(test_start_cb);
+    return COUNT_LEN;
+}
+uint8_t test_start_cb(const uint8_t* data, uint8_t len){
+    char* start = START_MSG;
+    if (len < START_LEN) return 0;
+
+    /* Test to see if start message is here */
+    start_cb_flag = 1;
+    for (uint8_t i = 0; i < START_LEN - 1; i++) {
+        /* Break if start msg not as expected*/
+        if (data[i] != start[i]) {
+            start_cb_flag = 0;
+            break;
+        }
     }
 
-    clear_uart_rx_buf();
-    return 0;
+    /* If start flag is detected, run current test */
+    return START_LEN;
 }
 
 void run_tests(test_t** suite, uint8_t len) {
     init_uart();
     test_suite = suite;
     test_num = len;
-    set_uart_rx_cb(test_count_cb);
 
-    __attribute__((unused)) uint8_t curr_cpy;
-    // GCC magic to make the compiler shut up
-    do {
-        ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-            curr_cpy = curr_test;
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+        clear_uart_rx_buf();
+        count_cb_flag = 0;
+        set_uart_rx_cb(test_count_cb);
+    }
+
+    while(!count_cb_flag);
+    print("%d\r\n", test_num);
+
+    for (int i = 0; i < len; i++){
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+            clear_uart_rx_buf();
+            start_cb_flag = 0;
+            set_uart_rx_cb(test_start_cb);
         }
-    } while (curr_test != len);
+        while(!start_cb_flag);
+        run_test(test_suite[i]);
+    }
+
 
     // This is unnecessary for the harness, but might be useful when
     // running a test by hand over UART
-    print("END\r\n");
+    print("DONE ALL\r\n");
 }
 
 void run_test(test_t* test) {
     print("TEST NAME %s\r\n", test->name);
     if (test_enable_time == true) print("TIME MIN %f MAX %f\r\n", test->time_min, test->time_max);
+    /* Calls function in test */
     (test->fn)();
     print("DONE\r\n");
 }
+
 
 uint8_t slave_kill_cb(const uint8_t* data, uint8_t len) {
     char* kill = KILL_MSG;
     if (len < KILL_LEN) return 0;
 
-    uint8_t flag = 1;
+    kill_cb_flag = 1;
     for (uint8_t i = 0; i < KILL_LEN - 1; i++) {
         if (data[i] != kill[i]) {
-            flag = 0;
+            kill_cb_flag = 0;
             break;
         }
     }
 
-    if (flag == 1) {
-        curr_test = 0;
-        return KILL_LEN;
-    } else {
-        clear_uart_rx_buf();
-        return 0;
-    }
+    return KILL_LEN;
 }
+
 
 void run_slave() {
     init_uart();
-    curr_test = -1;
-    set_uart_rx_cb(slave_kill_cb);
-    while (curr_test != 0) {};
+
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+        clear_uart_rx_buf();
+        kill_cb_flag = 0;
+        set_uart_rx_cb(slave_kill_cb);
+    }
+    while(!kill_cb_flag);
+    print("DONE ALL\r\n");
 }
