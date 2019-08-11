@@ -3,6 +3,7 @@
 
 #include <util/atomic.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #define COUNT_MSG "COUNT\r\n"
 #define COUNT_LEN 7
@@ -18,17 +19,14 @@
 test_t** test_suite;
 uint8_t test_num;
 
-volatile uint8_t curr_test = 0;
 volatile uint8_t start_cb_flag = 0;
 volatile uint8_t count_cb_flag = 0;
 volatile uint8_t kill_cb_flag = 0;
+volatile uint8_t seed_cb_flag = 0;
 
 bool test_enable_time = false;
 
 void run_test(test_t*);
-
-//TODO: Change cb functions to only set flags, execute code in main loop instead
-//Send data, len to other function as args
 
 uint8_t test_count_cb(const uint8_t* data, uint8_t len){
     char* count = COUNT_MSG;
@@ -48,33 +46,22 @@ uint8_t test_count_cb(const uint8_t* data, uint8_t len){
 
 uint8_t test_seed_cb(const uint8_t* data, uint8_t len) {
     char* seed = SEED_MSG;
-    if (len < 11) return 0;
+    uint16_t random_seed = 0; /* Need values between at least 0 and 10000 */
+    if (len < SEED_LEN) return 0;
 
-    uint8_t flag = 1;
+    seed_cb_flag = 1;
     for (uint8_t i = 0; i < 4; i++) {
         if (data[i] != seed[i]) {
-            flag = 0;
+            seed_cb_flag = 0;
             break;
         }
     }
 
-    if (flag == 1)
-    {
-        int random_seed;
-        random_seed = atoi((const char *)(&data[5]));
+    random_seed = atoi((const char *)(&data[5]));
+    srand(random_seed);
 
-        srand(random_seed);
-        print("RANDOM SEED IS %d\r\n", random_seed);
-
-
-        run_test(test_suite[curr_test]);
-        curr_test += 1;
-        set_uart_rx_cb(test_start_cb);
-        return len;
-    } else {
-        clear_uart_rx_buf();
-        return 0;
-    }
+    print("RANDOM SEED IS %d\r\n", random_seed);
+    return SEED_LEN;
 }
 
 uint8_t test_start_cb(const uint8_t* data, uint8_t len){
@@ -112,16 +99,24 @@ void run_tests(test_t** suite, uint8_t len) {
     for (int i = 0; i < len; i++){
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
             clear_uart_rx_buf();
+            seed_cb_flag = 0;
+            set_uart_rx_cb(test_seed_cb);
+        }
+        while(!seed_cb_flag);
+
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+            clear_uart_rx_buf();
             start_cb_flag = 0;
             set_uart_rx_cb(test_start_cb);
         }
         while(!start_cb_flag);
+
         run_test(test_suite[i]);
     }
 
 
-    // This is unnecessary for the harness, but might be useful when
-    // running a test by hand over UART
+    /* This is unnecessary for the harness, but might be useful when
+       running a test by hand over UART */
     print("DONE ALL\r\n");
 }
 
