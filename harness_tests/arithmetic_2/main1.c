@@ -6,9 +6,6 @@ Also test floats harness code
 #include <test/test.h>
 #include <uart/uart.h>
 
-#define F_CPU 8000000UL
-#include <util/delay.h>
-
 void not_equal(void) {
     ASSERT_NEQ(2, 1); //Assert true
     ASSERT_NEQ(1, 1); //Assert false
@@ -69,6 +66,13 @@ void str_equal(void) {
     ASSERT_STR_EQ("A", "a"); //Assert false
 }
 
+void random_equal(void) {
+    // These should both fail, just see that they are producing different values
+    // every time (or the same for a manually specified seed)
+    ASSERT_EQ(rand(), 1532);
+    ASSERT_EQ(random(), 234567);
+}
+
 test_t t1 = { .name = "not equal assert test", .fn = not_equal };
 test_t t2 = { .name = "greater than assert test", .fn = greater };
 test_t t3 = { .name = "less than assert test", .fn = less };
@@ -78,10 +82,11 @@ test_t t6 = { .name = "float greater than assert test", .fn = float_greater };
 test_t t7 = { .name = "float less than assert test", .fn = float_less };
 test_t t8 = { .name = "float assert pass", .fn = assert_pass };
 test_t t9 = { .name = "string assert test", .fn = str_equal };
+test_t t10 = { .name = "random equal test", .fn = random_equal };
 
-test_t* suite[9] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8, &t9 };
+test_t* suite[] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8, &t9, &t10 };
 
 int main() {
-    run_tests(suite, 9);
+    run_tests(suite, sizeof(suite) / sizeof(suite[0]));
     return 0;
 }

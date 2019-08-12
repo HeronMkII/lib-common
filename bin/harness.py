@@ -14,8 +14,6 @@ import os
 import re
 import random
 
-random_seed = random.randint(1,9999)
-
 try:
     import serial
 except ImportError:
@@ -35,7 +33,7 @@ class TestHarness:
     baud_rate = 9600
 
     # port and serial_port are passed in as port, uart (see code at bottom)
-    def __init__(self, port, serial_port, verbose):
+    def __init__(self, port, serial_port, verbose, random_seed):
         self.port = port
         self.serial_port = serial_port
         self.serial = []
@@ -44,6 +42,7 @@ class TestHarness:
         self.total_failed = 0
         self.timeout = 10
         self.verbose = verbose
+        self.random_seed = random_seed
 
     # Adds suites to suite class variable in TestHarness object
     def add_suite(self, suite):
@@ -86,7 +85,8 @@ class TestHarness:
     # Writes 'START' to serial port
     def send_start(self):
         self.serial[0].write(b"START\r\n")
-        self.serial[0].write(b"SEED %04d\r\n" %random_seed)
+        # Must have the number with exactly 4 digits (MCU is expecting it)
+        self.serial[0].write(b"SEED %04d\r\n" % self.random_seed)
         
 
     # Closes serial ports when tests are complete
@@ -219,7 +219,7 @@ class Test:
         if self.harness.verbose:
             print("UART RX (%d bytes):" % len(line), line.strip())
 
-        if line == "DONE\r\n":
+        if line == "DONE TEST\r\n":
             
             if (self.expected_min != None or self.expected_max != None):
                 elapsed_time = time.time() - self.start_time
@@ -483,8 +483,9 @@ if __name__ == "__main__":
     # Will be True or False
     parser.add_argument('-v', '--verbose', action='store_true',
             help='increase output verbosity')
-    parser.add_argument('-s', '--random_seed',
-        help='custom random seed')
+    # Allow the user to manually specify the seed to reproduce specific fails
+    parser.add_argument('-s', '--random_seed', default=random.randint(1, 9999),
+            help='custom random seed')
 
     # Converts strings to objects, which are then assigned to variables below
     args = parser.parse_args()
@@ -493,11 +494,14 @@ if __name__ == "__main__":
     port = args.prog
     uart = args.uart
     verbose = args.verbose
-    if args.random_seed:
-        random_seed = args.random_seed
+
+    # Use the user's seed if they supplied one, otherwise generate a random one
+    # that fits within 4 digits (for expecting serial format)
+    random_seed = int(args.random_seed)
+    print("Random seed is %d" % random_seed)
 
     # Creates TestHarness object
-    harness = TestHarness(port, uart, verbose)
+    harness = TestHarness(port, uart, verbose, random_seed)
     # Generates file names in directory specified by test_path (above)
     # Number of boards is initialized at 0, then incremented when os.walk finds
     # mainx.c file
