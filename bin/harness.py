@@ -134,13 +134,21 @@ class TestSuite:
     def compile_upload(self):
         print("    Compiling and uploading program...")
 
-        for i in range(1, self.boards + 1):
-            # Call "make upload" in the specific test suite's directory
-            cmd = " ".join(["make", "upload", "-C", self.path,
-                "PROG=main" + str(i), "PORT=" + self.harness.port[i - 1]])
-            # Calls cmd using shell
-            subprocess.call(cmd, shell=True)
-
+        if binary:
+            for i in range(1, self.boards + 1):
+                # Call "make upload" in the specific test suite's directory
+                cmd = " ".join(["make", "upload", "-C", self.path,
+                    "PROG="+ binary + str(i), "PORT=" + self.harness.port[i - 1]])
+                # Calls cmd using shell
+                subprocess.call(cmd, shell=True) 
+        else:
+            for i in range(1, self.boards + 1):
+                # Call "make upload" in the specific test suite's directory
+                cmd = " ".join(["make", "upload", "-C", self.path,
+                    "PROG=main" + str(i), "PORT=" + self.harness.port[i - 1]])
+                # Calls cmd using shell
+                subprocess.call(cmd, shell=True)
+            
     def run_suite(self):
         # Upon getting permission from user, compile, link, copy and upload code to 32m1
         if self.harness.has_permission(self):
@@ -486,6 +494,8 @@ if __name__ == "__main__":
     # Allow the user to manually specify the seed to reproduce specific fails
     parser.add_argument('-s', '--random_seed', default=random.randint(1, 9999),
             help='custom random seed')
+    parser.add_argument('-b', '--binary',
+            help='precompiled binary')
 
     # Converts strings to objects, which are then assigned to variables below
     args = parser.parse_args()
@@ -494,6 +504,7 @@ if __name__ == "__main__":
     port = args.prog
     uart = args.uart
     verbose = args.verbose
+    binary = args.binary #"./harness_tests/arithmetic_2/main" #args.binary
 
     # Use the user's seed if they supplied one, otherwise generate a random one
     # that fits within 4 digits (for expecting serial format)
