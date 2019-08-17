@@ -135,12 +135,10 @@ class TestSuite:
         print("    Compiling and uploading program...")
 
         if binary:
-            for i in range(1, self.boards + 1):
-                # Call "make upload" in the specific test suite's directory
-                cmd = " ".join(["make", "upload", "-C", self.path,
-                    "PROG="+ binary + str(i), "PORT=" + self.harness.port[i - 1]])
-                # Calls cmd using shell
-                subprocess.call(cmd, shell=True) 
+            cmd = " ".join(["make", "upload", "-C", self.path,
+            "PROG="+ binary, "PORT=" + self.harness.port[0]])
+            # Calls cmd using shell
+            subprocess.call(cmd, shell=True) 
         else:
             for i in range(1, self.boards + 1):
                 # Call "make upload" in the specific test suite's directory
