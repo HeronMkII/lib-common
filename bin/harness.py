@@ -33,7 +33,7 @@ class TestHarness:
     baud_rate = 9600
 
     # port and serial_port are passed in as port, uart (see code at bottom)
-    def __init__(self, port, serial_port, verbose, random_seed, binary):
+    def __init__(self, port, serial_port, verbose, random_seed, binary, mcu):
         self.port = port
         self.serial_port = serial_port
         self.serial = []
@@ -44,6 +44,7 @@ class TestHarness:
         self.verbose = verbose
         self.random_seed = random_seed
         self.binary = binary
+        self.mcu = mcu
 
     # Adds suites to suite class variable in TestHarness object
     def add_suite(self, suite):
@@ -88,7 +89,7 @@ class TestHarness:
         self.serial[0].write(b"START\r\n")
         # Must have the number with exactly 4 digits (MCU is expecting it)
         self.serial[0].write(b"SEED %04d\r\n" % self.random_seed)
-        
+
 
     # Closes serial ports when tests are complete
     def send_end(self):
@@ -147,7 +148,7 @@ class TestSuite:
             for i in range(1, self.boards + 1):
                 # Call "make upload" in the specific test suite's directory
                 cmd = " ".join(["make", "upload", "-C", self.path,
-                    "PROG=main" + str(i), "PORT=" + self.harness.port[i - 1]])
+                    "PROG=main" + str(i), "PORT=" + self.harness.port[i - 1]], "MCU=" + self.harness.mcu)
                 # Calls cmd using shell
                 subprocess.call(cmd, shell=True)
             
@@ -493,11 +494,13 @@ if __name__ == "__main__":
     # Will be True or False
     parser.add_argument('-v', '--verbose', action='store_true',
             help='increase output verbosity')
-    # Allow the user to manually specify the seed to reproduce specific fails
+        # Allow the user to manually specify the seed to reproduce specific fails
     parser.add_argument('-s', '--random_seed', default=random.randint(1, 9999),
             help='custom random seed')
     parser.add_argument('-b', '--binary',
             help='precompiled binary')
+    parser.add_argument('-m', '--mcu',
+            help='32m1 or 64m1 microcontroller')
 
     # Converts strings to objects, which are then assigned to variables below
     args = parser.parse_args()
@@ -507,14 +510,15 @@ if __name__ == "__main__":
     uart = args.uart
     verbose = args.verbose
     binary = args.binary
-
+    mcu = args.mcu
+    
     # Use the user's seed if they supplied one, otherwise generate a random one
     # that fits within 4 digits (for expecting serial format)
     random_seed = int(args.random_seed)
     print("Random seed is %d" % random_seed)
 
     # Creates TestHarness object
-    harness = TestHarness(port, uart, verbose, random_seed, binary)
+    harness = TestHarness(port, uart, verbose, random_seed, binary, mcu)
     # Generates file names in directory specified by test_path (above)
     # Number of boards is initialized at 0, then incremented when os.walk finds
     # mainx.c file
