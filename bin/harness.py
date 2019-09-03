@@ -135,7 +135,7 @@ class TestSuite:
         print("    Compiling and uploading program...")
 
         if binary:
-            cmd = " ".join(["make", "upload", "-C", self.path,
+            cmd = " ".join(["make", "upload_bin", "-C", self.path,
             "PROG="+ binary, "PORT=" + self.harness.port[0]])
             # Calls cmd using shell
             subprocess.call(cmd, shell=True) 
@@ -502,7 +502,7 @@ if __name__ == "__main__":
     port = args.prog
     uart = args.uart
     verbose = args.verbose
-    binary = args.binary #"./harness_tests/arithmetic_2/main" #args.binary
+    binary = args.binary
 
     # Use the user's seed if they supplied one, otherwise generate a random one
     # that fits within 4 digits (for expecting serial format)
