@@ -85,6 +85,7 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_EPS_CTRL_START_TEMP_LPM             17
 #define CAN_EPS_CTRL_ENABLE_INDEF_LPM           18
 #define CAN_EPS_CTRL_DISABLE_INDEF_LPM          19
+#define CAN_EPS_CTRL_FIELD_COUNT                20  // Number of fields
 
 // PAY housekeeping
 #define CAN_PAY_HK_HUM              0
@@ -142,5 +143,6 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_PAY_CTRL_START_TEMP_LPM     22
 #define CAN_PAY_CTRL_ENABLE_INDEF_LPM   23
 #define CAN_PAY_CTRL_DISABLE_INDEF_LPM  24
+#define CAN_PAY_CTRL_FIELD_COUNT        25  // Number of fields
 
 #endif
