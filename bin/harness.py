@@ -33,7 +33,7 @@ class TestHarness:
     baud_rate = 9600
 
     # port and serial_port are passed in as port, uart (see code at bottom)
-    def __init__(self, port, serial_port, verbose, random_seed):
+    def __init__(self, port, serial_port, verbose, random_seed, binary):
         self.port = port
         self.serial_port = serial_port
         self.serial = []
@@ -43,6 +43,7 @@ class TestHarness:
         self.timeout = 10
         self.verbose = verbose
         self.random_seed = random_seed
+        self.binary = binary
 
     # Adds suites to suite class variable in TestHarness object
     def add_suite(self, suite):
@@ -134,11 +135,14 @@ class TestSuite:
     def compile_upload(self):
         print("    Compiling and uploading program...")
 
-        if binary:
+        # Manually specified name for pre-compiled binary
+        if self.harness.binary is not None:
             cmd = " ".join(["make", "upload_bin", "-C", self.path,
-            "PROG="+ binary, "PORT=" + self.harness.port[0]])
+            "PROG="+ self.harness.binary, "PORT=" + self.harness.port[0]])
             # Calls cmd using shell
-            subprocess.call(cmd, shell=True) 
+            subprocess.call(cmd, shell=True)
+
+        # Default "main#" name for binary to compile
         else:
             for i in range(1, self.boards + 1):
                 # Call "make upload" in the specific test suite's directory
@@ -510,7 +514,7 @@ if __name__ == "__main__":
     print("Random seed is %d" % random_seed)
 
     # Creates TestHarness object
-    harness = TestHarness(port, uart, verbose, random_seed)
+    harness = TestHarness(port, uart, verbose, random_seed, binary)
     # Generates file names in directory specified by test_path (above)
     # Number of boards is initialized at 0, then incremented when os.walk finds
     # mainx.c file
