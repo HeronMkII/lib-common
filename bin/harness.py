@@ -148,7 +148,9 @@ class TestSuite:
             for i in range(1, self.boards + 1):
                 # Call "make upload" in the specific test suite's directory
                 cmd = " ".join(["make", "upload", "-C", self.path,
-                    "PROG=main" + str(i), "PORT=" + self.harness.port[i - 1]], "MCU=" + self.harness.mcu)
+                    "PROG=main" + str(i), "PORT=" + self.harness.port[i - 1]])
+                if self.harness.mcu is not None:
+                    cmd += " MCU=" + self.harness.mcu
                 # Calls cmd using shell
                 subprocess.call(cmd, shell=True)
             
@@ -494,7 +496,7 @@ if __name__ == "__main__":
     # Will be True or False
     parser.add_argument('-v', '--verbose', action='store_true',
             help='increase output verbosity')
-        # Allow the user to manually specify the seed to reproduce specific fails
+    # Allow the user to manually specify the seed to reproduce specific fails
     parser.add_argument('-s', '--random_seed', default=random.randint(1, 9999),
             help='custom random seed')
     parser.add_argument('-b', '--binary',
