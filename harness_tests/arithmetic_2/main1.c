@@ -6,6 +6,8 @@ Also test floats harness code
 #include <test/test.h>
 #include <uart/uart.h>
 
+#include <stdlib.h>
+
 void not_equal(void) {
     ASSERT_NEQ(2, 1); //Assert true
     ASSERT_NEQ(1, 1); //Assert false
@@ -47,6 +49,7 @@ void float_less(void) {
 
 void assert_pass(void) { //Assert pass
     ASSERT_FP_EQ(0, 0);
+    ASSERT_EQ(UINT32_MAX, -1); // Check -1 with 32 bit signed int behaviour, should be equal and pass
     ASSERT_FP_NEQ(1 ,2.001);
     ASSERT_FP_GREATER(1.001, 1.000);
     ASSERT_FP_LESS(0.05, 0.09);
@@ -80,7 +83,7 @@ test_t t4 = { .name = "float equal assert test", .fn = float_equal };
 test_t t5 = { .name = "float not equal assert test", .fn = float_not_equal };
 test_t t6 = { .name = "float greater than assert test", .fn = float_greater };
 test_t t7 = { .name = "float less than assert test", .fn = float_less };
-test_t t8 = { .name = "float assert pass", .fn = assert_pass };
+test_t t8 = { .name = "assert pass", .fn = assert_pass };
 test_t t9 = { .name = "string assert test", .fn = str_equal };
 test_t t10 = { .name = "random equal test", .fn = random_equal };
 

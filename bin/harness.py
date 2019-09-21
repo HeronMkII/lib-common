@@ -335,7 +335,7 @@ class Test:
     # Extracts line for assertion with two integer inputs
     # Prints out error message if it fails
     def handle_assert_two_nums(self, line):
-        regex = r"AS (\w+) (\d+) (\d+) \((.+)\) \((.+)\)\r\n"
+        regex = r"AS (\w+) (-?\d+) (-?\d+) \((.+)\) \((.+)\)\r\n"
         match = re.search(regex, line)
         operation = str(match.group(1)) # Type of assertion
         a, b = int(match.group(2)), int(match.group(3))
