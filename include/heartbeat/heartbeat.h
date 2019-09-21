@@ -8,6 +8,18 @@
 #include <can/ids.h>
 #include <uptime/uptime.h>
 
+// OpCodes
+#define PING_REQUEST 0x01
+#define PING_RESPONSE 0x02
+#define RESTART_DATA_REQ 0x03
+#define RESTART_DATA_RESP 0x04
+
+// Heartbeat Byte structure
+#define SENDER 0x00
+#define RECEIVER 0x01
+#define OP_CODE 0x02
+#define RESTART_REASON 0x03
+#define RESTART_COUNT 0x04
 
 // Define SSM ids
 #define HB_OBC 0x00
