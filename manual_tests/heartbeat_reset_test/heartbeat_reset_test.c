@@ -35,7 +35,7 @@ uint8_t uart_cb(const uint8_t* data, uint8_t len) {
         print_cmds();
         return 1;
     }
-    
+
     else if (c == '1') {
         switch (id) {
             case HB_OBC:
@@ -54,7 +54,7 @@ uint8_t uart_cb(const uint8_t* data, uint8_t len) {
                 break;
         }
     }
-    
+
     else if (c == '2') {
         switch (id) {
             case HB_OBC:
@@ -73,7 +73,7 @@ uint8_t uart_cb(const uint8_t* data, uint8_t len) {
                 break;
         }
     }
-    
+
     else {
         print("Invalid command\n");
     }
@@ -104,6 +104,6 @@ int main() {
     print_cmds();
     print("Press 'h' at any time to list the commands\n");
     while (1) {}
-    
+
     return 0;
 }

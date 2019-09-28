@@ -71,6 +71,7 @@ extern mob_t pay_hb_mob;
 extern volatile bool hb_send_obc_ping;
 extern volatile bool hb_send_eps_ping;
 extern volatile bool hb_send_pay_ping;
+
 extern volatile bool hb_received_obc_resp;
 extern volatile bool hb_received_eps_resp;
 extern volatile bool hb_received_pay_resp;
@@ -78,6 +79,14 @@ extern volatile bool hb_received_pay_resp;
 extern volatile bool hb_send_obc_resp;
 extern volatile bool hb_send_eps_resp;
 extern volatile bool hb_send_pay_resp;
+
+extern volatile bool hb_received_obc_rdata_req;
+extern volatile bool hb_received_eps_rdata_req;
+extern volatile bool hb_received_pay_rdata_req;
+
+extern volatile bool hb_send_obc_rdata_resp ;
+extern volatile bool hb_send_eps_rdata_resp;
+extern volatile bool hb_send_pay_rdata_resp;
 
 extern volatile uint32_t hb_ping_prev_uptime_s;
 extern volatile uint32_t hb_ping_period_s;

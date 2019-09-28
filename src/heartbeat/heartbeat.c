@@ -1,10 +1,5 @@
 /*
-CAN Message Format:
-Byte 0: 1 (ping) or 2 (response)
-Byte 1: Sender
-Byte 2: Receiver
-
-Updated CAN Protocol
+Updated CAN Heartbeat Protocol
 Byte 0: Sender
 Byte 1: Receiver
 Byte 2: OpCode (1 = ping request, 2 = ping response, 3 = restart count request, 4 = restart count response)
