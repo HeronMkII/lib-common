@@ -21,20 +21,26 @@ it wants to. It uses EEPROM to keep track of the reason for the most recent rese
 // Number of times the MCU has started up, i.e. how many times the program has
 // started from the beginning (includes 1 for the first time)
 uint32_t restart_count = 0;
-// Uptime (in seconds) - since most recent restart
-volatile uint32_t uptime_s = 0;
 // The restart reason loaded from EEPROM on startup (when init_uptime() is called)
 // The EEPROM will be cleared after setting this value
 uint32_t restart_reason = UPTIME_RESTART_REASON_UNKNOWN;
+// Uptime (in seconds) - since most recent restart
+volatile uint32_t uptime_s = 0;
+
 
 // No-op default callbacks
 void uptime_fn_nop(void) {}
-
 // Array of timer callbacks for uptime timer callback
 uptime_fn_t uptime_callbacks[UPTIME_NUM_CALLBACKS] = {uptime_fn_nop};
 
+volatile uint32_t cmd_timer_count_s = 0;
+uint32_t cmd_timer_period_s = CMD_TIMER_DEF_PERIOD;
+
+
 void uptime_timer_cb(void);
 void uptime_wdt_cb(void);
+
+void cmd_timer_cb(void);
 
 
 void init_uptime(void) {
@@ -103,6 +109,28 @@ void uptime_timer_cb(void) {
         uptime_callbacks[i]();
     }
 }
+
+
+// Use the 16-bit timer to isolate it from uptime functionality as a redundancy measure
+void init_cmd_timer(void) {
+    start_timer_16bit(CMD_TIMER_CB_INTERVAL, cmd_timer_cb);
+}
+
+void restart_cmd_timer(void) {
+    // Just in case there are any problems writing a 32-bit register
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        cmd_timer_count_s = 0;
+    }
+}
+
+void cmd_timer_cb(void) {
+    cmd_timer_count_s += (uint32_t) CMD_TIMER_CB_INTERVAL;
+    if (cmd_timer_count_s >= cmd_timer_period_s) {
+        reset_self_mcu(UPTIME_RESTART_REASON_CMD_TIMER);
+        // Program should stop here and restart from the beginning
+    }
+}
+
 
 void write_restart_reason(uint32_t reason) {
     eeprom_write_dword(RESTART_REASON_EEPROM_ADDR, reason);
