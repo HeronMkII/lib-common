@@ -176,11 +176,19 @@ void fetch_adc_channel(adc_t* adc, uint8_t channel) {
 }
 
 /*
-Reads the inforamtion currently stored in the ADC.
+Reads the information currently stored in the ADC.
 Returns a 16-bit unsigned integer that is stored in the channel array at index c.
 @param adc_t* adc - the ADC
 @param uint8_t c - the specified channel
 */
 uint16_t read_adc_channel(adc_t* adc, uint8_t channel) {
     return adc->channel_data[channel];
+}
+
+/*
+Fetches and reads 16-bit raw data for the specified channel in manual mode.
+*/
+uint16_t fetch_and_read_adc_channel(adc_t* adc, uint8_t channel) {
+    fetch_adc_channel(adc, channel);
+    return read_adc_channel(adc, channel);
 }
