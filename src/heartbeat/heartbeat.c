@@ -9,7 +9,7 @@ Byte 0: Sender
 Byte 1: Receiver
 Byte 2: OpCode (1 = ping request, 2 = ping response, 3 = restart count request, 4 = restart count response)
 Byte 3: Restart Reason (if opcode = 4)(See data conversion protocol)
-Byte 4-7: Data
+Byte 4-7: Restart Count (if opcode = 4)
 
 TODO - fix race conditions when 2 heartbeat pings are sent around the same time
 TODO - figure out better testing modes (e.g. not responding to all HB pings, randomly responding to some pings but not others)
@@ -86,10 +86,15 @@ volatile bool hb_send_obc_resp = false;
 volatile bool hb_send_eps_resp = false;
 volatile bool hb_send_pay_resp = false;
 
-// Current SSM -> Request restart data from other SSM
-volatile bool hb_received_obc_rdata_req = false;
-volatile bool hb_received_eps_rdata_req = false;
-volatile bool hb_received_pay_rdata_req = false;
+// Current SSM -> Request reset data from other SSM
+volatile bool hb_send_obc_rdata_req = false;
+volatile bool hb_send_eps_rdata_req = false;
+volatile bool hb_send_pay_rdata_req = false;
+
+// True if we received reset data response
+volatile bool hb_received_obc_rdata_resp = false;
+volatile bool hb_received_eps_rdata_resp = false;
+volatile bool hb_received_pay_rdata_resp = false;
 
 // Other SSM -> Send restart data from current SSM
 volatile bool hb_send_obc_rdata_resp = false;
@@ -242,36 +247,45 @@ void hb_tx_cb(uint8_t* data, uint8_t* len) {
             data[SENDER] = hb_self_id;
             data[RECEIVER] = HB_PAY;
             data[OP_CODE] = PING_RESPONSE;
+        } else if (hb_send_obc_rdata_req){
+            data[SENDER] = hb_self_id;
+            data[RECEIVER] = HB_OBC;
+            data[OP_CODE] = RESTART_DATA_REQ;
+        } else if (hb_send_eps_rdata_req){
+            data[SENDER] = hb_self_id;
+            data[RECEIVER] = HB_EPS;
+            data[OP_CODE] = RESTART_DATA_REQ;
+        } else if (hb_send_pay_rdata_req){
+            data[SENDER] = hb_self_id;
+            data[RECEIVER] = HB_PAY;
+            data[OP_CODE] = RESTART_DATA_REQ;
         } else if (hb_send_obc_rdata_resp){
             data[SENDER] = hb_self_id;
             data[RECEIVER] = HB_OBC;
-            data[OP_CODE] = RESTART_DATA_REQ;
+            data[OP_CODE] = RESTART_DATA_RESP;
+            data[RESTART_REASON] = restart_reason; //eeprom_read_byte((uint8_t*)RESTART_REASON_EEPROM_ADDR);
+            data[RESTART_COUNT] = (restart_count & 0xFF000000) >> 24; //eeprom_read_byte((uint8_t*)RESTART_COUNT_EEPROM_ADDR);
+            data[RESTART_COUNT+1] = (restart_count & 0x00FF0000) >> 16;
+            data[RESTART_COUNT+2] = (restart_count & 0x0000FF00) >> 8;
+            data[RESTART_COUNT+3] = (restart_count & 0x000000FF);
         } else if (hb_send_eps_rdata_resp){
             data[SENDER] = hb_self_id;
             data[RECEIVER] = HB_EPS;
-            data[OP_CODE] = RESTART_DATA_REQ;
+            data[OP_CODE] = RESTART_DATA_RESP;
+            data[RESTART_REASON] = restart_reason; //eeprom_read_byte((uint8_t*)RESTART_REASON_EEPROM_ADDR);
+            data[RESTART_COUNT] = (restart_count & 0xFF000000) >> 24;
+            data[RESTART_COUNT+1] = (restart_count & 0x00FF0000) >> 16;
+            data[RESTART_COUNT+2] = (restart_count & 0x0000FF00) >> 8;
+            data[RESTART_COUNT+3] = (restart_count & 0x000000FF);
         } else if (hb_send_pay_rdata_resp){
             data[SENDER] = hb_self_id;
             data[RECEIVER] = HB_PAY;
-            data[OP_CODE] = RESTART_DATA_REQ;
-        } else if (hb_received_obc_rdata_req){
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_OBC;
             data[OP_CODE] = RESTART_DATA_RESP;
-            data[RESTART_REASON] = eeprom_read_byte((uint8_t*)RESTART_REASON_EEPROM_ADDR);
-            data[RESTART_COUNT] = eeprom_read_byte((uint8_t*)RESTART_COUNT_EEPROM_ADDR);
-        } else if (hb_received_eps_rdata_req){
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_EPS;
-            data[OP_CODE] = RESTART_DATA_RESP;
-            data[RESTART_REASON] = eeprom_read_byte((uint8_t*)RESTART_REASON_EEPROM_ADDR);
-            data[RESTART_COUNT] = eeprom_read_byte((uint8_t*)RESTART_COUNT_EEPROM_ADDR);
-        } else if (hb_received_pay_rdata_req){
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_PAY;
-            data[OP_CODE] = RESTART_DATA_RESP;
-            data[RESTART_REASON] = eeprom_read_byte((uint8_t*)RESTART_REASON_EEPROM_ADDR);
-            data[RESTART_COUNT] = eeprom_read_byte((uint8_t*)RESTART_COUNT_EEPROM_ADDR);
+            data[RESTART_REASON] = restart_reason; //eeprom_read_byte((uint8_t*)RESTART_REASON_EEPROM_ADDR);
+            data[RESTART_COUNT] = (restart_count & 0xFF000000) >> 24;
+            data[RESTART_COUNT+1] = (restart_count & 0x00FF0000) >> 16;
+            data[RESTART_COUNT+2] = (restart_count & 0x0000FF00) >> 8;
+            data[RESTART_COUNT+3] = (restart_count & 0x000000FF);
         }
         else {
             // Should not get here
@@ -343,13 +357,13 @@ void hb_rx_cb(const uint8_t* data, uint8_t len) {
         else if (data[OP_CODE] == RESTART_DATA_RESP) {
             switch (data[SENDER]) {
                 case HB_OBC:
-                    hb_received_obc_rdata_req = true;
+                    hb_received_obc_rdata_resp = true;
                     break;
                 case HB_EPS:
-                    hb_received_eps_rdata_req = true;
+                    hb_received_eps_rdata_resp = true;
                     break;
                 case HB_PAY:
-                    hb_received_pay_rdata_req = true;
+                    hb_received_pay_rdata_resp = true;
                     break;
             }
         }
@@ -365,7 +379,7 @@ void hb_uptime_cb(void) {
 
     // If it is time to send another ping
     // Need to set the flags - can't send CAN directly because we are inside an ISR
-    if (uptime_s > hb_ping_prev_uptime_s && uptime_s >= hb_ping_prev_uptime_s + hb_ping_period_s) {
+    if (uptime_s >= hb_ping_prev_uptime_s + hb_ping_period_s) {
         if (hb_self_id != HB_OBC) {
             hb_send_obc_ping = true;
         }
@@ -378,7 +392,6 @@ void hb_uptime_cb(void) {
         hb_ping_prev_uptime_s = uptime_s;
     }
 }
-
 
 bool wait_for_hb_mob_not_paused(mob_t* mob) {
     // Wait up to 10 ms
@@ -401,7 +414,6 @@ bool wait_for_hb_resp(volatile bool* received_resp) {
     }
     return false;
 }
-
 
 void send_hb_resp(mob_t* mob, volatile bool* send_resp) {
     resume_mob(mob);
@@ -489,7 +501,7 @@ void run_hb(void) {
     else if (hb_send_pay_resp) {
         send_hb_resp(&pay_hb_mob, &hb_send_pay_resp);
     }
-
+    // Check is there is a ping that needs to be sent
     else if (hb_send_obc_ping) {
         send_hb_ping(&obc_hb_mob, HB_OBC, &hb_send_obc_ping, &hb_received_obc_resp);
     }
@@ -499,4 +511,25 @@ void run_hb(void) {
     else if (hb_send_pay_ping) {
         send_hb_ping(&pay_hb_mob, HB_PAY, &hb_send_pay_ping, &hb_received_pay_resp);
     }
+    // Check is there is a ping that needs to be sent
+    else if (hb_send_obc_rdata_req) {
+        send_hb_ping(&obc_hb_mob, HB_OBC, &hb_send_obc_rdata_req, &hb_received_obc_rdata_resp);
+    }
+    else if (hb_send_eps_rdata_req) {
+        send_hb_ping(&eps_hb_mob, HB_EPS, &hb_send_eps_rdata_req, &hb_received_eps_rdata_resp);
+    }
+    else if (hb_send_pay_rdata_req) {
+        send_hb_ping(&pay_hb_mob, HB_PAY, &hb_send_pay_rdata_req, &hb_received_pay_rdata_resp);
+    }
+    // Check if there is a restart data request that needs to be responded to
+    else if (hb_send_obc_rdata_resp) {
+        send_hb_resp(&obc_hb_mob, &hb_send_obc_rdata_resp);
+    }
+    else if (hb_send_eps_rdata_resp) {
+        send_hb_resp(&eps_hb_mob, &hb_send_eps_rdata_resp);
+    }
+    else if (hb_send_pay_rdata_resp) {
+        send_hb_resp(&pay_hb_mob, &hb_send_pay_rdata_resp);
+    }
+
 }
