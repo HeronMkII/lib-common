@@ -23,7 +23,7 @@ it wants to. It uses EEPROM to keep track of the reason for the most recent rese
 uint32_t restart_count = 0;
 // The restart reason loaded from EEPROM on startup (when init_uptime() is called)
 // The EEPROM will be cleared after setting this value
-uint32_t restart_reason = UPTIME_RESTART_REASON_UNKNOWN;
+uint8_t restart_reason = UPTIME_RESTART_REASON_UNKNOWN;
 // Uptime (in seconds) - since most recent restart
 volatile uint32_t uptime_s = 0;
 
@@ -48,7 +48,7 @@ void init_uptime(void) {
     update_restart_count();
 
     // Read restart reason
-    restart_reason = read_eeprom(RESTART_REASON_EEPROM_ADDR);
+    restart_reason = (uint8_t) read_eeprom(RESTART_REASON_EEPROM_ADDR);
     //If there's no restart reason, read the MCUSR for a restart reason
     if (restart_reason == EEPROM_DEF_DWORD) {
         if (MCUSR & _BV(WDRF)) restart_reason = UPTIME_RESTART_REASON_WDRF;
@@ -129,8 +129,8 @@ void com_timeout_timer_cb(void) {
 }
 
 
-void write_restart_reason(uint32_t reason) {
-    write_eeprom(RESTART_REASON_EEPROM_ADDR, reason);
+void write_restart_reason(uint8_t reason) {
+    write_eeprom(RESTART_REASON_EEPROM_ADDR, (uint32_t)reason);
 }
 
 void uptime_wdt_cb(void) {
@@ -143,7 +143,7 @@ this program.
 NOTE: The program will not continue after calling this function. It will restart
 from the beginning.
 */
-void reset_self_mcu(uint32_t reason) {
+void reset_self_mcu(uint8_t reason) {
     // Only enable the system reset, not the interrupt
     // If we use the interrupt, it will write the restart reason as an
     // uninteniontal WDT timeout
