@@ -36,5 +36,6 @@ void reset_adc(adc_t* adc);
 void fetch_all_adc_channels(adc_t* adc);
 void fetch_adc_channel(adc_t* adc, uint8_t channel);
 uint16_t read_adc_channel(adc_t* adc, uint8_t channel);
+uint16_t fetch_and_read_adc_channel(adc_t* adc, uint8_t channel);
 
 #endif // ADC_H
