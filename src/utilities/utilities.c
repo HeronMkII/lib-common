@@ -102,3 +102,25 @@ uint8_t get_pin_val(uint8_t pin, port_t port) {
         return 0;
     }
 }
+
+/*
+Reads a dword (i.e. double word, 4 bytes) from the specified address in EEPROM.
+If it reads the default value after erasing (0xFFFFFFFF), returns the specified
+default value instead.
+addr - 16 bits because uint32_t* pointers are represented as a 16-bit address
+*/
+uint32_t read_eeprom(uint16_t addr, uint32_t default_value) {
+    uint32_t value = eeprom_read_dword((uint32_t*) addr);
+    if (value == EEPROM_DEF_DWORD) {
+        return default_value;
+    }
+    return value;
+}
+
+void write_eeprom(uint16_t addr, uint32_t value) {
+    // Should use eeprom_update_dword instead of eeprom_write_dword, since it
+    // reads the current value and only writes if the new value is different
+    // This reduces wear on the devices from the number of writes
+    // See https://www.avrfreaks.net/sites/default/files/forum_attachments/EEPROM.pdf, Section 2.2
+    eeprom_update_dword((uint32_t*) addr, value);
+}
