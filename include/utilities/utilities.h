@@ -40,7 +40,8 @@ void init_input_pin(uint8_t pin, ddr_t ddr);
 void set_pin_pullup(uint8_t pin, port_t port, uint8_t value);
 uint8_t get_pin_val(uint8_t pin, port_t port);
 
-uint32_t read_eeprom(uint16_t addr, uint32_t default_value);
+uint32_t read_eeprom(uint16_t addr);
+uint32_t read_eeprom_or_default(uint16_t addr, uint32_t default_value);
 void write_eeprom(uint16_t addr, uint32_t value);
 
 #endif // UTILITIES_H

@@ -8,8 +8,9 @@ void eeprom_test(void) {
 
     ASSERT_NEQ(default_value, EEPROM_DEF_DWORD);
     write_eeprom(addr, EEPROM_DEF_DWORD);
-    ASSERT_EQ(read_eeprom(addr, EEPROM_DEF_DWORD), EEPROM_DEF_DWORD);
-    ASSERT_EQ(read_eeprom(addr, default_value), default_value);
+    ASSERT_EQ(read_eeprom(addr), EEPROM_DEF_DWORD);
+    ASSERT_EQ(read_eeprom_or_default(addr, EEPROM_DEF_DWORD), EEPROM_DEF_DWORD);
+    ASSERT_EQ(read_eeprom_or_default(addr, default_value), default_value);
 
     uint32_t write_data = 0x7A35FE09;
     
@@ -17,7 +18,8 @@ void eeprom_test(void) {
     ASSERT_NEQ(write_data, default_value);
     write_eeprom(addr, write_data);
 
-    ASSERT_EQ(read_eeprom(addr, default_value), write_data);
+    ASSERT_EQ(read_eeprom(addr), write_data);
+    ASSERT_EQ(read_eeprom_or_default(addr, default_value), write_data);
 }
 
 test_t t1 = { .name = "EEPROM test", .fn = eeprom_test };
