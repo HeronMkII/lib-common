@@ -11,12 +11,7 @@
 #endif
 #include <util/delay.h>
 
-// Default values in EEPROM for different sizes
-// Byte (1 byte)
-#define EEPROM_DEF_BYTE 0xFF
-// Word (2 bytes)
-#define EEPROM_DEF_WORD 0xFFFF
-// Double word (4 bytes)
+// Default EEPROM value for double word (4 bytes)
 #define EEPROM_DEF_DWORD 0xFFFFFFFF
 
 

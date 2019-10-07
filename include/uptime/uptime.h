@@ -10,9 +10,9 @@
 #include <watchdog/watchdog.h>
 
 // EEPROM address for storing number of resets
-#define RESTART_COUNT_EEPROM_ADDR ((uint32_t*) 0x60)
+#define RESTART_COUNT_EEPROM_ADDR   0x10
 // EEPROM address for storing reason for last reset
-#define RESTART_REASON_EEPROM_ADDR ((uint32_t*) 0x64)
+#define RESTART_REASON_EEPROM_ADDR  0x14
 
 // Number of seconds between timer callbacks
 #define UPTIME_TIMER_PERIOD 1

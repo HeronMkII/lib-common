@@ -48,7 +48,7 @@ void init_uptime(void) {
     update_restart_count();
 
     // Read restart reason
-    restart_reason = eeprom_read_dword(RESTART_REASON_EEPROM_ADDR);
+    restart_reason = read_eeprom(RESTART_REASON_EEPROM_ADDR);
     //If there's no restart reason, read the MCUSR for a restart reason
     if (restart_reason == EEPROM_DEF_DWORD) {
         if (MCUSR & _BV(WDRF)) restart_reason = UPTIME_RESTART_REASON_WDRF;
@@ -73,14 +73,11 @@ void init_uptime(void) {
 
 void update_restart_count(void) {
     // Read the restart count stored in EEPROM
-    restart_count = eeprom_read_dword(RESTART_COUNT_EEPROM_ADDR);
-    if (restart_count == EEPROM_DEF_DWORD) {
-        restart_count = 0;
-    }
+    restart_count = read_eeprom_or_default(RESTART_COUNT_EEPROM_ADDR, 0);
 
     // Increment the restart count and write it back to EEPROM
     restart_count++;
-    eeprom_write_dword(RESTART_COUNT_EEPROM_ADDR, restart_count);
+    write_eeprom(RESTART_COUNT_EEPROM_ADDR, restart_count);
 }
 
 // Adds a callback to the next available spot in the array
@@ -133,7 +130,7 @@ void cmd_timer_cb(void) {
 
 
 void write_restart_reason(uint32_t reason) {
-    eeprom_write_dword(RESTART_REASON_EEPROM_ADDR, reason);
+    write_eeprom(RESTART_REASON_EEPROM_ADDR, reason);
 }
 
 void uptime_wdt_cb(void) {
