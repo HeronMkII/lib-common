@@ -10,18 +10,18 @@ Full test of the heartbeat system
 
 // NOTE: Change this variable before re-compiling and re-uploading to match the
 // subsystem of the board you are uploading to
-#define SELF_ID HB_OBC
+//#define SELF_ID HB_OBC
 // #define SELF_ID HB_EPS
-// #define SELF_ID HB_PAY
+#define SELF_ID HB_PAY
 
 // Uncomment to ignore received pings and not respond
-#define IGNORE_PINGS true
+#define IGNORE_PINGS false
 
 // Uncomment to overwrite hb_ping_period_s (if IGNORE_PINGS is enabled, recommended to set this high so it doesn't reset the other board)
 #define PING_PERIOD 100
 
 // Uncomment for more debug logging
- #define DEBUG_LOG false
+ #define DEBUG_LOG true
 // -----------------------------------------------------------------------------
 
 
@@ -74,17 +74,22 @@ int main() {
     print("Starting main loop\n");
 
 
+    uint32_t uptime_last = uptime_s;
     while (1) {
 
         // set flags for reset data requests
-        if (uptime_s % 5 == 0 && hb_self_id != HB_OBC){
-            hb_send_obc_rdata_req = true;
-        }
-        if (uptime_s % 5 == 1 && hb_self_id != HB_EPS){
-            hb_send_eps_rdata_req = true;
-        }
-        if (uptime_s % 5 == 2 && hb_self_id != HB_PAY){
-            hb_send_pay_rdata_req = true;
+
+        if (uptime_s > uptime_last){
+            uptime_last = uptime_s;
+            if (uptime_s % 15 == 0 && hb_self_id != HB_OBC){
+                hb_send_obc_rdata_req = true;
+            }
+            if (uptime_s % 15 == 5 && hb_self_id != HB_EPS){
+                hb_send_eps_rdata_req = true;
+            }
+            if (uptime_s % 15 == 10 && hb_self_id != HB_PAY){
+                hb_send_pay_rdata_req = true;
+            }
         }
 
         run_hb();
@@ -101,9 +106,13 @@ int main() {
             print_bool("hb_send_eps_resp", hb_send_eps_resp);
             print_bool("hb_send_pay_resp", hb_send_pay_resp);
 
-            print_bool("hb_received_obc_rdata_req", hb_received_obc_rdata_req);
-            print_bool("hb_received_eps_rdata_req", hb_received_eps_rdata_req);
-            print_bool("hb_received_pay_rdata_req", hb_received_pay_rdata_req);
+            print_bool("hb_send_obc_rdata_req", hb_send_obc_rdata_req);
+            print_bool("hb_send_eps_rdata_req", hb_send_eps_rdata_req);
+            print_bool("hb_send_pay_rdata_req", hb_send_pay_rdata_req);
+
+            print_bool("hb_received_obc_rdata_resp", hb_received_obc_rdata_resp);
+            print_bool("hb_received_eps_rdata_resp", hb_received_eps_rdata_resp);
+            print_bool("hb_received_pay_rdata_resp", hb_received_pay_rdata_resp);
 
             print_bool("hb_send_obc_rdata_resp", hb_send_obc_rdata_resp);
             print_bool("hb_send_eps_rdata_resp", hb_send_eps_rdata_resp);

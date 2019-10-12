@@ -47,7 +47,7 @@
 // Was not able to record the reason for reset
 // Generally when the external reset pin is driven low
 // This is also the default value in EEPROM
-#define UPTIME_RESTART_REASON_UNKNOWN       EEPROM_DEF_DWORD
+#define UPTIME_RESTART_REASON_UNKNOWN       0xFF
 
 typedef void(*uptime_fn_t)(void);
 

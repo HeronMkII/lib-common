@@ -9,17 +9,17 @@
 #include <uptime/uptime.h>
 
 // OpCodes
-#define PING_REQUEST 0x01
-#define PING_RESPONSE 0x02
-#define RESTART_DATA_REQ 0x03
-#define RESTART_DATA_RESP 0x04
+#define HB_PING_REQUEST 0x01
+#define HB_PING_RESPONSE 0x02
+#define HB_RESTART_DATA_REQ 0x03
+#define HB_RESTART_DATA_RESP 0x04
 
 // Heartbeat Byte structure
-#define SENDER 0x00
-#define RECEIVER 0x01
-#define OP_CODE 0x02
-#define RESTART_REASON 0x03
-#define RESTART_COUNT 0x04
+#define HB_SENDER 0x00
+#define HB_RECEIVER 0x01
+#define HB_OPCODE 0x02
+#define HB_RESTART_REASON 0x03
+#define HB_RESTART_COUNT 0x04
 
 // Define SSM ids
 #define HB_OBC 0x00
@@ -80,11 +80,15 @@ extern volatile bool hb_send_obc_resp;
 extern volatile bool hb_send_eps_resp;
 extern volatile bool hb_send_pay_resp;
 
-extern volatile bool hb_received_obc_rdata_req;
-extern volatile bool hb_received_eps_rdata_req;
-extern volatile bool hb_received_pay_rdata_req;
+extern volatile bool hb_send_obc_rdata_req;
+extern volatile bool hb_send_eps_rdata_req;
+extern volatile bool hb_send_pay_rdata_req;
 
-extern volatile bool hb_send_obc_rdata_resp ;
+extern volatile bool hb_received_obc_rdata_resp;
+extern volatile bool hb_received_eps_rdata_resp;
+extern volatile bool hb_received_pay_rdata_resp;
+
+extern volatile bool hb_send_obc_rdata_resp;
 extern volatile bool hb_send_eps_rdata_resp;
 extern volatile bool hb_send_pay_rdata_resp;
 

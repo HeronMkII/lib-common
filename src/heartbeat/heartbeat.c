@@ -1,14 +1,15 @@
 /*
 Updated CAN Heartbeat Protocol
-Byte 0: Sender
-Byte 1: Receiver
-Byte 2: OpCode (1 = ping request, 2 = ping response, 3 = restart count request, 4 = restart count response)
-Byte 3: Restart Reason (if opcode = 4)(See data conversion protocol)
-Byte 4-7: Restart Count (if opcode = 4)
+Byte 0: HB_SENDER
+Byte 1: HB_RECEIVER
+Byte 2: HB_OPCODE (1 = ping request, 2 = ping response, 3 = restart count request, 4 = restart count response)
+Byte 3: Restart Reason (if HB_OPCODE = 4)(See data conversion protocol)
+Byte 4-7: Restart Count (if HB_OPCODE = 4)
 
 TODO - fix race conditions when 2 heartbeat pings are sent around the same time
 TODO - figure out better testing modes (e.g. not responding to all HB pings, randomly responding to some pings but not others)
 TODO - test with flight model PAY with proper reset hardware
+TODO - Add proper constants for PAY, EPS, OBC
 */
 
 #include <avr/eeprom.h>
@@ -21,6 +22,10 @@ TODO - test with flight model PAY with proper reset hardware
 // Extra debugging logs
 // #define HB_DEBUG
 
+// temporary constants
+#define HB_OBC_PLACEHOLDER 0x00
+#define HB_PAY_PLACEHOLDER 0x01
+#define HB_EPS_PLACEHOLDER 0x02
 
 // The current MCU's ID
 uint8_t hb_self_id = 0xFF;  // None of the subsystems by default
@@ -129,17 +134,17 @@ void init_hb_resets(void) {
     pin_info_t rst_pin_2;
 
     switch (hb_self_id) {
-        case HB_OBC:
+        case HB_OBC_PLACEHOLDER:
             rst_pin_1 = obc_rst_eps;
             rst_pin_2 = obc_rst_pay;
             break;
-        case HB_EPS:
-            rst_pin_1 = eps_rst_obc;
-            rst_pin_2 = eps_rst_pay;
-            break;
-        case HB_PAY:
+        case HB_PAY_PLACEHOLDER:
             rst_pin_1 = pay_rst_obc;
             rst_pin_2 = pay_rst_eps;
+            break;
+        case HB_EPS_PLACEHOLDER:
+            rst_pin_1 = eps_rst_obc;
+            rst_pin_2 = eps_rst_pay;
             break;
         default:
             return;
@@ -185,20 +190,20 @@ void init_hb_tx_mob(mob_t* mob, uint8_t mob_num, uint16_t id_tag) {
 
 void init_hb_mobs(void) {
     switch (hb_self_id) {
-        case HB_OBC:
-            init_hb_rx_mob(&obc_hb_mob, HB_OBC, OBC_OBC_HB_RX_MOB_ID);
-            init_hb_tx_mob(&eps_hb_mob, HB_EPS, OBC_EPS_HB_TX_MOB_ID);
-            init_hb_tx_mob(&pay_hb_mob, HB_PAY, OBC_PAY_HB_TX_MOB_ID);
+        case HB_OBC_PLACEHOLDER:
+            init_hb_rx_mob(&obc_hb_mob, HB_OBC_PLACEHOLDER, OBC_OBC_HB_RX_MOB_ID);
+            init_hb_tx_mob(&pay_hb_mob, HB_PAY_PLACEHOLDER, OBC_PAY_HB_TX_MOB_ID);
+            init_hb_tx_mob(&eps_hb_mob, HB_EPS_PLACEHOLDER, OBC_EPS_HB_TX_MOB_ID);
             break;
-        case HB_EPS:
-            init_hb_tx_mob(&obc_hb_mob, HB_OBC, EPS_OBC_HB_TX_MOB_ID);
-            init_hb_rx_mob(&eps_hb_mob, HB_EPS, EPS_EPS_HB_RX_MOB_ID);
-            init_hb_tx_mob(&pay_hb_mob, HB_PAY, EPS_PAY_HB_TX_MOB_ID);
+        case HB_PAY_PLACEHOLDER:
+            init_hb_tx_mob(&obc_hb_mob, HB_OBC_PLACEHOLDER, PAY_OBC_HB_TX_MOB_ID);
+            init_hb_rx_mob(&pay_hb_mob, HB_PAY_PLACEHOLDER, PAY_PAY_HB_RX_MOB_ID);
+            init_hb_tx_mob(&eps_hb_mob, HB_EPS_PLACEHOLDER, PAY_EPS_HB_TX_MOB_ID);
             break;
-        case HB_PAY:
-            init_hb_tx_mob(&obc_hb_mob, HB_OBC, PAY_OBC_HB_TX_MOB_ID);
-            init_hb_tx_mob(&eps_hb_mob, HB_EPS, PAY_EPS_HB_TX_MOB_ID);
-            init_hb_rx_mob(&pay_hb_mob, HB_PAY, PAY_PAY_HB_RX_MOB_ID);
+        case HB_EPS_PLACEHOLDER:
+            init_hb_tx_mob(&obc_hb_mob, HB_OBC_PLACEHOLDER, EPS_OBC_HB_TX_MOB_ID);
+            init_hb_tx_mob(&pay_hb_mob, HB_PAY_PLACEHOLDER, EPS_PAY_HB_TX_MOB_ID);
+            init_hb_rx_mob(&eps_hb_mob, HB_EPS_PLACEHOLDER, EPS_EPS_HB_RX_MOB_ID);
             break;
         default:
             break;
@@ -219,70 +224,72 @@ void hb_tx_cb(uint8_t* data, uint8_t* len) {
         }
 
         if (hb_send_obc_ping) {
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_OBC;
-            data[OP_CODE] = PING_REQUEST;
-        } else if (hb_send_eps_ping) {
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_EPS;
-            data[OP_CODE] = PING_REQUEST;
+            data[HB_SENDER] = hb_self_id;
+            data[HB_RECEIVER] = HB_OBC_PLACEHOLDER;
+            data[HB_OPCODE] = HB_PING_REQUEST;
         } else if (hb_send_pay_ping) {
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_PAY;
-            data[OP_CODE] = PING_REQUEST;
+            data[HB_SENDER] = hb_self_id;
+            data[HB_RECEIVER] = HB_PAY_PLACEHOLDER;
+            data[HB_OPCODE] = HB_PING_REQUEST;
+        } else if (hb_send_eps_ping) {
+            data[HB_SENDER] = hb_self_id;
+            data[HB_RECEIVER] = HB_EPS_PLACEHOLDER;
+            data[HB_OPCODE] = HB_PING_REQUEST;
+
         } else if (hb_send_obc_resp) {
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_OBC;
-            data[OP_CODE] = PING_RESPONSE;
-        } else if (hb_send_eps_resp) {
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_EPS;
-            data[OP_CODE] = PING_RESPONSE;
+            data[HB_SENDER] = hb_self_id;
+            data[HB_RECEIVER] = HB_OBC_PLACEHOLDER;
+            data[HB_OPCODE] = HB_PING_RESPONSE;
         } else if (hb_send_pay_resp) {
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_PAY;
-            data[OP_CODE] = PING_RESPONSE;
+            data[HB_SENDER] = hb_self_id;
+            data[HB_RECEIVER] = HB_PAY_PLACEHOLDER;
+            data[HB_OPCODE] = HB_PING_RESPONSE;
+        } else if (hb_send_eps_resp) {
+            data[HB_SENDER] = hb_self_id;
+            data[HB_RECEIVER] = HB_EPS_PLACEHOLDER;
+            data[HB_OPCODE] = HB_PING_RESPONSE;
+
         } else if (hb_send_obc_rdata_req){
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_OBC;
-            data[OP_CODE] = RESTART_DATA_REQ;
-        } else if (hb_send_eps_rdata_req){
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_EPS;
-            data[OP_CODE] = RESTART_DATA_REQ;
+            data[HB_SENDER] = hb_self_id;
+            data[HB_RECEIVER] = HB_OBC_PLACEHOLDER;
+            data[HB_OPCODE] = HB_RESTART_DATA_REQ;
         } else if (hb_send_pay_rdata_req){
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_PAY;
-            data[OP_CODE] = RESTART_DATA_REQ;
+            data[HB_SENDER] = hb_self_id;
+            data[HB_RECEIVER] = HB_PAY_PLACEHOLDER;
+            data[HB_OPCODE] = HB_RESTART_DATA_REQ;
+        } else if (hb_send_eps_rdata_req){
+            data[HB_SENDER] = hb_self_id;
+            data[HB_RECEIVER] = HB_EPS_PLACEHOLDER;
+            data[HB_OPCODE] = HB_RESTART_DATA_REQ;
+
         } else if (hb_send_obc_rdata_resp){
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_OBC;
-            data[OP_CODE] = RESTART_DATA_RESP;
-            data[RESTART_REASON] = restart_reason; //eeprom_read_byte((uint8_t*)RESTART_REASON_EEPROM_ADDR);
-            data[RESTART_COUNT] = (restart_count & 0xFF000000) >> 24; //eeprom_read_byte((uint8_t*)RESTART_COUNT_EEPROM_ADDR);
-            data[RESTART_COUNT+1] = (restart_count & 0x00FF0000) >> 16;
-            data[RESTART_COUNT+2] = (restart_count & 0x0000FF00) >> 8;
-            data[RESTART_COUNT+3] = (restart_count & 0x000000FF);
-        } else if (hb_send_eps_rdata_resp){
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_EPS;
-            data[OP_CODE] = RESTART_DATA_RESP;
-            data[RESTART_REASON] = restart_reason; //eeprom_read_byte((uint8_t*)RESTART_REASON_EEPROM_ADDR);
-            data[RESTART_COUNT] = (restart_count & 0xFF000000) >> 24;
-            data[RESTART_COUNT+1] = (restart_count & 0x00FF0000) >> 16;
-            data[RESTART_COUNT+2] = (restart_count & 0x0000FF00) >> 8;
-            data[RESTART_COUNT+3] = (restart_count & 0x000000FF);
+            data[HB_SENDER] = hb_self_id;
+            data[HB_RECEIVER] = HB_OBC_PLACEHOLDER;
+            data[HB_OPCODE] = HB_RESTART_DATA_RESP;
+            data[HB_RESTART_REASON] = HB_RESTART_REASON;
+            data[HB_RESTART_COUNT] = (restart_count & 0xFF000000) >> 24;
+            data[HB_RESTART_COUNT+1] = (restart_count & 0x00FF0000) >> 16;
+            data[HB_RESTART_COUNT+2] = (restart_count & 0x0000FF00) >> 8;
+            data[HB_RESTART_COUNT+3] = (restart_count & 0x000000FF);
         } else if (hb_send_pay_rdata_resp){
-            data[SENDER] = hb_self_id;
-            data[RECEIVER] = HB_PAY;
-            data[OP_CODE] = RESTART_DATA_RESP;
-            data[RESTART_REASON] = restart_reason; //eeprom_read_byte((uint8_t*)RESTART_REASON_EEPROM_ADDR);
-            data[RESTART_COUNT] = (restart_count & 0xFF000000) >> 24;
-            data[RESTART_COUNT+1] = (restart_count & 0x00FF0000) >> 16;
-            data[RESTART_COUNT+2] = (restart_count & 0x0000FF00) >> 8;
-            data[RESTART_COUNT+3] = (restart_count & 0x000000FF);
-        }
-        else {
+            data[HB_SENDER] = hb_self_id;
+            data[HB_RECEIVER] = HB_PAY_PLACEHOLDER;
+            data[HB_OPCODE] = HB_RESTART_DATA_RESP;
+            data[HB_RESTART_REASON] = HB_RESTART_REASON; //eeprom_read_byte((uint8_t*)HB_RESTART_REASON_EEPROM_ADDR);
+            data[HB_RESTART_COUNT] = (restart_count & 0xFF000000) >> 24;
+            data[HB_RESTART_COUNT+1] = (restart_count & 0x00FF0000) >> 16;
+            data[HB_RESTART_COUNT+2] = (restart_count & 0x0000FF00) >> 8;
+            data[HB_RESTART_COUNT+3] = (restart_count & 0x000000FF);
+        } else if (hb_send_eps_rdata_resp){
+            data[HB_SENDER] = hb_self_id;
+            data[HB_RECEIVER] = HB_EPS_PLACEHOLDER;
+            data[HB_OPCODE] = HB_RESTART_DATA_RESP;
+            data[HB_RESTART_REASON] = HB_RESTART_REASON;
+            data[HB_RESTART_COUNT] = (restart_count & 0xFF000000) >> 24;
+            data[HB_RESTART_COUNT+1] = (restart_count & 0x00FF0000) >> 16;
+            data[HB_RESTART_COUNT+2] = (restart_count & 0x0000FF00) >> 8;
+            data[HB_RESTART_COUNT+3] = (restart_count & 0x000000FF);
+        } else {
             // Should not get here
             print("Error: Failed to execute hb tx callback\n");
         }
@@ -301,64 +308,64 @@ void hb_rx_cb(const uint8_t* data, uint8_t len) {
         if (len != 8) {
             return;
         }
-        if (data[RECEIVER] != hb_self_id) {
+        if (data[HB_RECEIVER] != hb_self_id) {
             return;
         }
 
         // Ping Request received
-        if (data[OP_CODE] == PING_REQUEST) {
-            switch (data[SENDER]) {
-                case HB_OBC:
+        if (data[HB_OPCODE] == HB_PING_REQUEST) {
+            switch (data[HB_SENDER]) {
+                case HB_OBC_PLACEHOLDER:
                     hb_send_obc_resp = true;
                     break;
-                case HB_EPS:
-                    hb_send_eps_resp = true;
-                    break;
-                case HB_PAY:
+                case HB_PAY_PLACEHOLDER:
                     hb_send_pay_resp = true;
+                    break;
+                case HB_EPS_PLACEHOLDER:
+                    hb_send_eps_resp = true;
                     break;
                 default:
                     break;
             }
         // Ping Response received
-        } else if (data[OP_CODE] == PING_RESPONSE) {
-            switch (data[SENDER]) {
-                case HB_OBC:
+        } else if (data[HB_OPCODE] == HB_PING_RESPONSE) {
+            switch (data[HB_SENDER]) {
+                case HB_OBC_PLACEHOLDER:
                     hb_received_obc_resp = true;
                     break;
-                case HB_EPS:
-                    hb_received_eps_resp = true;
-                    break;
-                case HB_PAY:
+                case HB_PAY_PLACEHOLDER:
                     hb_received_pay_resp = true;
+                    break;
+                case HB_EPS_PLACEHOLDER:
+                    hb_received_eps_resp = true;
                     break;
                 default:
                     break;
             }
         // Data request received
-        } else if (data[OP_CODE] == RESTART_DATA_REQ) {
-            switch (data[SENDER]) {
-                case HB_OBC:
+        } else if (data[HB_OPCODE] == HB_RESTART_DATA_REQ) {
+            switch (data[HB_SENDER]) {
+                case HB_OBC_PLACEHOLDER:
                     hb_send_obc_rdata_resp = true;
                     break;
-                case HB_EPS:
-                    hb_send_eps_rdata_resp = true;
-                    break;
-                case HB_PAY:
+                case HB_PAY_PLACEHOLDER:
                     hb_send_pay_rdata_resp = true;
+                    break;
+                case HB_EPS_PLACEHOLDER:
+                    hb_send_eps_rdata_resp = true;
                     break;
             }
         }
-        else if (data[OP_CODE] == RESTART_DATA_RESP) {
-            switch (data[SENDER]) {
-                case HB_OBC:
+        else if (data[HB_OPCODE] == HB_RESTART_DATA_RESP) {
+            switch (data[HB_SENDER]) {
+                case HB_OBC_PLACEHOLDER:
                     hb_received_obc_rdata_resp = true;
                     break;
-                case HB_EPS:
-                    hb_received_eps_rdata_resp = true;
-                    break;
-                case HB_PAY:
+                case HB_PAY_PLACEHOLDER:
                     hb_received_pay_rdata_resp = true;
+                    break;
+                case HB_EPS_PLACEHOLDER:
+                    hb_received_eps_rdata_resp = true;
                     break;
             }
         }
@@ -375,14 +382,14 @@ void hb_uptime_cb(void) {
     // If it is time to send another ping
     // Need to set the flags - can't send CAN directly because we are inside an ISR
     if (uptime_s >= hb_ping_prev_uptime_s + hb_ping_period_s) {
-        if (hb_self_id != HB_OBC) {
+        if (hb_self_id != HB_OBC_PLACEHOLDER) {
             hb_send_obc_ping = true;
         }
-        if (hb_self_id != HB_EPS) {
-            hb_send_eps_ping = true;
-        }
-        if (hb_self_id != HB_PAY) {
+        if (hb_self_id != HB_PAY_PLACEHOLDER) {
             hb_send_pay_ping = true;
+        }
+        if (hb_self_id != HB_EPS_PLACEHOLDER) {
+            hb_send_eps_ping = true;
         }
         hb_ping_prev_uptime_s = uptime_s;
     }
@@ -438,9 +445,6 @@ void send_hb_ping(mob_t* mob, uint8_t other_id, volatile bool* send_ping, volati
     if (*send_ping != false){
         print("Error: send_ping is not false\n");
     }
-    if (*received_resp != false){
-        print("Error: received_resp is not false\n");
-    }
     // Set flags to false just in case
     *send_ping = false;
     *received_resp = false;
@@ -454,18 +458,18 @@ bool send_hb_reset(uint8_t other_id) {
 
     pin_info_t rst_pin;
 
-    if        (hb_self_id == HB_OBC && other_id == HB_EPS) {
+    if        (hb_self_id == HB_OBC_PLACEHOLDER && other_id == HB_EPS_PLACEHOLDER) {
         rst_pin = obc_rst_eps;
-    } else if (hb_self_id == HB_OBC && other_id == HB_PAY) {
+    } else if (hb_self_id == HB_OBC_PLACEHOLDER && other_id == HB_PAY_PLACEHOLDER) {
         rst_pin = obc_rst_pay;
-    } else if (hb_self_id == HB_EPS && other_id == HB_OBC) {
-        rst_pin = eps_rst_obc;
-    } else if (hb_self_id == HB_EPS && other_id == HB_PAY) {
-        rst_pin = eps_rst_pay;
-    } else if (hb_self_id == HB_PAY && other_id == HB_OBC) {
+    } else if (hb_self_id == HB_PAY_PLACEHOLDER && other_id == HB_OBC_PLACEHOLDER) {
         rst_pin = pay_rst_obc;
-    } else if (hb_self_id == HB_PAY && other_id == HB_EPS) {
+    } else if (hb_self_id == HB_PAY_PLACEHOLDER && other_id == HB_EPS_PLACEHOLDER) {
         rst_pin = pay_rst_eps;
+    } else if (hb_self_id == HB_EPS_PLACEHOLDER && other_id == HB_OBC_PLACEHOLDER) {
+        rst_pin = eps_rst_obc;
+    } else if (hb_self_id == HB_EPS_PLACEHOLDER && other_id == HB_PAY_PLACEHOLDER) {
+        rst_pin = eps_rst_pay;
     } else {
         return false;
     }
@@ -498,33 +502,33 @@ void run_hb(void) {
     }
     // Check is there is a ping that needs to be sent
     else if (hb_send_obc_ping) {
-        send_hb_ping(&obc_hb_mob, HB_OBC, &hb_send_obc_ping, &hb_received_obc_resp);
-    }
-    else if (hb_send_eps_ping) {
-        send_hb_ping(&eps_hb_mob, HB_EPS, &hb_send_eps_ping, &hb_received_eps_resp);
+        send_hb_ping(&obc_hb_mob, HB_OBC_PLACEHOLDER, &hb_send_obc_ping, &hb_received_obc_resp);
     }
     else if (hb_send_pay_ping) {
-        send_hb_ping(&pay_hb_mob, HB_PAY, &hb_send_pay_ping, &hb_received_pay_resp);
+        send_hb_ping(&pay_hb_mob, HB_PAY_PLACEHOLDER, &hb_send_pay_ping, &hb_received_pay_resp);
+    }
+    else if (hb_send_eps_ping) {
+        send_hb_ping(&eps_hb_mob, HB_EPS_PLACEHOLDER, &hb_send_eps_ping, &hb_received_eps_resp);
     }
     // Check is there is a ping that needs to be sent
     else if (hb_send_obc_rdata_req) {
-        send_hb_ping(&obc_hb_mob, HB_OBC, &hb_send_obc_rdata_req, &hb_received_obc_rdata_resp);
-    }
-    else if (hb_send_eps_rdata_req) {
-        send_hb_ping(&eps_hb_mob, HB_EPS, &hb_send_eps_rdata_req, &hb_received_eps_rdata_resp);
+        send_hb_ping(&obc_hb_mob, HB_OBC_PLACEHOLDER, &hb_send_obc_rdata_req, &hb_received_obc_rdata_resp);
     }
     else if (hb_send_pay_rdata_req) {
-        send_hb_ping(&pay_hb_mob, HB_PAY, &hb_send_pay_rdata_req, &hb_received_pay_rdata_resp);
+        send_hb_ping(&pay_hb_mob, HB_PAY_PLACEHOLDER, &hb_send_pay_rdata_req, &hb_received_pay_rdata_resp);
+    }
+    else if (hb_send_eps_rdata_req) {
+        send_hb_ping(&eps_hb_mob, HB_EPS_PLACEHOLDER, &hb_send_eps_rdata_req, &hb_received_eps_rdata_resp);
     }
     // Check if there is a restart data request that needs to be responded to
     else if (hb_send_obc_rdata_resp) {
         send_hb_resp(&obc_hb_mob, &hb_send_obc_rdata_resp);
     }
-    else if (hb_send_eps_rdata_resp) {
-        send_hb_resp(&eps_hb_mob, &hb_send_eps_rdata_resp);
-    }
     else if (hb_send_pay_rdata_resp) {
         send_hb_resp(&pay_hb_mob, &hb_send_pay_rdata_resp);
+    }
+    else if (hb_send_eps_rdata_resp) {
+        send_hb_resp(&eps_hb_mob, &hb_send_eps_rdata_resp);
     }
 
 }
