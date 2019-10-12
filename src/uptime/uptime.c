@@ -33,14 +33,14 @@ void uptime_fn_nop(void) {}
 // Array of timer callbacks for uptime timer callback
 uptime_fn_t uptime_callbacks[UPTIME_NUM_CALLBACKS] = {uptime_fn_nop};
 
-volatile uint32_t cmd_timer_count_s = 0;
-uint32_t cmd_timer_period_s = CMD_TIMER_DEF_PERIOD;
+volatile uint32_t com_timeout_count_s = 0;
+uint32_t com_timeout_period_s = COM_TIMEOUT_DEF_PERIOD;
 
 
 void uptime_timer_cb(void);
 void uptime_wdt_cb(void);
 
-void cmd_timer_cb(void);
+void com_timeout_timer_cb(void);
 
 
 void init_uptime(void) {
@@ -109,21 +109,21 @@ void uptime_timer_cb(void) {
 
 
 // Use the 16-bit timer to isolate it from uptime functionality as a redundancy measure
-void init_cmd_timer(void) {
-    start_timer_16bit(CMD_TIMER_CB_INTERVAL, cmd_timer_cb);
+void init_com_timeout(void) {
+    start_timer_16bit(COM_TIMEOUT_CB_INTERVAL, com_timeout_timer_cb);
 }
 
-void restart_cmd_timer(void) {
-    // Just in case there are any problems writing a 32-bit register
+void restart_com_timeout(void) {
+    // Atomic just in case there are any problems writing a 32-bit register
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        cmd_timer_count_s = 0;
+        com_timeout_count_s = 0;
     }
 }
 
-void cmd_timer_cb(void) {
-    cmd_timer_count_s += (uint32_t) CMD_TIMER_CB_INTERVAL;
-    if (cmd_timer_count_s >= cmd_timer_period_s) {
-        reset_self_mcu(UPTIME_RESTART_REASON_CMD_TIMER);
+void com_timeout_timer_cb(void) {
+    com_timeout_count_s += (uint32_t) COM_TIMEOUT_CB_INTERVAL;
+    if (com_timeout_count_s >= com_timeout_period_s) {
+        reset_self_mcu(UPTIME_RESTART_REASON_COM_TIMEOUT);
         // Program should stop here and restart from the beginning
     }
 }

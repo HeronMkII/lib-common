@@ -22,9 +22,9 @@
 
 
 // Number in seconds, equal to 1 day
-#define CMD_TIMER_DEF_PERIOD    (60UL * 60UL * 24UL)
+#define COM_TIMEOUT_DEF_PERIOD    (60UL * 60UL * 24UL)
 // Number in seconds
-#define CMD_TIMER_CB_INTERVAL   1
+#define COM_TIMEOUT_CB_INTERVAL   1
 
 
 // Possible reasons for reset
@@ -34,8 +34,8 @@
 // Received and executed a reset command (from ground station, either directly
 // to OBC or forwarded by OBC)
 #define UPTIME_RESTART_REASON_RESET_CMD     0x02
-// Have not received a command for some amount of time (e.g. 6 hours)
-#define UPTIME_RESTART_REASON_CMD_TIMER     0x03
+// Have not received communication for some amount of time (e.g. 1 day)
+#define UPTIME_RESTART_REASON_COM_TIMEOUT   0x03
 //Watchdog System Reset
 #define UPTIME_RESTART_REASON_WDRF          0x04 //WDRF  is 00001000 or 0x08
 //Brown-out Reset
@@ -55,16 +55,15 @@ extern uint32_t restart_count;
 extern uint32_t restart_reason;
 extern volatile uint32_t uptime_s;
 
-extern volatile uint32_t cmd_timer_count_s;
-extern uint32_t cmd_timer_period_s;
+extern volatile uint32_t com_timeout_count_s;
+extern uint32_t com_timeout_period_s;
 
 void init_uptime(void);
 void update_restart_count(void);
 uint8_t add_uptime_callback(uptime_fn_t callback);
 
-void init_cmd_timer(void);
-void restart_cmd_timer(void);
-void cmd_timer_cb(void);
+void init_com_timeout(void);
+void restart_com_timeout(void);
 
 void write_restart_reason(uint32_t reason);
 void reset_self_mcu(uint32_t reason);

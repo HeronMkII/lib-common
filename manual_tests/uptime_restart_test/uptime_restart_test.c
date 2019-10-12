@@ -13,8 +13,8 @@ void print_reason_string(void) {
         case UPTIME_RESTART_REASON_RESET_CMD:
             print("Reset cmd");
             break;
-        case UPTIME_RESTART_REASON_CMD_TIMER:
-            print("Cmd timer");
+        case UPTIME_RESTART_REASON_COM_TIMEOUT:
+            print("Communication timeout");
             break;
         case UPTIME_RESTART_REASON_WDRF:
             print("Watchdog System Reset");
@@ -46,15 +46,15 @@ void print_info(void) {
     print("restart_reason = %lu\n", restart_reason);
     print("uptime_s = %lu\n", uptime_s);
 
-    print("cmd_timer_count_s = %lu\n", cmd_timer_count_s);
-    print("cmd_timer_period_s = %lu\n", cmd_timer_period_s);
+    print("com_timeout_count_s = %lu\n", com_timeout_count_s);
+    print("com_timeout_period_s = %lu\n", com_timeout_period_s);
 }
 
 void print_cmds(void) {
     print("0. Print debug info\n");
     print("1. Reset (watchdog timeout)\n");
     print("2. Reset (reset command)\n");
-    print("3. Restart command timer count\n");
+    print("3. Restart communication timeout count\n");
     print("Press reset button: Reset (external)\n");
 }
 
@@ -76,10 +76,10 @@ uint8_t uart_cb(const uint8_t* data, uint8_t len) {
             reset_self_mcu(UPTIME_RESTART_REASON_RESET_CMD);
             break;
         case '3':
-            print("cmd_timer_count_s = %lu\n", cmd_timer_count_s);
-            print("Restarting command timer count...\n");
-            restart_cmd_timer();
-            print("cmd_timer_count_s = %lu\n", cmd_timer_count_s);
+            print("com_timeout_count_s = %lu\n", com_timeout_count_s);
+            print("Restarting communication timeout count...\n");
+            restart_com_timeout();
+            print("com_timeout_count_s = %lu\n", com_timeout_count_s);
             break;
         default:
             print("Invalid command\n");
@@ -99,12 +99,12 @@ int main(void) {
     print("\n\n\nStarting uptime test\n\n");
 
     // Can change this as needed to test the command timer feature
-    cmd_timer_period_s = 15;
+    com_timeout_period_s = 15;
     
     init_uptime();
     print("Initialized uptime\n");
-    init_cmd_timer();
-    print("Initialized command timer\n");
+    init_com_timeout();
+    print("Initialized communication timeout\n");
 
     print_info();
     
