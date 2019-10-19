@@ -32,7 +32,7 @@ void print_bool(char* str, bool val) {
 }
 
 
-int main() {
+int main(void) {
     init_uart();
     init_uptime();
     init_can();
@@ -73,30 +73,12 @@ int main() {
 
     print("Starting main loop\n");
 
-
-    uint32_t uptime_last = uptime_s;
     while (1) {
-
-        // set flags for reset data requests
-
-        if (uptime_s > uptime_last){
-            uptime_last = uptime_s;
-            if (uptime_s % 15 == 0 && hb_self_id != HB_OBC){
-                hb_send_obc_rdata_req = true;
-            }
-            if (uptime_s % 15 == 5 && hb_self_id != HB_EPS){
-                hb_send_eps_rdata_req = true;
-            }
-            if (uptime_s % 15 == 10 && hb_self_id != HB_PAY){
-                hb_send_pay_rdata_req = true;
-            }
-        }
-
         run_hb();
         if (DEBUG_LOG){
-            print_bool("hb_send_obc_ping", hb_send_obc_ping);
-            print_bool("hb_send_eps_ping", hb_send_eps_ping);
-            print_bool("hb_send_pay_ping", hb_send_pay_ping);
+            print_bool("hb_send_obc_req", hb_send_obc_req);
+            print_bool("hb_send_eps_req", hb_send_eps_req);
+            print_bool("hb_send_pay_req", hb_send_pay_req);
 
             print_bool("hb_received_obc_resp", hb_received_obc_resp);
             print_bool("hb_received_eps_resp", hb_received_eps_resp);
@@ -106,17 +88,11 @@ int main() {
             print_bool("hb_send_eps_resp", hb_send_eps_resp);
             print_bool("hb_send_pay_resp", hb_send_pay_resp);
 
-            print_bool("hb_send_obc_rdata_req", hb_send_obc_rdata_req);
-            print_bool("hb_send_eps_rdata_req", hb_send_eps_rdata_req);
-            print_bool("hb_send_pay_rdata_req", hb_send_pay_rdata_req);
+            print("Latest restart count received: %lu", hb_latest_restart_count);
+            print("Latest restart reason received: %u", hb_latest_restart_reason);
 
-            print_bool("hb_received_obc_rdata_resp", hb_received_obc_rdata_resp);
-            print_bool("hb_received_eps_rdata_resp", hb_received_eps_rdata_resp);
-            print_bool("hb_received_pay_rdata_resp", hb_received_pay_rdata_resp);
-
-            print_bool("hb_send_obc_rdata_resp", hb_send_obc_rdata_resp);
-            print_bool("hb_send_eps_rdata_resp", hb_send_eps_rdata_resp);
-            print_bool("hb_send_pay_rdata_resp", hb_send_pay_rdata_resp);
+            print("Stored count: %lu", restart_count);
+            print("Stored reason: %u", restart_reason);
         }
     }
 
