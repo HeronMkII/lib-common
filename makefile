@@ -148,7 +148,7 @@ examples:
 	done
 
 harness:
-	$(PYTHON) ./bin/harness.py -p $(PORT) -u $(UART) -d $(TEST) $(HARNESS_ARGS)
+	$(PYTHON) ./bin/harness.py -m $(MCU) -p $(PORT) -u $(UART) -d $(TEST) $(HARNESS_ARGS)
 
 help:
 	@echo "usage: make [all | clean | debug | examples | harness | help | manual_tests | read-eeprom]"
