@@ -62,13 +62,6 @@ ifeq ($(LINUX), true)
 	UART = $(shell find /dev -name 'ttyS[0-9]*' | sort | sed -n 2p)
 endif
 
-# If automatic port detection fails,
-# uncomment one of these lines and change it to set the port manually
-# PORT = COM3						# Windows
-# PORT = /dev/tty.usbmodem00208212	# macOS
-# PORT = /dev/ttyS3					# Linux
-
-
 # Set the PYTHON variable - Python interpreter
 # Windows uses `python` for either Python 2 or 3,
 # while macOS/Linux use `python3` to explicitly use Python 3
@@ -134,6 +127,8 @@ debug:
 	@echo ------------
 	@echo $(PYTHON)
 	@echo ------------
+	@echo $(HARNESS_ARGS)
+	@echo ------------
 
 # For each example, clean directory then build
 # TODO - call `make clean` within each subdirectory
@@ -147,8 +142,9 @@ examples:
 		cd ../.. ; \
 	done
 
+# If multi-board testing, PORT2 and UART2 must both be specified
 harness:
-	$(PYTHON) ./bin/harness.py -m $(MCU) -p $(PORT) -u $(UART) -d $(TEST) $(HARNESS_ARGS)
+	$(PYTHON) ./bin/harness.py -m $(MCU) -p $(PORT) $(PORT2) -u $(UART) $(UART2) -d $(TEST) $(HARNESS_ARGS)
 
 help:
 	@echo "usage: make [all | clean | debug | examples | harness | help | manual_tests | read-eeprom]"
