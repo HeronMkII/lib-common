@@ -22,10 +22,10 @@ adc_t adc = {
 };
 
 void print_voltage(adc_t* adc, uint8_t c) {
-    uint16_t raw_data = read_adc_channel(adc, c);
-    double raw_voltage = adc_raw_data_to_raw_vol(raw_data);
-    print("Channel: %u, Raw Data: 0x%.4x, Raw Voltage: %.6f V\n",
-            c, raw_data, raw_voltage);
+    uint16_t raw = read_adc_channel(adc, c);
+    double ch_vol = adc_raw_to_ch_vol(raw);
+    print("Channel: %u, Raw Data: 0x%.4x, Channel Voltage: %.6f V\n",
+            c, raw, ch_vol);
 }
 
 // This test reads the raw data and voltages on each ADC channel
