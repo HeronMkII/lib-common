@@ -80,14 +80,13 @@ endif
 
 all: $(SRC)
 
-# Echo the text of the command to print out what we're doing before actually
-# executing the command (can't echo an individual command in a for loop)
-# TODO - calling make in a subdirectory seems to not pass the `clean` argument -
-#	find a fix for this
+# Remove all files in the `lib` directory and each of the `build` subdirectories
+# Calling `make clean` in each subdirectory on Windows does not properly pass
+# the `clean` argument, so manually remove the files
 clean:
-	rm -f lib/*.a
+	rm -f lib/*.*
+	@echo "Removing files in build"
 	@for dir in $(BUILD) ; do \
-		echo rm -f $$dir/*.* ; \
 		rm -f $$dir/*.* ; \
 	done
 
@@ -130,8 +129,9 @@ debug:
 	@echo $(HARNESS_ARGS)
 	@echo ------------
 
-# For each example, clean directory then build
-# TODO - call `make clean` within each subdirectory
+# For each example program, clean directory then build
+# Calling `make clean` in each subdirectory on Windows does not properly pass
+# the `clean` argument, so manually remove the files
 examples:
 	@for dir in $(EXAMPLES) ; do \
 		cd $$dir ; \
@@ -158,8 +158,9 @@ help:
 	@echo "manual_tests   build all manual tests (see manual_tests/makefile)"
 	@echo "read-eeprom    read and display the contents of the microcontroller's EEPROM"
 
-# For each example, clean directory then build
-# TODO - call `make clean` within each subdirectory
+# For each manual test program, clean directory then build
+# Calling `make clean` in each subdirectory on Windows does not properly pass
+# the `clean` argument, so manually remove the files
 manual_tests:
 	@for dir in $(MANUAL_TESTS) ; do \
 		cd $$dir ; \
