@@ -138,7 +138,7 @@ void init_hb_resets(void) {
 // Need to define these separately here because CAN_RX_MASK_ID, default_rx_ctrl,
 // and default_tx_ctrl are defined using {} initializers, which only work for
 // globally declared structs (not in functions)
-mob_id_mask_t hb_id_mask = CAN_RX_MASK_ID;
+mob_id_mask_t hb_id_mask = { CAN_RX_MASK_ID };
 mob_ctrl_t hb_rx_ctrl = default_rx_ctrl;
 mob_ctrl_t hb_tx_ctrl = default_tx_ctrl;
 
