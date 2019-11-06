@@ -10,7 +10,7 @@ actual measurements for all software systems in the satellite.
 ADC - ADS7952 - PAY/EPS
 http://www.ti.com/lit/ds/slas605c/slas605c.pdf
 
-EPS ADC uses current monitor - INA214
+EPS/PAY ADCs use current monitor - INA214
 http://www.ti.com/lit/ds/symlink/ina214.pdf
 
 DAC - DAC7562 - PAY
@@ -45,101 +45,86 @@ https://cdn.sparkfun.com/assets/7/6/9/3/c/Sensor-Hub-Transport-Protocol-v1.7.pdf
 
 
 /*
-Converts raw data from an ADC channel to the voltage on that ADC input pin.
+Converts raw data from an ADC channel to the voltage on that ADC channel input pin.
 raw_data - 12 bit ADC data
-returns - raw voltage on ADC input channel pin (in V)
+returns - voltage on ADC input channel pin (in V)
 */
-double adc_raw_data_to_raw_vol(uint16_t raw_data) {
-    double ratio = (double) raw_data / (double) 0x0FFF;
-    double voltage = ratio * ADC_V_REF;
+double adc_raw_to_ch_vol(uint16_t raw) {
+    double ratio = (double) raw / (double) 0x0FFF;
+    double voltage = ratio * ADC_VREF;
     return voltage;
 }
 
 /*
-Converts the voltage on an ADC input pin to raw data from an ADC channel.
-raw_data - raw voltage on ADC input channel pin (in V)
+Converts the voltage on an ADC channel input pin to raw data from an ADC channel.
+raw_data - voltage on ADC input channel pin (in V)
 returns - 12 bit ADC data
 */
-uint16_t adc_raw_vol_to_raw_data(double raw_voltage) {
-    return (uint16_t) ((raw_voltage / (double) ADC_V_REF) * 0x0FFF);
+uint16_t adc_ch_vol_to_raw(double ch_vol) {
+    return (uint16_t) ((ch_vol / (double) ADC_VREF) * 0x0FFF);
 }
 
 /*
-Converts a raw voltage on an ADC pin to a voltage in the EPS electronics using
-    the known voltage divider.
-raw_voltage - voltage on an ADC input pin (in V)
-returns - voltage in the EPS circuit (in V)
+Converts a voltage on an ADC channel pin to a voltage in the circuit using
+    a voltage divider ratio.
+raw_voltage - voltage on an ADC channel input pin (in V)
+low_res - low-side resistance (in ohms)
+high_res - high-side resistance (in ohms)
+returns - voltage in the circuit (in V)
 */
-double adc_raw_vol_to_eps_vol(double raw_voltage) {
+double adc_ch_vol_to_circ_vol(double ch_vol, double low_res, double high_res) {
     // Use voltage divider circuit ratio to recover original voltage before division
-    return raw_voltage / ADC_EPS_VOUT_DIV_RATIO;
+    return ch_vol / low_res * (low_res + high_res);
 }
 
 /*
-Converts a raw voltage on an ADC pin to a current in the EPS electronics using
-    the known current monitoring circuit.
-NOTE: this does not apply to battery current
-raw_voltage - voltage on an ADC input pin (in V)
-returns - current in the EPS circuit (in A)
+Converts a raw voltage on an ADC pin to a current in the circuit using
+    the known sense resistor current monitoring circuit.
+ch_vol - voltage on an ADC input pin (in V)
+sense_res - sense resistor value (in ohms)
+ref_vol - VREF (reference voltage) value to the INA214 (in V)
+returns - current in the circuit (in A)
 */
-double adc_raw_vol_to_eps_cur(double raw_voltage) {
-    // Get the voltage across the resistor before amplifier gain
-    double before_gain_voltage = raw_voltage / ADC_EPS_IOUT_AMP_GAIN;
+double adc_ch_vol_to_circ_cur(double ch_vol, double sense_res, double ref_vol) {
+    // Get the voltage across the sense resistor before amplifier gain
+    double before_gain_voltage = (ch_vol - ref_vol) / ADC_CUR_SENSE_AMP_GAIN;
     // Ohm's law (I = V / R)
-    double current = before_gain_voltage / ADC_EPS_IOUT_RES;
-
-    return current;
+    double circ_cur = before_gain_voltage / sense_res;
+    return circ_cur;
 }
 
 /*
-Converts a current in the EPS electronics to a raw voltage on an ADC pin using
-    the known current monitoring circuit.
-NOTE: this does not apply to battery current
-current - current in the EPS circuit (in A)
-returns - voltage on an ADC input pin (in V)
+Converts a current in the circuit to a channel voltage on an ADC pin using
+    the known sense resistor current monitoring circuit.
+circ_cur - current in the circuit (in A)
+sense_res - sense resistor value (in ohms)
+ref_vol - VREF (reference voltage) value to the INA214 (in V)
+returns - voltage on an ADC channel input pin (in V)
 */
-double adc_eps_cur_to_raw_vol(double current) {
-    // Ohm's law (I = V / R)
-    double before_gain_voltage = current * ADC_EPS_IOUT_RES;
-    // Get the voltage to the ADC input after amplifier gain
-    double after_gain_voltage = before_gain_voltage * ADC_EPS_IOUT_AMP_GAIN;
-    return after_gain_voltage;
+double adc_circ_cur_to_ch_vol(double circ_cur, double sense_res, double ref_vol) {
+    // Ohm's law (V = I * R)
+    double before_gain_voltage = circ_cur * sense_res;
+    // Get the voltage to the ADC input after amplifier gain (with reference offset)
+    double ch_vol = (before_gain_voltage * ADC_CUR_SENSE_AMP_GAIN) + ref_vol;
+    return ch_vol;
 }
 
 /*
-Converts a raw voltage on an ADC pin to the battery current in the EPS
-    electronics using the known current monitoring circuit.
-This conversion is different from `eps_cur` because the shunt resistor has
-    a different resistance
-raw_voltage - voltage on an ADC input pin (in V)
-returns - battery current in the EPS circuit (in A)
-*/
-double adc_raw_vol_to_bat_cur(double raw_voltage) {
-    // Get the voltage across the resistor before amplifier gain
-    double before_gain_voltage =
-        (raw_voltage - ADC_EPS_BAT_IOUT_VREF) / ADC_EPS_IOUT_AMP_GAIN;
-    // Ohm's law (I = V / R)
-    double current = before_gain_voltage / ADC_EPS_BAT_IOUT_RES;
-
-    return current;
-}
-
-/*
-Converts raw 12 bit data from an ADC channel to a voltage in the EPS circuit.
-raw_data - 12 bits
+Converts raw 12 bit data from an ADC channel to a voltage in the circuit.
+raw - 12 bits
 returns - in V
 */
-double adc_raw_data_to_eps_vol(uint16_t raw_data) {
-    return adc_raw_vol_to_eps_vol(adc_raw_data_to_raw_vol(raw_data));
+double adc_raw_to_circ_vol(uint16_t raw, double low_res, double high_res) {
+    return adc_ch_vol_to_circ_vol(adc_raw_to_ch_vol(raw), low_res, high_res);
 }
 
 /*
-Converts raw 12 bit data from an ADC channel to a current in the EPS circuit.
+Converts raw 12 bit data from an ADC channel to a current in the circuit.
 raw_data - 12 bits
 returns - in A
 */
-double adc_raw_data_to_eps_cur(uint16_t raw_data) {
-    return adc_raw_vol_to_eps_cur(adc_raw_data_to_raw_vol(raw_data));
+double adc_raw_to_circ_cur(uint16_t raw, double sense_res, double ref_vol) {
+    return adc_ch_vol_to_circ_cur(adc_raw_to_ch_vol(raw), sense_res, ref_vol);
 }
 
 /*
@@ -147,17 +132,8 @@ Converts a current in the EPS circuit to raw 12 bit data from an ADC channel.
 current - in A
 returns - 12 bits
 */
-uint16_t adc_eps_cur_to_raw_data(double current) {
-    return adc_raw_vol_to_raw_data(adc_eps_cur_to_raw_vol(current));
-}
-
-/*
-Converts raw 12 bit data from an ADC channel to the battery current in the EPS circuit.
-raw_data - 12 bits
-returns - in A
-*/
-double adc_raw_data_to_bat_cur(uint16_t raw_data) {
-    return adc_raw_vol_to_bat_cur(adc_raw_data_to_raw_vol(raw_data));
+uint16_t adc_circ_cur_to_raw(double circ_cur, double sense_res, double ref_vol) {
+    return adc_ch_vol_to_raw(adc_circ_cur_to_ch_vol(circ_cur, sense_res, ref_vol));
 }
 
 /*
@@ -166,8 +142,8 @@ Converts raw 12 bit data from an ADC channel to the temperature measured by a
 raw_data - 12 bits
 returns - in C
 */
-double adc_raw_data_to_therm_temp(uint16_t raw_data) {
-    return therm_res_to_temp(therm_vol_to_res(adc_raw_data_to_raw_vol(raw_data)));
+double adc_raw_to_therm_temp(uint16_t raw) {
+    return therm_res_to_temp(therm_vol_to_res(adc_raw_to_ch_vol(raw)));
 }
 
 
