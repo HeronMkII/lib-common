@@ -365,6 +365,9 @@ class Test:
                 self.assert_passed += 1
             else:
                 failure = True
+        else:
+            print("Error: unknown assertion type")
+            sys.exit(1)
 
         # Printing failure message
         if failure == True:
@@ -378,59 +381,60 @@ class Test:
     # Accurate to 3 decimal places. Code will round for the 6th decimal place
     # Note: If program fails here, check to make sure that function name is not long
     def handle_assert_two_float_nums(self, line):
-        # Regex will fail if we get "inf" or "-inf" in string, so check it before
-        # TODO - kind of hacky, find a better way
-        has_inf = False
-        if "inf" in line:
-            has_inf = True
-        else:
-            regex = r"AS FP (\w+) (-?\d+\.\d+) (-?\d+\.\d+) \((.+)\) \((.+)\)\r\n"
-            match = re.search(regex, line)
-            operation = str(match.group(1)) # Type of assertion
-            a, b = float(match.group(2)), float(match.group(3))
-            a = float("%.3f" % a) # Truncating to three decimal places
-            b = float("%.3f" % b)
+        # Detect floats as string in case they are inf or -inf
+        # Floats should be sent over UART as three decimal places (from test.h)
+        regex = r"AS FP (\w+) (.*) (.*) \((.+)\) \((.+)\)\r\n"
+        match = re.search(regex, line)
+
+        operation = str(match.group(1)) # Type of assertion
+        a = str(match.group(2))
+        b = str(match.group(3))
+        fn = str(match.group(4))
+        line_num = int(match.group(5))
 
         failure = False # Flag for if assertion failed
-        # Always fail the assertion if we get inf or -inf
-        if has_inf:
+
+        # If we get "inf" or "-inf", always fail the assertion
+        if "inf" in line:        
             failure = True
-        # Passes if both sides are equivalent
-        elif operation == "EQ":
-            if a == b:
-                self.assert_passed += 1
+
+        else:
+            a = float(a)
+            b = float(b)
+
+            # Passes if both sides are equivalent
+            if operation == "EQ":
+                if a == b:
+                    self.assert_passed += 1
+                else:
+                    failure = True
+            # Passes if both sides are not equivalent
+            elif operation == "NEQ":
+                if a != b:
+                    self.assert_passed += 1
+                else:
+                    failure = True
+            # Passes if first greater than second number
+            elif operation == "GT":
+                if a > b:
+                    self.assert_passed += 1
+                else:
+                    failure = True
+            # Passes if first less than second number
+            elif operation == "LT":
+                if a < b:
+                    self.assert_passed += 1
+                else:
+                    failure = True
             else:
-                failure = True
-        # Passes if both sides are not equivalent
-        elif operation == "NEQ":
-            if a != b:
-                self.assert_passed += 1
-            else:
-                failure = True
-        # Passes if first greater than second number
-        elif operation == "GT":
-            if a > b:
-                self.assert_passed += 1
-            else:
-                failure = True
-        # Passes if first less than second number
-        elif operation == "LT":
-            if a < b:
-                self.assert_passed += 1
-            else:
-                failure = True
+                print("Error: unknown assertion type")
+                sys.exit(1)
 
         # Printing failure message
-        if failure == True:
+        if failure:
             self.assert_failed += 1
-            if has_inf:
-                # TODO - clean up
-                print("In function ?, line ?")
-                print("    Error: ASSERT failed: %s" % line.strip())
-            else:
-                fn, line = str(match.group(4)), int(match.group(5))
-                print("In function '%s', line %d" % (fn, line))
-                print("    Error: ASSERT_FP_%s failed: %f, %f" % (operation, a, b))
+            print("In function '%s', line %d" % (fn, line_num))
+            print("    Error: ASSERT_FP_%s failed: %s, %s" % (operation, str(a), str(b)))
 
     # Extracts line and passes if it evaluates to true
     # Prints out error message if it fails
