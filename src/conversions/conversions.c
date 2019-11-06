@@ -74,7 +74,7 @@ returns - voltage in the circuit (in V)
 */
 double adc_ch_vol_to_circ_vol(double ch_vol, double low_res, double high_res) {
     // Use voltage divider circuit ratio to recover original voltage before division
-    return ch_vol * low_res / (low_res + high_res);
+    return ch_vol / low_res * (low_res + high_res);
 }
 
 /*

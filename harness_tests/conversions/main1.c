@@ -17,9 +17,9 @@ void adc_raw_vol_to_eps_vol_test(void) {
 }
 
 void adc_raw_vol_to_eps_cur_test(void) {
-    double raw_voltage = 5.3;
-    double current = adc_ch_vol_to_circ_cur(raw_voltage, 0.01, 0.0);
-    ASSERT_FP_EQ(current, 2.0);
+    double raw_voltage = 2.64;
+    double current = adc_ch_vol_to_circ_cur(raw_voltage, 0.008, 0.0);
+    ASSERT_FP_EQ(current, 3.3);
 }
 
 void adc_raw_data_to_eps_vol_test(void) {
@@ -28,7 +28,7 @@ void adc_raw_data_to_eps_vol_test(void) {
 }
 
 void adc_raw_data_to_eps_cur_test(void) {
-    uint16_t raw_data = 0x0FFF;
+    uint16_t raw_data = 0x570;
     ASSERT_FP_EQ(adc_raw_to_circ_cur(raw_data, 0.01, 0.0), 1.7);
 }
 
