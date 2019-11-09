@@ -47,12 +47,12 @@
 // Was not able to record the reason for reset
 // Generally when the external reset pin is driven low
 // This is also the default value in EEPROM
-#define UPTIME_RESTART_REASON_UNKNOWN       EEPROM_DEF_DWORD
+#define UPTIME_RESTART_REASON_UNKNOWN       0xFF
 
 typedef void(*uptime_fn_t)(void);
 
 extern uint32_t restart_count;
-extern uint32_t restart_reason;
+extern uint8_t restart_reason;
 extern volatile uint32_t uptime_s;
 
 extern volatile uint32_t com_timeout_count_s;
@@ -65,7 +65,7 @@ uint8_t add_uptime_callback(uptime_fn_t callback);
 void init_com_timeout(void);
 void restart_com_timeout(void);
 
-void write_restart_reason(uint32_t reason);
-void reset_self_mcu(uint32_t reason);
+void write_restart_reason(uint8_t reason);
+void reset_self_mcu(uint8_t reason);
 
 #endif

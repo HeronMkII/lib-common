@@ -8,6 +8,16 @@
 #include <can/ids.h>
 #include <uptime/uptime.h>
 
+// OpCodes
+#define HB_PING_REQUEST 0x01
+#define HB_PING_RESPONSE 0x02
+
+// Heartbeat Byte structure
+#define HB_SENDER 0x00
+#define HB_RECEIVER 0x01
+#define HB_OPCODE 0x02
+#define HB_RESTART_REASON 0x03
+#define HB_RESTART_COUNT 0x04
 
 // Define SSM ids
 #define HB_OBC 0x00
@@ -52,13 +62,18 @@
 
 extern uint8_t hb_self_id;
 
+extern uint8_t hb_latest_restart_reason;
+
+extern uint32_t hb_latest_restart_count;
+
 extern mob_t obc_hb_mob;
 extern mob_t eps_hb_mob;
 extern mob_t pay_hb_mob;
 
-extern volatile bool hb_send_obc_ping;
-extern volatile bool hb_send_eps_ping;
-extern volatile bool hb_send_pay_ping;
+extern volatile bool hb_send_obc_req;
+extern volatile bool hb_send_eps_req;
+extern volatile bool hb_send_pay_req;
+
 extern volatile bool hb_received_obc_resp;
 extern volatile bool hb_received_eps_resp;
 extern volatile bool hb_received_pay_resp;
