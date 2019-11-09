@@ -9,7 +9,6 @@ Byte 4-7: Restart Count (if HB_OPCODE = 2)
 TODO - fix race conditions when 2 heartbeat pings are sent around the same time
 TODO - figure out better testing modes (e.g. not responding to all HB pings, randomly responding to some pings but not others)
 TODO - test with flight model PAY with proper reset hardware
-TODO - Add proper constants for PAY, EPS, OBC
 */
 
 #include <avr/eeprom.h>
@@ -21,11 +20,6 @@ TODO - Add proper constants for PAY, EPS, OBC
 
 // Extra debugging logs
 // #define HB_DEBUG
-
-// temporary constants
-#define HB_OBC_PLACEHOLDER 0x00
-#define HB_PAY_PLACEHOLDER 0x01
-#define HB_EPS_PLACEHOLDER 0x02
 
 // The current MCU's ID
 uint8_t hb_self_id = 0xFF;  // None of the subsystems by default
@@ -124,15 +118,15 @@ void init_hb_resets(void) {
     pin_info_t rst_pin_2;
 
     switch (hb_self_id) {
-        case HB_OBC_PLACEHOLDER:
+        case HB_OBC:
             rst_pin_1 = obc_rst_eps;
             rst_pin_2 = obc_rst_pay;
             break;
-        case HB_PAY_PLACEHOLDER:
+        case HB_PAY:
             rst_pin_1 = pay_rst_obc;
             rst_pin_2 = pay_rst_eps;
             break;
-        case HB_EPS_PLACEHOLDER:
+        case HB_EPS:
             rst_pin_1 = eps_rst_obc;
             rst_pin_2 = eps_rst_pay;
             break;
@@ -180,20 +174,20 @@ void init_hb_tx_mob(mob_t* mob, uint8_t mob_num, uint16_t id_tag) {
 
 void init_hb_mobs(void) {
     switch (hb_self_id) {
-        case HB_OBC_PLACEHOLDER:
-            init_hb_rx_mob(&obc_hb_mob, HB_OBC_PLACEHOLDER, OBC_OBC_HB_RX_MOB_ID);
-            init_hb_tx_mob(&pay_hb_mob, HB_PAY_PLACEHOLDER, OBC_PAY_HB_TX_MOB_ID);
-            init_hb_tx_mob(&eps_hb_mob, HB_EPS_PLACEHOLDER, OBC_EPS_HB_TX_MOB_ID);
+        case HB_OBC:
+            init_hb_rx_mob(&obc_hb_mob, OBC_HB_MOB_NUM, OBC_OBC_HB_RX_MOB_ID);
+            init_hb_tx_mob(&pay_hb_mob, PAY_HB_MOB_NUM, OBC_PAY_HB_TX_MOB_ID);
+            init_hb_tx_mob(&eps_hb_mob, EPS_HB_MOB_NUM, OBC_EPS_HB_TX_MOB_ID);
             break;
-        case HB_PAY_PLACEHOLDER:
-            init_hb_tx_mob(&obc_hb_mob, HB_OBC_PLACEHOLDER, PAY_OBC_HB_TX_MOB_ID);
-            init_hb_rx_mob(&pay_hb_mob, HB_PAY_PLACEHOLDER, PAY_PAY_HB_RX_MOB_ID);
-            init_hb_tx_mob(&eps_hb_mob, HB_EPS_PLACEHOLDER, PAY_EPS_HB_TX_MOB_ID);
+        case HB_PAY:
+            init_hb_tx_mob(&obc_hb_mob, OBC_HB_MOB_NUM, PAY_OBC_HB_TX_MOB_ID);
+            init_hb_rx_mob(&pay_hb_mob, PAY_HB_MOB_NUM, PAY_PAY_HB_RX_MOB_ID);
+            init_hb_tx_mob(&eps_hb_mob, EPS_HB_MOB_NUM, PAY_EPS_HB_TX_MOB_ID);
             break;
-        case HB_EPS_PLACEHOLDER:
-            init_hb_tx_mob(&obc_hb_mob, HB_OBC_PLACEHOLDER, EPS_OBC_HB_TX_MOB_ID);
-            init_hb_tx_mob(&pay_hb_mob, HB_PAY_PLACEHOLDER, EPS_PAY_HB_TX_MOB_ID);
-            init_hb_rx_mob(&eps_hb_mob, HB_EPS_PLACEHOLDER, EPS_EPS_HB_RX_MOB_ID);
+        case HB_EPS:
+            init_hb_tx_mob(&obc_hb_mob, OBC_HB_MOB_NUM, EPS_OBC_HB_TX_MOB_ID);
+            init_hb_tx_mob(&pay_hb_mob, PAY_HB_MOB_NUM, EPS_PAY_HB_TX_MOB_ID);
+            init_hb_rx_mob(&eps_hb_mob, EPS_HB_MOB_NUM, EPS_EPS_HB_RX_MOB_ID);
             break;
         default:
             break;
@@ -215,20 +209,20 @@ void hb_tx_cb(uint8_t* data, uint8_t* len) {
 
         if (hb_send_obc_req) {
             data[HB_SENDER] = hb_self_id;
-            data[HB_RECEIVER] = HB_OBC_PLACEHOLDER;
+            data[HB_RECEIVER] = HB_OBC;
             data[HB_OPCODE] = HB_PING_REQUEST;
         } else if (hb_send_pay_req) {
             data[HB_SENDER] = hb_self_id;
-            data[HB_RECEIVER] = HB_PAY_PLACEHOLDER;
+            data[HB_RECEIVER] = HB_PAY;
             data[HB_OPCODE] = HB_PING_REQUEST;
         } else if (hb_send_eps_req) {
             data[HB_SENDER] = hb_self_id;
-            data[HB_RECEIVER] = HB_EPS_PLACEHOLDER;
+            data[HB_RECEIVER] = HB_EPS;
             data[HB_OPCODE] = HB_PING_REQUEST;
 
         } else if (hb_send_obc_resp) {
             data[HB_SENDER] = hb_self_id;
-            data[HB_RECEIVER] = HB_OBC_PLACEHOLDER;
+            data[HB_RECEIVER] = HB_OBC;
             data[HB_OPCODE] = HB_PING_RESPONSE;
             data[HB_RESTART_REASON] = restart_reason;
             data[HB_RESTART_COUNT] = (restart_count >> 24) & 0xFF;
@@ -237,7 +231,7 @@ void hb_tx_cb(uint8_t* data, uint8_t* len) {
             data[HB_RESTART_COUNT+3] = (restart_count & 0xFF);
         } else if (hb_send_pay_resp) {
             data[HB_SENDER] = hb_self_id;
-            data[HB_RECEIVER] = HB_PAY_PLACEHOLDER;
+            data[HB_RECEIVER] = HB_PAY;
             data[HB_OPCODE] = HB_PING_RESPONSE;
             data[HB_RESTART_REASON] = restart_reason;
             data[HB_RESTART_COUNT] = (restart_count >> 24) & 0xFF;
@@ -246,7 +240,7 @@ void hb_tx_cb(uint8_t* data, uint8_t* len) {
             data[HB_RESTART_COUNT+3] = (restart_count & 0xFF);
         } else if (hb_send_eps_resp) {
             data[HB_SENDER] = hb_self_id;
-            data[HB_RECEIVER] = HB_EPS_PLACEHOLDER;
+            data[HB_RECEIVER] = HB_EPS;
             data[HB_OPCODE] = HB_PING_RESPONSE;
             data[HB_RESTART_REASON] = restart_reason;
             data[HB_RESTART_COUNT] = (restart_count >> 24) & 0xFF;
@@ -279,13 +273,13 @@ void hb_rx_cb(const uint8_t* data, uint8_t len) {
         // Ping Request received
         if (data[HB_OPCODE] == HB_PING_REQUEST) {
             switch (data[HB_SENDER]) {
-                case HB_OBC_PLACEHOLDER:
+                case HB_OBC:
                     hb_send_obc_resp = true;
                     break;
-                case HB_PAY_PLACEHOLDER:
+                case HB_PAY:
                     hb_send_pay_resp = true;
                     break;
-                case HB_EPS_PLACEHOLDER:
+                case HB_EPS:
                     hb_send_eps_resp = true;
                     break;
                 default:
@@ -298,13 +292,13 @@ void hb_rx_cb(const uint8_t* data, uint8_t len) {
                 | ((uint32_t)data[HB_RESTART_COUNT+2] << 8) | ((uint32_t)data[HB_RESTART_COUNT+3]);
 
             switch (data[HB_SENDER]) {
-                case HB_OBC_PLACEHOLDER:
+                case HB_OBC:
                     hb_received_obc_resp = true;
                     break;
-                case HB_PAY_PLACEHOLDER:
+                case HB_PAY:
                     hb_received_pay_resp = true;
                     break;
-                case HB_EPS_PLACEHOLDER:
+                case HB_EPS:
                     hb_received_eps_resp = true;
                     break;
                 default:
@@ -323,13 +317,13 @@ void hb_uptime_cb(void) {
     // If it is time to send another ping
     // Need to set the flags - can't send CAN directly because we are inside an ISR
     if (uptime_s >= hb_ping_prev_uptime_s + hb_ping_period_s) {
-        if (hb_self_id != HB_OBC_PLACEHOLDER) {
+        if (hb_self_id != HB_OBC) {
             hb_send_obc_req = true;
         }
-        if (hb_self_id != HB_PAY_PLACEHOLDER) {
+        if (hb_self_id != HB_PAY) {
             hb_send_pay_req = true;
         }
-        if (hb_self_id != HB_EPS_PLACEHOLDER) {
+        if (hb_self_id != HB_EPS) {
             hb_send_eps_req = true;
         }
         hb_ping_prev_uptime_s = uptime_s;
@@ -399,17 +393,17 @@ bool send_hb_reset(uint8_t other_id) {
 
     pin_info_t rst_pin;
 
-    if        (hb_self_id == HB_OBC_PLACEHOLDER && other_id == HB_EPS_PLACEHOLDER) {
+    if        (hb_self_id == HB_OBC && other_id == HB_EPS) {
         rst_pin = obc_rst_eps;
-    } else if (hb_self_id == HB_OBC_PLACEHOLDER && other_id == HB_PAY_PLACEHOLDER) {
+    } else if (hb_self_id == HB_OBC && other_id == HB_PAY) {
         rst_pin = obc_rst_pay;
-    } else if (hb_self_id == HB_PAY_PLACEHOLDER && other_id == HB_OBC_PLACEHOLDER) {
+    } else if (hb_self_id == HB_PAY && other_id == HB_OBC) {
         rst_pin = pay_rst_obc;
-    } else if (hb_self_id == HB_PAY_PLACEHOLDER && other_id == HB_EPS_PLACEHOLDER) {
+    } else if (hb_self_id == HB_PAY && other_id == HB_EPS) {
         rst_pin = pay_rst_eps;
-    } else if (hb_self_id == HB_EPS_PLACEHOLDER && other_id == HB_OBC_PLACEHOLDER) {
+    } else if (hb_self_id == HB_EPS && other_id == HB_OBC) {
         rst_pin = eps_rst_obc;
-    } else if (hb_self_id == HB_EPS_PLACEHOLDER && other_id == HB_PAY_PLACEHOLDER) {
+    } else if (hb_self_id == HB_EPS && other_id == HB_PAY) {
         rst_pin = eps_rst_pay;
     } else {
         return false;
@@ -443,13 +437,13 @@ void run_hb(void) {
     }
     // Check is there is a ping that needs to be sent
     else if (hb_send_obc_req) {
-        send_hb_ping(&obc_hb_mob, HB_OBC_PLACEHOLDER, &hb_send_obc_req, &hb_received_obc_resp);
+        send_hb_ping(&obc_hb_mob, HB_OBC, &hb_send_obc_req, &hb_received_obc_resp);
     }
     else if (hb_send_pay_req) {
-        send_hb_ping(&pay_hb_mob, HB_PAY_PLACEHOLDER, &hb_send_pay_req, &hb_received_pay_resp);
+        send_hb_ping(&pay_hb_mob, HB_PAY, &hb_send_pay_req, &hb_received_pay_resp);
     }
     else if (hb_send_eps_req) {
-        send_hb_ping(&eps_hb_mob, HB_EPS_PLACEHOLDER, &hb_send_eps_req, &hb_received_eps_resp);
+        send_hb_ping(&eps_hb_mob, HB_EPS, &hb_send_eps_req, &hb_received_eps_resp);
     }
 
 }
