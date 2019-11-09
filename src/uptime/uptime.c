@@ -50,7 +50,7 @@ void init_uptime(void) {
     // Read restart reason
     restart_reason = (uint8_t) read_eeprom(RESTART_REASON_EEPROM_ADDR);
     //If there's no restart reason, read the MCUSR for a restart reason
-    if (restart_reason == EEPROM_DEF_DWORD) {
+    if (restart_reason == UPTIME_RESTART_REASON_UNKNOWN) {
         if (MCUSR & _BV(WDRF)) restart_reason = UPTIME_RESTART_REASON_WDRF;
         if (MCUSR & _BV(BORF)) restart_reason = UPTIME_RESTART_REASON_BORF;
         if (MCUSR & _BV(EXTRF)) restart_reason = UPTIME_RESTART_REASON_EXTRF;
