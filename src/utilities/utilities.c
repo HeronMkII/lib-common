@@ -132,3 +132,10 @@ void write_eeprom(uint16_t addr, uint32_t value) {
     // See https://www.avrfreaks.net/sites/default/files/forum_attachments/EEPROM.pdf, Section 2.2
     eeprom_update_dword((uint32_t*) addr, value);
 }
+
+// Catch-all interrupt vector for interrupts that are enabled but have no ISR
+// definition (overrides the default behaviour of the MCU restarting)
+// https://www.nongnu.org/avr-libc/user-manual/group__avr__interrupts.html
+ISR(BADISR_vect) {
+    print("ERROR: BADISR\n");
+}
