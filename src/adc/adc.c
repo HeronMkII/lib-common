@@ -1,8 +1,11 @@
 /*
-ADS7952 Analog to Digital Converter
+ADS7952/ADS7953 Analog to Digital Converter
 
 Link to Datasheet:
 http://www.ti.com/lit/ds/slas605c/slas605c.pdf
+
+The ADS7952 is the 12-channel variant, while the ADS7953 is the 16-channel
+variant (both have 12-bit precision).
 
 Brief Overview:
 An analog to digital converter is a component that takes an analog signal input

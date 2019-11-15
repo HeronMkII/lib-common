@@ -7,7 +7,9 @@
 #include <uart/uart.h>
 
 // Number channels in the ADC
-#define ADC_CHANNELS 12
+// 12 for ADS7952, 16 for ADS7953
+// Use 16 to always have array space for channel data
+#define ADC_CHANNELS 16
 
 // ADC operational modes
 typedef enum {
