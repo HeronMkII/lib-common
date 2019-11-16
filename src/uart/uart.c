@@ -174,8 +174,15 @@ void set_uart_rx_cb(uart_rx_cb_t cb) {
 Gets the number of characters that are currently in the UART RX buffer but have
 not been processed yet.
 */
-uint8_t get_uart_rx_buf_count(void) {
+uint8_t get_uart_rx_count(void) {
     return uart_rx_buf_count;
+}
+
+/*
+Gets a pointer to the buffer of received characters in the UART RX buffer.
+*/
+uint8_t* get_uart_rx_buf(void) {
+    return (uint8_t*) uart_rx_buf;
 }
 
 /*
