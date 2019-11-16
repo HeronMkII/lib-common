@@ -2,6 +2,7 @@
 #define UTILITIES_H
 
 #include <avr/eeprom.h>
+#include <avr/interrupt.h>
 #include <avr/io.h>
 
 // CPU clock frequency of 8 MHz
@@ -10,6 +11,8 @@
 #define F_CPU 8000000UL
 #endif
 #include <util/delay.h>
+
+#include <uart/uart.h>
 
 // Default EEPROM value for double word (4 bytes)
 #define EEPROM_DEF_DWORD 0xFFFFFFFF
