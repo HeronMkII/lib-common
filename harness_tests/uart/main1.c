@@ -24,7 +24,8 @@ void init_uart_test(void){
     init_uart();
     ASSERT_EQ(LINBRRH, 0);
     ASSERT_EQ(LINBRRL, 25);
-    ASSERT_EQ(LINBTR, 32);
+    // Check LBT[5:0] (p.297)
+    ASSERT_EQ(LINBTR & 0x3F, 32);
     ASSERT_EQ(LINCR, _BV(LENA) | _BV(LCMD2) | _BV(LCMD1) | _BV(LCMD0));
     ASSERT_EQ(LINENIR, _BV(LENRXOK));
 }
