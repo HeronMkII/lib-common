@@ -29,11 +29,11 @@ Optical ADC - AD7194 - PAY-Optical, different from main ADC
 http://www.analog.com/media/en/technical-documentation/data-sheets/AD7194.pdf
 
 Thermistor:
-NTC Thermistor 10k 0603 (1608 Metric) Part # NCU18XH103F60RB
-Digikey link: https://www.digikey.ca/product-detail/en/murata-electronics-north-america/NCU18XH103F60RB/490-16279-1-ND/7363262
+NTC Thermistor 10k 0402 (1005 Metric) Part # NCU15XH103F60RC
+Digikey link: https://www.digikey.ca/product-detail/en/murata-electronics-north-america/NCU15XH103F60RC/490-18149-1-ND/9686729
 Datasheet (page 13. Part # NCU__XH103):
 https://www.murata.com/~/media/webrenewal/support/library/catalog/products/thermistor/r03e.ashx?la=en-us
-Datasheet (NCU18XH103F60RB): https://www.murata.com/en-us/api/pdfdownloadapi?cate=luNTCforTempeSenso&partno=NCU18XH103F60RB
+Datasheet (NCU15XH103F60RC): https://www.murata.com/en-us/api/pdfdownloadapi?cate=luNTCforTempeSenso&partno=NCU15XH103F60RC
 
 IMU - BNO080
 https://cdn.sparkfun.com/assets/1/3/4/5/9/BNO080_Datasheet_v1.3.pdf
