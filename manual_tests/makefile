@@ -38,6 +38,8 @@ WINDOWS := false
 MAC_OS := false
 LINUX := false
 
+REMOTE := false
+
 ifeq ($(OS),Windows_NT)
 	WINDOWS := true
 else
@@ -63,7 +65,11 @@ ifeq ($(MAC_OS), true)
 endif
 ifeq ($(LINUX), true)
 	# lower number
-	PORT = $(shell find /dev -name 'ttyS[0-9]*' | sort | head -n1)
+	PORT = $(shell pavr2cmd --prog-port)
+	UART = $(shell pavr2cmd --ttl-port)
+	ifeq ($(shell whoami),ss)
+		REMOTE := true
+	endif
 endif
 
 # If automatic port detection fails,
@@ -147,7 +153,15 @@ endif
 
 # Upload .hex program to device
 upload: $(PROG)
+ifeq ($(REMOTE),true)
+	gpio -g mode 14 IN
+	gpio -g mode 15 IN
+endif
 	avrdude -p $(DEVICE) -c $(PGMR) -C $(LIB_COMMON)/avrdude.conf -P $(PORT) -U flash:w:./$^.hex
+ifeq ($(REMOTE),true)
+	gpio -g mode 14 ALT0
+	gpio -g mode 15 ALT0
+endif
 
 # Upload .hex program to device, using a precompiled binary that must already be
 # in the folder and be named $(PROG).hex
