@@ -4,17 +4,31 @@
 #include <uart/uart.h>
 #include <dac/dac.h>
 
+// -----------------------------------------------------------------------------
 // PAY-SSM configuration
+// pin_info_t cs = {
+//     .pin = PD0,
+//     .ddr = &DDRD,
+//     .port = &PORTD
+// };
+// pin_info_t clr = {
+//     .pin = PD1,
+//     .ddr = &DDRD,
+//     .port = &PORTD
+// };
+// -----------------------------------------------------------------------------
+// EPS flight configuration
 pin_info_t cs = {
-    .pin = PD0,
-    .ddr = &DDRD,
-    .port = &PORTD
+    .pin = PB4,
+    .ddr = &DDRB,
+    .port = &PORTB
 };
 pin_info_t clr = {
-    .pin = PD1,
-    .ddr = &DDRD,
-    .port = &PORTD
+    .pin = PC7,
+    .ddr = &DDRC,
+    .port = &PORTC
 };
+// -----------------------------------------------------------------------------
 
 dac_t dac = {
     .cs = &cs,
@@ -29,6 +43,13 @@ void delay_s(uint16_t seconds) {
             _delay_ms(100);
         }
     }
+}
+
+void wait_for_key_press(void) {
+    print("Waiting for key press...\n");
+    while (get_uart_rx_count() == 0) {}
+    clear_uart_rx_buf();
+    print("Got key press\n");
 }
 
 // *NEED TO CHOOSE BOARD AND VOLTAGES TO USE*
@@ -52,12 +73,12 @@ int main(void) {
     print("Set VOUTA = 0.7 V\n");
     set_dac_voltage(&dac, DAC_B, 1.2);
     print("Set VOUTB = 1.2 V\n");
-    delay_s(20);
+    wait_for_key_press();
     print("\n");
 
     reset_dac(&dac);
     print("Reset DAC: VOUTA = 0 V, VOUTB = 0 V\n");
-    delay_s(20);
+    wait_for_key_press();
     print("\n");
 
     for (uint8_t i = 0; i < 40; i++) {
