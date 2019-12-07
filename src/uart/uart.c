@@ -236,7 +236,9 @@ ISR(LIN_TC_vect) {
         }
 
         // Clear RX interrupt bit (p. 293)
-        // TODO - does this actually work? should we write a 1 instead?
+        // From experimentation, it seems that reading LINDAT in get_uart_char()
+        // earlier in this ISR is what clears the LRXOK flag (bit 0 of LINSIR)
+        // This line does not seem to change anything
         LINSIR &= ~_BV(LRXOK);
     }
 }
