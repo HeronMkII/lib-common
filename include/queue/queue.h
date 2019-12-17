@@ -28,6 +28,7 @@ uint8_t queue_full(queue_t* queue);
 uint8_t queue_empty(queue_t* queue);
 void shift_queue_left(queue_t* queue);
 uint8_t enqueue(queue_t* queue, const uint8_t* data);
+uint8_t enqueue_front(queue_t* queue, const uint8_t* data);
 uint8_t peek_queue(queue_t* queue, uint8_t* data);
 uint8_t dequeue(queue_t* queue, uint8_t* data);
 

@@ -115,6 +115,58 @@ void dequeue_simple() {
     ASSERT_FALSE(succ);
 }
 
+void enqueue_front_advanced() {
+    // Queue should start empty
+    ASSERT_EQ(queue_size(&queue), 0);
+    // Set the initial head and tail index
+    queue.head = 1;
+    queue.tail = 1;
+
+    uint8_t succ = enqueue_front(&queue, w[0]);
+    ASSERT_TRUE(succ);
+
+    ASSERT_EQ(queue.head, 0);
+    ASSERT_EQ(queue.tail, 1);
+    ASSERT_EQ(queue_size(&queue), 1);
+
+    for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
+        ASSERT_EQ(queue.content[queue.head][j], w[0][j]);
+    }
+
+    // Test shifting
+    succ = enqueue_front(&queue, w[1]);
+    ASSERT_TRUE(succ);
+
+    ASSERT_EQ(queue.head, 0);
+    ASSERT_EQ(queue.tail, 2);
+    ASSERT_EQ(queue_size(&queue), 2);
+
+    for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
+        ASSERT_EQ(queue.content[queue.head][j], w[1][j]);
+        ASSERT_EQ(queue.content[queue.head + 1][j], w[0][j]);
+    }
+
+    // Fill the queue
+    for (uint8_t i = queue_size(&queue); i < MAX_QUEUE_SIZE; i++) {
+        ASSERT_TRUE(enqueue_front(&queue, w[i]));
+    }
+
+    ASSERT_FALSE(enqueue_front(&queue, u));
+
+    // Dequeue everything to how it was originally
+    uint8_t data[QUEUE_DATA_SIZE] = { 0 };
+    for (uint8_t i = 0; i < MAX_QUEUE_SIZE; i ++) {
+        succ = dequeue(&queue, data);
+        ASSERT_TRUE(succ);
+        // Queue values set to empty
+        for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
+            ASSERT_EQ(data[j], w[MAX_QUEUE_SIZE - i - 1][j]);
+            ASSERT_EQ(queue.content[queue.head - 1][j], 0);
+        }
+    }
+    ASSERT_EQ(queue_size(&queue), 0);
+}
+
 void is_empty_test() {
     uint8_t empty = queue_empty(&queue);
     ASSERT_TRUE(empty);
@@ -179,19 +231,28 @@ void mixed_test() {
     ASSERT_EQ(queue.head, 0);
     ASSERT_EQ(queue.tail, 1);
     ASSERT_EQ(queue_size(&queue), 1);
+
+    succ = enqueue_front(&queue, t);
+    ASSERT_TRUE(succ);
+
+    ASSERT_EQ(queue.head, 0);
+    ASSERT_EQ(queue.tail, 2);
+    ASSERT_EQ(queue_size(&queue), 2);
 }
+
 
 test_t t1 = { .name = "init_queue", .fn = init_queue_test };
 test_t t2 = { .name = "simple enqueue", .fn = enqueue_simple };
 test_t t3 = { .name = "simple peek queue", .fn = peek_queue_simple };
 test_t t4 = { .name = "simple dequeue", .fn = dequeue_simple };
-test_t t5 = { .name = "queue_empty", .fn = is_empty_test };
-test_t t6 = { .name = "queue_full", .fn = is_full_test };
-test_t t7 = { .name = "mixed enqueue/dequeue", .fn = mixed_test };
+test_t t5 = { .name = "advanced enqueue front", .fn = enqueue_front_advanced };
+test_t t6 = { .name = "queue_empty", .fn = is_empty_test };
+test_t t7 = { .name = "queue_full", .fn = is_full_test };
+test_t t8 = { .name = "mixed enqueue/dequeue", .fn = mixed_test };
 
-test_t* suite[7] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7 };
+test_t* suite[8] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8 };
 
 int main() {
-    run_tests(suite, 7);
+    run_tests(suite, 8);
     return 0;
 }
