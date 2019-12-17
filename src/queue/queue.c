@@ -105,6 +105,24 @@ void shift_queue_left(queue_t* queue) {
 }
 
 /*
+Shifts all the elements in queue right one
+
+@param queue_t* queue - queue to operate on
+*/
+void shift_queue_right(queue_t* queue) {
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        for (uint8_t i = queue->tail; i > queue->head; i-=1) {
+            for (uint8_t j = 0; j < QUEUE_DATA_SIZE; j++) {
+                queue->content[i][j] = queue->content[i - 1][j];
+                queue->content[i - 1][j] = 0x00;
+            }
+        }
+        queue->tail += 1;
+        queue->head += 1;
+    }
+}
+
+/*
 Inserts new data at the end of the queue
 
 @param queue_t* queue - queue to insert into
@@ -124,6 +142,32 @@ uint8_t enqueue(queue_t* queue, const uint8_t* data) {
             queue->content[queue->tail][i] = data[i];
         }
         queue->tail += 1;
+        return 1;
+    }
+
+    return 0;
+}
+
+/*
+Inserts new data at the front of the queue
+
+@param queue_t* queue - queue to insert into
+@param const uint8_t* data - pointer to 8-byte array to insert (copy) into the queue
+@return 1 if data has been added to queue, 0 otherwise
+*/
+uint8_t enqueue_front(queue_t* queue, const uint8_t* data) {
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        if (queue_full(queue)) {
+            return 0;
+        }
+
+        if (queue->head == 0) {
+            shift_queue_right(queue);
+        }
+        queue->head -= 1;
+        for (uint8_t i = 0; i < QUEUE_DATA_SIZE; i++) {
+            queue->content[queue->head][i] = data[i];
+        }
         return 1;
     }
 
