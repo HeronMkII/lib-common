@@ -44,17 +44,15 @@
 #define HB_EPS_RST_PAY_PORT PORTC
 #define HB_EPS_RST_PAY_DDR  DDRC
 
-// TODO - update pin definitions for PAY outputs from flight model PCB
-
 // PAY resets OBC
-#define HB_PAY_RST_OBC_PIN  PB3
-#define HB_PAY_RST_OBC_PORT PORTB
-#define HB_PAY_RST_OBC_DDR  DDRB
+#define HB_PAY_RST_OBC_PIN  PC0
+#define HB_PAY_RST_OBC_PORT PORTC
+#define HB_PAY_RST_OBC_DDR  DDRC
 
 // PAY resets EPS
-#define HB_PAY_RST_EPS_PIN  PB3
-#define HB_PAY_RST_EPS_PORT PORTB
-#define HB_PAY_RST_EPS_DDR  DDRB
+#define HB_PAY_RST_EPS_PIN  PD1
+#define HB_PAY_RST_EPS_PORT PORTD
+#define HB_PAY_RST_EPS_DDR  DDRD
 
 // Default 1 hour
 #define HB_RESET_UPTIME_THRESH (1UL * 60UL * 60UL)
