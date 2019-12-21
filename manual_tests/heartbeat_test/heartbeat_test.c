@@ -10,9 +10,9 @@ Full test of the heartbeat system
 
 // NOTE: Change this variable before re-compiling and re-uploading to match the
 // subsystem of the board you are uploading to
-//#define SELF_ID HB_OBC
- #define SELF_ID HB_EPS
-//#define SELF_ID HB_PAY
+#define SELF_ID HB_OBC
+// #define SELF_ID HB_EPS
+// #define SELF_ID HB_PAY
 
 // Uncomment to ignore received pings and not respond
 #define IGNORE_PINGS false
@@ -34,9 +34,10 @@ void print_bool(char* str, bool val) {
 
 int main(void) {
     init_uart();
+    print("\n\n");
     init_uptime();
     init_can();
-    print("\n\n\nStarting heartbeat test\n");
+    print("Starting heartbeat test\n");
 /*
     if (SELF_ID == HB_OBC) {
         hb_ping_period_s = 15;

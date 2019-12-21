@@ -5,6 +5,9 @@
 #include <can/can.h>
 #include <uart/uart.h>
 
+// Uncomment for extra print statements
+// #define CAN_DEBUG
+
 #define ERR_MSG "ERR: %s.\n"
 
 mob_t* mob_array[6] = {0};
@@ -133,14 +136,23 @@ void init_can(void) {
     // set global interrupt flag
     sei();
 
-    // set can to enable mode
-    CANGCON |= _BV(ENASTB);
+    // set can to enable mode (ENASTB)
+    // "In TTC mode, a frame is sent once, even if an error occurs." (p.237)
+    // Enable TTC mode so if the CAN bus is disconnected, we won't keep getting
+    // no ack errors infinitely when CAN tries to send a frame until succeeding
+    CANGCON |= _BV(TTC) | _BV(ENASTB);
 
     // enable CAN and wait for CAN to turn on before returning
     uint16_t timeout = UINT16_MAX;
     while (!(CANGSTA & _BV(ENFG)) && timeout > 0) {
         timeout--;
     }
+
+#ifdef CAN_DEBUG
+    print("CAN initialized\n");
+    print("CANGSTA: 0x%.2x\n", CANGSTA);
+    print("CANGCON: 0x%.2x\n", CANGCON);
+#endif
 }
 
 // Pauses the selected mob by setting 2 MSB of CANCDMOB to 0
@@ -304,6 +316,15 @@ uint8_t handle_err(mob_t* mob) {
 
         // Clears CANSTMOB error bits
         CANSTMOB &= ~(0x9f);
+
+        // If CAN is not in TTC mode and there is a no ack error (AERR = 1), the
+        // previous line will successfully clear it so AERR = 0, but the device
+        // will automatically set the AERR bit to 1 very quickly and try
+        // to resend the message
+
+        // If CAN is in TTC mode, it will not automatically set the AERR bit
+        // (leaves it at 0) and will stop attempting to send the message
+
         //print("CANTEC: %d\n", CANTEC);
         //print("ERRP: %d\n", CANGSTA & _BV(ERRP));
         //print("BOFF: %d\n", CANGSTA & _BV(BOFF));
