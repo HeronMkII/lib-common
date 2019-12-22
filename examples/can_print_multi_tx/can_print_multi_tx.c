@@ -35,11 +35,16 @@ int main (void) {
 
     while (1) {
         resume_mob(&tx_mob_1);
-        while (!is_paused(&tx_mob_1)) {};
+        // Normally would wait until the mob is not paused, but in TTC mode
+        // if the transmission fails, CONMOB[1:0] stays at 0b01 (enable transmission)
+        // so this would loop infinitely
+        // while (!is_paused(&tx_mob_1)) {};
+        _delay_ms(1);
         _delay_ms(100);
 
         resume_mob(&tx_mob_2);
-        while (!is_paused(&tx_mob_2)) {};
+        // while (!is_paused(&tx_mob_2)) {};
+        _delay_ms(1);
         _delay_ms(100);
     };
 }

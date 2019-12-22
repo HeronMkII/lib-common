@@ -108,6 +108,10 @@ uint8_t load_data(mob_t* mob) {
 uint8_t is_paused(mob_t* mob) {
     select_mob(mob->mob_num);
 
+#ifdef CAN_DEBUG
+    print("CANCDMOB: 0x%.2x\n", CANCDMOB);
+#endif
+
     // the MOb is paused iff the two MSB of CANCDMOB are 0
     if (CANCDMOB & 0xc0) {
         return 0;

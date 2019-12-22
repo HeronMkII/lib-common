@@ -1,5 +1,6 @@
 #include <uart/uart.h>
 #include <can/can.h>
+#include <utilities/utilities.h>
 
 void tx_callback(uint8_t*, uint8_t*);
 
@@ -29,7 +30,13 @@ int main(void) {
 
     while (1) {
         resume_mob(&tx_mob);
-        while (!is_paused(&tx_mob)) {};
+
+        // Normally would wait until the mob is not paused, but in TTC mode
+        // if the transmission fails, CONMOB[1:0] stays at 0b01 (enable transmission)
+        // so this would loop infinitely
+        // while (!is_paused(&tx_mob)) {};
+
+        _delay_ms(1);
 
         print("Status: %#02x\n", mob_status(&tx_mob));
         print("Tx error count: %d\n", CANTEC);
