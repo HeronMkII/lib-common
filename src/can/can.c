@@ -138,8 +138,13 @@ void init_can(void) {
 
     // set can to enable mode (ENASTB)
     // "In TTC mode, a frame is sent once, even if an error occurs." (p.237)
-    // Enable TTC mode so if the CAN bus is disconnected, we won't keep getting
+    // Enable TTC mode so that if the CAN bus is disconnected, we won't keep getting
     // no ack errors infinitely when CAN tries to send a frame until succeeding
+    // (normal behaviour without TTC mode)
+    // https://www.avrfreaks.net/forum/quick-question-about-can
+    // https://community.arm.com/developer/tools-software/tools/f/keil-forum/19706/are-can-messages-continuously-sent-by-hardware-if-there-is-no-ack
+    // https://www.avrfreaks.net/forum/ttctime-triggered-communication-can-using-at90can128
+    // http://www.flexautomotive.net/EMCFLEXBLOG/post/2016/03/20/can-bus-off-error-handling
     CANGCON |= _BV(TTC) | _BV(ENASTB);
 
     // enable CAN and wait for CAN to turn on before returning
@@ -325,9 +330,12 @@ uint8_t handle_err(mob_t* mob) {
         // If CAN is in TTC mode, it will not automatically set the AERR bit
         // (leaves it at 0) and will stop attempting to send the message
 
-        //print("CANTEC: %d\n", CANTEC);
-        //print("ERRP: %d\n", CANGSTA & _BV(ERRP));
-        //print("BOFF: %d\n", CANGSTA & _BV(BOFF));
+#ifdef CAN_DEBUG
+        print("CANTEC: %u\n", CANTEC);
+        print("ERRP: %u\n", CANGSTA & _BV(ERRP));
+        print("BOFF: %u\n", CANGSTA & _BV(BOFF));
+#endif
+
         return 1;
     }
 
@@ -370,7 +378,6 @@ void handle_bus_off_interrupt(void){
 
     CANGIT |= _BV(BOFFIT); //setting this bit clears it
 
-    // TODO: store appropriate information to be retrieved later (e.g. last msg sent)
     // handle interrupt by performing a software reset
 
     print("Resetting CAN controller...\n");
@@ -396,16 +403,23 @@ void handle_bus_off_interrupt(void){
 
 // ISR routine for CAN to handle various interrupts
 ISR(CAN_INT_vect) {
-    //print("CANTEC: %x\n", CANTEC);
+#ifdef CAN_DEBUG
+    print("CANTEC: 0x%.2x\n", CANTEC);
+#endif
+
     // Bus off interrupt
     if (CANGIT & _BV(BOFFIT)){
         print(ERR_MSG, "BOFFIT");
         handle_bus_off_interrupt();
         boffit_count++;
-        print("BOFFIT COUNT: %d\n",boffit_count);
+        print("BOFFIT COUNT: %u\n",boffit_count);
     }
-    //print("CANREC: %x\n", CANREC);
-    //print("CANGIT: %x\n", CANGIT);
+
+#ifdef CAN_DEBUG
+    print("CANREC: 0x%.2x\n", CANREC);
+    print("CANGIT: 0x%.2x\n", CANGIT);
+#endif
+
     for (uint8_t i = 0; i < 6; i++) {
         mob_t* mob = mob_array[i];
         if (mob == 0) {continue;}
