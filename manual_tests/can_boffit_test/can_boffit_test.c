@@ -7,6 +7,11 @@ Note: Board 2 can be inactive (i.e. not connected to CAN bus), as it can be more
 than errors via setting bits.
 Note: In order for this test to run successfully, CANREC and CANTEC must be reset to zero before initialization.
 This can be accomplished by running other code (e.g. can_print_rx, tx), as these registers are read-only and cannot be set directly.
+
+You can create actual bit errors by shorting the CANH and CANL lines together.
+
+Note that this test may not work (could hang) if TTC mode is enabled
+(which it is by default in init_can()).
 */
 
 #include <stdio.h>

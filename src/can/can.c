@@ -371,9 +371,15 @@ void set_can_baud_rate(can_baud_rate_t baud_rate){
             break;
     }
 }
+
 // Handles the circumstance where the CAN channel is not allowed to have
 // any influence on bus (i.e. entering bus off mode)
 // Reference pg. 237 for error management
+// From testing and observation, it appears that boffit mode does not get
+// triggered from no ack errors
+// If the MCU is not in TTC mode and no other devices are connected to the bus,
+// it will infinitely keep getting no ack errors while trying to send the
+// message repeatedly
 void handle_bus_off_interrupt(void){
 
     CANGIT |= _BV(BOFFIT); //setting this bit clears it
