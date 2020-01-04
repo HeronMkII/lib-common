@@ -5,6 +5,9 @@
 #include <can/can.h>
 #include <uart/uart.h>
 
+// Uncomment for extra print statements
+// #define CAN_DEBUG
+
 #define ERR_MSG "ERR: %s.\n"
 
 mob_t* mob_array[6] = {0};
@@ -105,6 +108,10 @@ uint8_t load_data(mob_t* mob) {
 uint8_t is_paused(mob_t* mob) {
     select_mob(mob->mob_num);
 
+#ifdef CAN_DEBUG
+    print("CANCDMOB: 0x%.2x\n", CANCDMOB);
+#endif
+
     // the MOb is paused iff the two MSB of CANCDMOB are 0
     if (CANCDMOB & 0xc0) {
         return 0;
@@ -133,14 +140,28 @@ void init_can(void) {
     // set global interrupt flag
     sei();
 
-    // set can to enable mode
-    CANGCON |= _BV(ENASTB);
+    // set can to enable mode (ENASTB)
+    // "In TTC mode, a frame is sent once, even if an error occurs." (p.237)
+    // Enable TTC mode so that if the CAN bus is disconnected, we won't keep getting
+    // no ack errors infinitely when CAN tries to send a frame until succeeding
+    // (normal behaviour without TTC mode)
+    // https://www.avrfreaks.net/forum/quick-question-about-can
+    // https://community.arm.com/developer/tools-software/tools/f/keil-forum/19706/are-can-messages-continuously-sent-by-hardware-if-there-is-no-ack
+    // https://www.avrfreaks.net/forum/ttctime-triggered-communication-can-using-at90can128
+    // http://www.flexautomotive.net/EMCFLEXBLOG/post/2016/03/20/can-bus-off-error-handling
+    CANGCON |= _BV(TTC) | _BV(ENASTB);
 
     // enable CAN and wait for CAN to turn on before returning
     uint16_t timeout = UINT16_MAX;
     while (!(CANGSTA & _BV(ENFG)) && timeout > 0) {
         timeout--;
     }
+
+#ifdef CAN_DEBUG
+    print("CAN initialized\n");
+    print("CANGSTA: 0x%.2x\n", CANGSTA);
+    print("CANGCON: 0x%.2x\n", CANGCON);
+#endif
 }
 
 // Pauses the selected mob by setting 2 MSB of CANCDMOB to 0
@@ -304,9 +325,21 @@ uint8_t handle_err(mob_t* mob) {
 
         // Clears CANSTMOB error bits
         CANSTMOB &= ~(0x9f);
-        //print("CANTEC: %d\n", CANTEC);
-        //print("ERRP: %d\n", CANGSTA & _BV(ERRP));
-        //print("BOFF: %d\n", CANGSTA & _BV(BOFF));
+
+        // If CAN is not in TTC mode and there is a no ack error (AERR = 1), the
+        // previous line will successfully clear it so AERR = 0, but the device
+        // will automatically set the AERR bit to 1 very quickly and try
+        // to resend the message
+
+        // If CAN is in TTC mode, it will not automatically set the AERR bit
+        // (leaves it at 0) and will stop attempting to send the message
+
+#ifdef CAN_DEBUG
+        print("CANTEC: %u\n", CANTEC);
+        print("ERRP: %u\n", CANGSTA & _BV(ERRP));
+        print("BOFF: %u\n", CANGSTA & _BV(BOFF));
+#endif
+
         return 1;
     }
 
@@ -342,14 +375,19 @@ void set_can_baud_rate(can_baud_rate_t baud_rate){
             break;
     }
 }
+
 // Handles the circumstance where the CAN channel is not allowed to have
 // any influence on bus (i.e. entering bus off mode)
 // Reference pg. 237 for error management
+// From testing and observation, it appears that boffit mode does not get
+// triggered from no ack errors
+// If the MCU is not in TTC mode and no other devices are connected to the bus,
+// it will infinitely keep getting no ack errors while trying to send the
+// message repeatedly
 void handle_bus_off_interrupt(void){
 
     CANGIT |= _BV(BOFFIT); //setting this bit clears it
 
-    // TODO: store appropriate information to be retrieved later (e.g. last msg sent)
     // handle interrupt by performing a software reset
 
     print("Resetting CAN controller...\n");
@@ -375,16 +413,23 @@ void handle_bus_off_interrupt(void){
 
 // ISR routine for CAN to handle various interrupts
 ISR(CAN_INT_vect) {
-    //print("CANTEC: %x\n", CANTEC);
+#ifdef CAN_DEBUG
+    print("CANTEC: 0x%.2x\n", CANTEC);
+#endif
+
     // Bus off interrupt
     if (CANGIT & _BV(BOFFIT)){
         print(ERR_MSG, "BOFFIT");
         handle_bus_off_interrupt();
         boffit_count++;
-        print("BOFFIT COUNT: %d\n",boffit_count);
+        print("BOFFIT COUNT: %u\n",boffit_count);
     }
-    //print("CANREC: %x\n", CANREC);
-    //print("CANGIT: %x\n", CANGIT);
+
+#ifdef CAN_DEBUG
+    print("CANREC: 0x%.2x\n", CANREC);
+    print("CANGIT: 0x%.2x\n", CANGIT);
+#endif
+
     for (uint8_t i = 0; i < 6; i++) {
         mob_t* mob = mob_array[i];
         if (mob == 0) {continue;}
