@@ -114,7 +114,7 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_PAY_HK_10V_CUR          23
 #define CAN_PAY_HK_THERM_STAT       24
 #define CAN_PAY_HK_HEAT_STAT        25
-#define CAN_PAY_HK_LIM_STAT         26
+#define CAN_PAY_HK_LSW_STAT         26
 #define CAN_PAY_HK_UPTIME           27
 #define CAN_PAY_HK_RESTART_COUNT    28
 #define CAN_PAY_HK_RESTART_REASON   29
@@ -129,8 +129,8 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_PAY_CTRL_DISABLE_6V                     2
 #define CAN_PAY_CTRL_ENABLE_10V                     3
 #define CAN_PAY_CTRL_DISABLE_10V                    4
-#define CAN_PAY_CTRL_GET_HEAT_SETPOINT              5
-#define CAN_PAY_CTRL_SET_HEAT_SETPOINT              6
+#define CAN_PAY_CTRL_GET_HEAT_SP                    5
+#define CAN_PAY_CTRL_SET_HEAT_SP                    6
 #define CAN_PAY_CTRL_POLL_THERM_READINGS            7
 #define CAN_PAY_CTRL_POLL_THERM_STAT                8
 #define CAN_PAY_CTRL_SET_THERM_STAT_OVERRIDE        9
