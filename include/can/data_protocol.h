@@ -107,42 +107,39 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_PAY_HK_MF10_TEMP        16
 #define CAN_PAY_HK_MF11_TEMP        17
 #define CAN_PAY_HK_MF12_TEMP        18
-#define CAN_PAY_HK_HEAT_EN          19
-#define CAN_PAY_HK_LIM_PRESS        20
-#define CAN_PAY_HK_UPTIME           21
-#define CAN_PAY_HK_RESTART_COUNT    22
-#define CAN_PAY_HK_RESTART_REASON   23
-#define CAN_PAY_HK_FIELD_COUNT      24  // Number of fields
+#define CAN_PAY_HK_BATT_VOLT        19
+#define CAN_PAY_HK_10V_VOLT         20
+#define CAN_PAY_HK_10V_CURR         21
+#define CAN_PAY_HK_6V_VOLT          22
+#define CAN_PAY_HK_6V_CURR          23
+#define CAN_PAY_HK_HEAT_EN          24
+#define CAN_PAY_HK_THERM_VALID      25
+#define CAN_PAY_HK_LIM_PRESS        26
+#define CAN_PAY_HK_UPTIME           27
+#define CAN_PAY_HK_RESTART_COUNT    28
+#define CAN_PAY_HK_RESTART_REASON   29
+#define CAN_PAY_HK_FIELD_COUNT      30  // Number of fields
 
 // PAY optical
 #define CAN_PAY_OPT_FIELD_COUNT 32  // Number of fields
 
 // PAY control
 #define CAN_PAY_CTRL_PING               0
-#define CAN_PAY_CTRL_HEAT1_OFF          1
-#define CAN_PAY_CTRL_HEAT1_ON           2
-#define CAN_PAY_CTRL_HEAT2_OFF          3
-#define CAN_PAY_CTRL_HEAT2_ON           4
-#define CAN_PAY_CTRL_HEAT3_OFF          5
-#define CAN_PAY_CTRL_HEAT3_ON           6
-#define CAN_PAY_CTRL_HEAT4_OFF          7
-#define CAN_PAY_CTRL_HEAT4_ON           8
-#define CAN_PAY_CTRL_HEAT5_OFF          9
-#define CAN_PAY_CTRL_HEAT5_ON           10
-#define CAN_PAY_CTRL_DISABLE_6V         11
-#define CAN_PAY_CTRL_ENABLE_6V          12
-#define CAN_PAY_CTRL_DISABLE_10V        13
-#define CAN_PAY_CTRL_ENABLE_10V         14
-#define CAN_PAY_CTRL_ACT_UP             15
-#define CAN_PAY_CTRL_ACT_DOWN           16
-#define CAN_PAY_CTRL_BLIST_DEP_SEQ      17
-#define CAN_PAY_CTRL_RESET              18
-#define CAN_PAY_CTRL_READ_EEPROM        19
-#define CAN_PAY_CTRL_ERASE_EEPROM       20
-#define CAN_PAY_CTRL_READ_RAM_BYTE      21
-#define CAN_PAY_CTRL_START_TEMP_LPM     22
-#define CAN_PAY_CTRL_ENABLE_INDEF_LPM   23
-#define CAN_PAY_CTRL_DISABLE_INDEF_LPM  24
-#define CAN_PAY_CTRL_FIELD_COUNT        25  // Number of fields
+#define CAN_PAY_CTRL_ENABLE_6V          1
+#define CAN_PAY_CTRL_DISABLE_6V         2
+#define CAN_PAY_CTRL_ENABLE_10V         3
+#define CAN_PAY_CTRL_DISABLE_10V        4
+#define CAN_PAY_MOTOR_ROUTINE           5
+#define CAN_PAY_HEATER_SETPOINT         6
+#define CAN_PAY_POLL_THERM_STAT         7
+#define CAN_PAY_MOD_THERM_STAT          8
+#define CAN_PAY_CTRL_RESET              9
+#define CAN_PAY_CTRL_READ_EEPROM        10
+#define CAN_PAY_CTRL_ERASE_EEPROM       11
+#define CAN_PAY_CTRL_READ_RAM_BYTE      12
+#define CAN_PAY_CTRL_START_TEMP_LPM     13
+#define CAN_PAY_CTRL_ENABLE_INDEF_LPM   14
+#define CAN_PAY_CTRL_DISABLE_INDEF_LPM  15
+#define CAN_PAY_CTRL_FIELD_COUNT        16  // Number of fields
 
 #endif
