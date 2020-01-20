@@ -20,6 +20,7 @@ TODO - test with flight model PAY with proper reset hardware
 
 // Extra debugging logs
 #define HB_DEBUG
+// #define HB_VERBOSE
 
 
 pin_info_t obc_rst_eps = {
@@ -350,7 +351,7 @@ bool wait_for_hb_mob_not_paused(mob_t* mob) {
 }
 
 bool send_hb_reset(hb_dev_t* device) {
-    print("Sending HB reset to %u (%s)\n", device->id, device->name);
+    print("Send HB reset to %u (%s)\n", device->id, device->name);
 
     // Assert the reset
     // See table on p.96 - for reset, need to output low (DDR = 1, PORT = 0)
@@ -366,7 +367,7 @@ bool send_hb_reset(hb_dev_t* device) {
 // This should be run in the main loop
 // because we can't interrupt inside of an interrupt, etc.
 void run_hb(void) {
-#ifdef HB_DEBUG
+#ifdef HB_VERBOSE
     print("%s\n", __FUNCTION__);
 #endif
 
@@ -379,7 +380,9 @@ void run_hb(void) {
             hb_dev_t* dev = (hb_dev_t*) all_hb_devs[i];
 
             if (dev != self_hb_dev && dev->send_resp_flag) {
+#ifdef HB_DEBUG
                 print("Sending HB resp to %u (%s)\n", dev->id, dev->name);
+#endif
 
                 // TODO - does this work?
                 resume_mob(&dev->mob);
@@ -406,7 +409,9 @@ void run_hb(void) {
                     dev->ping_in_progress = false;
                     dev->send_req_flag = false;
                     dev->rcvd_resp_flag = false;
-                    print("Received HB resp from %u (%s)\n", dev->id, dev->name);
+#ifdef HB_DEBUG
+                    print("Successful HB resp from %u (%s)\n", dev->id, dev->name);
+#endif
                 }
                 
                 // If the wait period has elapsed without receiving a response
@@ -414,7 +419,11 @@ void run_hb(void) {
                     dev->ping_in_progress = false;
                     dev->send_req_flag = false;
                     dev->rcvd_resp_flag = false;
-                    print("Failed to receive HB resp from %u (%s)\n", dev->id, dev->name);
+
+#ifdef HB_DEBUG
+                    print("Failed HB resp from %u (%s)\n", dev->id, dev->name);
+#endif
+
                     send_hb_reset(dev);
                 }
             }
@@ -432,7 +441,9 @@ void run_hb(void) {
                     dev->send_req_flag = true;
                     dev->rcvd_resp_flag = false;
 
+#ifdef HB_DEBUG
                     print("Sending HB req to %u (%s)\n", dev->id, dev->name);
+#endif
 
                     // TODO - does this work with multiple sends in the same function call?
                     // maybe needs to interrupt?

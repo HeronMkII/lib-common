@@ -14,11 +14,13 @@ Full test of the heartbeat system
 // #define SELF_ID HB_EPS
 #define SELF_ID HB_PAY
 
+// Uncomment to overwrite hb_req_period_s (if IGNORE_PINGS is enabled, recommended to set this high so it doesn't reset the other board)
+#define REQ_PERIOD      15
+// Uncomment to overwrite hb_resp_wait_time_s
+#define RESP_WAIT_TIME  5
+
 // Uncomment to ignore received pings and not respond
 // #define IGNORE_PINGS
-
-// Uncomment to overwrite hb_ping_period_s (if IGNORE_PINGS is enabled, recommended to set this high so it doesn't reset the other board)
-#define PING_PERIOD 5
 
 // Uncomment for more debug logging
 #define DEBUG_LOG
@@ -40,8 +42,11 @@ int main(void) {
     print("Starting heartbeat test\n");
 
     // optional override for ping period
-#ifdef PING_PERIOD
-    hb_req_period_s = PING_PERIOD;
+#ifdef REQ_PERIOD
+    hb_req_period_s = REQ_PERIOD;
+#endif
+#ifdef RESP_WAIT_TIME
+    hb_resp_wait_time_s = RESP_WAIT_TIME;
 #endif
 
 #ifndef IGNORE_PINGS
@@ -53,7 +58,8 @@ int main(void) {
 
     print("Self: %u (%s)\n", self_hb_dev->id, self_hb_dev->name);
     print("hb_req_period_s = %lu\n", hb_req_period_s);
-    print("Starting main loop\n");
+    print("hb_resp_wait_time_s = %lu\n", hb_resp_wait_time_s);
+    print("Starting loop\n");
 
     uint32_t last_uptime = uptime_s;
 
