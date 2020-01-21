@@ -83,9 +83,7 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_EPS_CTRL_ERASE_EEPROM               15
 #define CAN_EPS_CTRL_READ_RAM_BYTE              16
 #define CAN_EPS_CTRL_START_TEMP_LPM             17
-#define CAN_EPS_CTRL_ENABLE_INDEF_LPM           18
-#define CAN_EPS_CTRL_DISABLE_INDEF_LPM          19
-#define CAN_EPS_CTRL_FIELD_COUNT                20  // Number of fields
+#define CAN_EPS_CTRL_FIELD_COUNT                18  // Number of fields
 
 // PAY housekeeping
 #define CAN_PAY_HK_HUM              0
@@ -143,9 +141,7 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_PAY_CTRL_READ_RAM_BYTE                  16
 #define CAN_PAY_CTRL_RESET_SSM                      17
 #define CAN_PAY_CTRL_RESET_OPT                      18
-#define CAN_PAY_CTRL_ENABLE_INDEF_LPM               19
-#define CAN_PAY_CTRL_DISABLE_INDEF_LPM              20
-#define CAN_PAY_CTRL_FIELD_COUNT                    21  // Number of fields
+#define CAN_PAY_CTRL_FIELD_COUNT                    19  // Number of fields
 
 // CAN message status bytes
 #define CAN_STATUS_OK                   0x00
