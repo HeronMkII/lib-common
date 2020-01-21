@@ -147,4 +147,10 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_PAY_CTRL_DISABLE_INDEF_LPM              20
 #define CAN_PAY_CTRL_FIELD_COUNT                    21  // Number of fields
 
+// CAN message status bytes
+#define CAN_STATUS_OK                   0x00
+#define CAN_STATUS_INVALID_OPCODE       0x11
+#define CAN_STATUS_INVALID_FIELD_NUM    0x12
+#define CAN_STATUS_INVALID_DATA         0x13
+
 #endif
