@@ -336,8 +336,8 @@ void hb_rx_cb(const uint8_t* data, uint8_t len) {
 }
 
 bool wait_for_hb_mob_not_paused(mob_t* mob) {
-    // Wait up to 10 ms
-    for (uint16_t i = 0; i < 10; i++) {
+    // Wait up to 5 ms
+    for (uint16_t i = 0; i < 5; i++) {
         if (is_paused(mob)) {
             return true;
         }
@@ -351,7 +351,7 @@ bool wait_for_hb_mob_not_paused(mob_t* mob) {
 }
 
 bool send_hb_reset(hb_dev_t* device) {
-    print("Send HB reset to %u (%s)\n", device->id, device->name);
+    print("HB reset to %u (%s)\n", device->id, device->name);
 
     // Assert the reset
     // See table on p.96 - for reset, need to output low (DDR = 1, PORT = 0)
@@ -371,35 +371,47 @@ void run_hb(void) {
     print("%s\n", __FUNCTION__);
 #endif
 
+    // If we are currently in the process of sending a CAN message, wait until
+    // all TX MOBs are paused before possibly trying to send another message
+    // Don't check self (RX MOB) because it is always in receive mode and never
+    // paused
+    // This must be outside the atomic block because the MOB is only unpaused
+    // (set CONMOB[1:0] = 0b00) by our CAN library when a TX interrupt occurs
+    // (after it actually sends a message)
+    for (uint8_t i = 0; i < HB_NUM_DEVS; i++) {
+        hb_dev_t* dev = (hb_dev_t*) all_hb_devs[i];        
+        if (dev != self_hb_dev) {
+            wait_for_hb_mob_not_paused(&dev->mob);
+        }
+    }
+
     // Do all this logic in an atomic block because the structs and flags could
     // be modified by CAN RX interrupts
+    // Note if we send a CAN message we return from the ISR because we can only
+    // load one message at a time
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        // Response - check if we need to respond to a reqeuest first so we
+        // Send response - check if we need to respond to a request first so we
         // don't get reset
         for (uint8_t i = 0; i < HB_NUM_DEVS; i++) {
             hb_dev_t* dev = (hb_dev_t*) all_hb_devs[i];
 
-            if (dev != self_hb_dev && dev->send_resp_flag) {
+            if ((dev != self_hb_dev) && dev->send_resp_flag) {
 #ifdef HB_DEBUG
-                print("Sending HB resp to %u (%s)\n", dev->id, dev->name);
+                print("HB resp to %u (%s)\n", dev->id, dev->name);
 #endif
 
-                // TODO - does this work?
                 resume_mob(&dev->mob);
-                // TODO - does this require interrupt? will this not work if we
-                // are in atomic block?
-                wait_for_hb_mob_not_paused(&dev->mob);
+
                 // Make sure to do this after resume_mob, which calls the TX
                 // callback which checks this flag to be true
                 dev->send_resp_flag = false;
 
-                // TODO - should we return or continue?
                 return;
             }
         }
 
-        // Request - check that we received responses to any requests we already
-        // sent out
+        // Check for response - check that we received responses to any requests
+        // we already sent out
         for (uint8_t i = 0; i < HB_NUM_DEVS; i++) {
             hb_dev_t* dev = (hb_dev_t*) all_hb_devs[i];
 
@@ -410,7 +422,7 @@ void run_hb(void) {
                     dev->send_req_flag = false;
                     dev->rcvd_resp_flag = false;
 #ifdef HB_DEBUG
-                    print("Successful HB resp from %u (%s)\n", dev->id, dev->name);
+                    print("HB ping to %u (%s) - success\n", dev->id, dev->name);
 #endif
                 }
                 
@@ -421,7 +433,7 @@ void run_hb(void) {
                     dev->rcvd_resp_flag = false;
 
 #ifdef HB_DEBUG
-                    print("Failed HB resp from %u (%s)\n", dev->id, dev->name);
+                    print("HB ping to %u (%s) - fail\n", dev->id, dev->name);
 #endif
 
                     send_hb_reset(dev);
@@ -429,7 +441,8 @@ void run_hb(void) {
             }
         }
 
-        // Request - check if it is time to send another ping to both other devices
+        // Set request flag - check if it is time to send another ping to both
+        // other devices - just set the flags if so, but don't send yet
         if (uptime_s >= hb_req_prev_uptime_s + hb_req_period_s) {
             hb_req_prev_uptime_s = uptime_s;
             
@@ -437,24 +450,29 @@ void run_hb(void) {
                 hb_dev_t* dev = (hb_dev_t*) all_hb_devs[i];
 
                 if (dev != self_hb_dev) {
-                    dev->ping_in_progress = true;
+                    dev->ping_in_progress = false;
                     dev->send_req_flag = true;
                     dev->rcvd_resp_flag = false;
+                }
+            }
+        }
 
+        // Send request - if the flag is set, send a request to another device
+        for (uint8_t i = 0; i < HB_NUM_DEVS; i++) {
+            hb_dev_t* dev = (hb_dev_t*) all_hb_devs[i];
+
+            if ((dev != self_hb_dev) && dev->send_req_flag) {
 #ifdef HB_DEBUG
-                    print("Sending HB req to %u (%s)\n", dev->id, dev->name);
+                print("HB req to %u (%s)\n", dev->id, dev->name);
 #endif
 
-                    // TODO - does this work with multiple sends in the same function call?
-                    // maybe needs to interrupt?
-                    resume_mob(&dev->mob);
-                    // TODO - does this require interrupt? will this not work if we
-                    // are in atomic block?
-                    wait_for_hb_mob_not_paused(&dev->mob);
+                resume_mob(&dev->mob);
 
-                    // TODO - should we return or continue?
-                    return;
-                }
+                dev->ping_in_progress = true;
+                dev->send_req_flag = false;
+                dev->rcvd_resp_flag = false;
+                
+                return;
             }
         }
     }

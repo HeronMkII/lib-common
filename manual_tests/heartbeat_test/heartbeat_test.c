@@ -23,7 +23,7 @@ Full test of the heartbeat system
 // #define IGNORE_PINGS
 
 // Uncomment for more debug logging
-#define DEBUG_LOG
+// #define DEBUG_LOG
 // -----------------------------------------------------------------------------
 
 
@@ -61,7 +61,9 @@ int main(void) {
     print("hb_resp_wait_time_s = %lu\n", hb_resp_wait_time_s);
     print("Starting loop\n");
 
+#ifdef DEBUG_LOG
     uint32_t last_uptime = uptime_s;
+#endif
 
     while (1) {
         run_hb();
