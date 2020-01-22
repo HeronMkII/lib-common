@@ -10,9 +10,9 @@ Full test of the heartbeat system
 
 // NOTE: Change this variable before re-compiling and re-uploading to match the
 // subsystem of the board you are uploading to
-// #define SELF_ID HB_OBC
+#define SELF_ID HB_OBC
 // #define SELF_ID HB_EPS
-#define SELF_ID HB_PAY
+// #define SELF_ID HB_PAY
 
 // Uncomment to overwrite hb_req_period_s (if IGNORE_PINGS is enabled, recommended to set this high so it doesn't reset the other board)
 #define REQ_PERIOD      15

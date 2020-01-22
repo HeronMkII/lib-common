@@ -6,8 +6,6 @@ Byte 2: HB_OPCODE (1 = ping request, 2 = ping response)
 Byte 3: Restart Reason (if HB_OPCODE = 2)(See data conversion protocol)
 Byte 4-7: Restart Count (if HB_OPCODE = 2)
 
-TODO - fix race conditions when 2 heartbeat pings are sent around the same time
-TODO - figure out better testing modes (e.g. not responding to all HB pings, randomly responding to some pings but not others)
 TODO - test with flight model PAY with proper reset hardware
 */
 
@@ -19,7 +17,7 @@ TODO - test with flight model PAY with proper reset hardware
 #include <uptime/uptime.h>
 
 // Extra debugging logs
-#define HB_DEBUG
+// #define HB_DEBUG
 // #define HB_VERBOSE
 
 
@@ -421,6 +419,7 @@ void run_hb(void) {
                     dev->ping_in_progress = false;
                     dev->send_req_flag = false;
                     dev->rcvd_resp_flag = false;
+
 #ifdef HB_DEBUG
                     print("HB ping to %u (%s) - success\n", dev->id, dev->name);
 #endif
