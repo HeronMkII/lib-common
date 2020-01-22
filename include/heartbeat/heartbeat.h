@@ -24,6 +24,8 @@
 #define HB_PAY 0x01
 #define HB_EPS 0x02
 
+#define HB_NUM_DEVS 3
+
 // OBC resets EPS
 #define HB_OBC_RST_EPS_PIN  PC4
 #define HB_OBC_RST_EPS_PORT PORTC
@@ -67,42 +69,50 @@
 #define HB_PAY_RST_EPS_PORT PORTD
 #define HB_PAY_RST_EPS_DDR  DDRD
 
-// Default 1 hour
-#define HB_RESET_UPTIME_THRESH (1UL * 60UL * 60UL)
+// Default 3 hours
+#define HB_REQ_PERIOD_S    (3UL * 60UL * 60UL)
+// Number of seconds to wait for a response before sending a reset
+#define HB_RESP_WAIT_TIME_S 60
 
 
-extern uint8_t hb_self_id;
+// Heartbeat device informataion
+typedef struct {
+    char name[4];
+    uint8_t id;
+    mob_t mob;
 
-extern uint8_t hb_latest_restart_reason;
+    // When initiating request
+    bool ping_in_progress;
+    bool send_req_flag;
+    bool rcvd_resp_flag;
 
-extern uint32_t hb_latest_restart_count;
+    // When responding to request
+    bool send_resp_flag;
+    
+    pin_info_t* reset;
+    uint32_t ping_start_uptime_s;
+    uint8_t restart_reason;
+    uint32_t restart_count;
+} hb_dev_t;
 
-extern mob_t obc_hb_mob;
-extern mob_t eps_hb_mob;
-extern mob_t pay_hb_mob;
+// Must all be volatile because they are modified inside CAN TX/RX interrupts
+// Don't initialize mobs here
+extern volatile hb_dev_t obc_hb_dev;
+extern volatile hb_dev_t eps_hb_dev;
+extern volatile hb_dev_t pay_hb_dev;
 
-extern volatile bool hb_send_obc_req;
-extern volatile bool hb_send_eps_req;
-extern volatile bool hb_send_pay_req;
+extern volatile hb_dev_t* all_hb_devs[];
 
-extern volatile bool hb_received_obc_resp;
-extern volatile bool hb_received_eps_resp;
-extern volatile bool hb_received_pay_resp;
+extern volatile hb_dev_t* self_hb_dev;
 
-extern volatile bool hb_send_obc_resp;
-extern volatile bool hb_send_eps_resp;
-extern volatile bool hb_send_pay_resp;
-
-extern volatile uint32_t hb_ping_prev_uptime_s;
-extern volatile uint32_t hb_ping_period_s;
+extern volatile uint32_t hb_req_prev_uptime_s;
+extern volatile uint32_t hb_req_period_s;
+extern volatile uint32_t hb_resp_wait_time_s;
 
 
 void init_hb(uint8_t self_id);
 bool wait_for_hb_mob_not_paused(mob_t* mob);
-bool wait_for_hb_resp(volatile bool* received_resp);
-void send_hb_resp(mob_t* mob, volatile bool* send_resp);
-void send_hb_ping(mob_t* mob, uint8_t other_id, volatile bool* send_ping, volatile bool* received_resp);
-bool send_hb_reset(uint8_t other_id);
+bool send_hb_reset(hb_dev_t* device);
 void run_hb(void);
 
 #endif // HEARTBEAT_H

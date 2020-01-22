@@ -14,14 +14,16 @@ Full test of the heartbeat system
 // #define SELF_ID HB_EPS
 // #define SELF_ID HB_PAY
 
-// Uncomment to ignore received pings and not respond
-#define IGNORE_PINGS false
+// Uncomment to overwrite hb_req_period_s (if IGNORE_PINGS is enabled, recommended to set this high so it doesn't reset the other board)
+#define REQ_PERIOD      15
+// Uncomment to overwrite hb_resp_wait_time_s
+#define RESP_WAIT_TIME  5
 
-// Uncomment to overwrite hb_ping_period_s (if IGNORE_PINGS is enabled, recommended to set this high so it doesn't reset the other board)
-#define PING_PERIOD 5
+// Uncomment to ignore received pings and not respond
+// #define IGNORE_PINGS
 
 // Uncomment for more debug logging
- #define DEBUG_LOG true
+// #define DEBUG_LOG
 // -----------------------------------------------------------------------------
 
 
@@ -38,68 +40,49 @@ int main(void) {
     init_uptime();
     init_can();
     print("Starting heartbeat test\n");
-/*
-    if (SELF_ID == HB_OBC) {
-        hb_ping_period_s = 15;
-    } else if (SELF_ID == HB_EPS) {
-        hb_ping_period_s = 20;
-    } else if (SELF_ID == HB_PAY) {
-        hb_ping_period_s = 25;
-    }
-*/
+
     // optional override for ping period
-    if (PING_PERIOD){
-        hb_ping_period_s = PING_PERIOD;
-    }
+#ifdef REQ_PERIOD
+    hb_req_period_s = REQ_PERIOD;
+#endif
+#ifdef RESP_WAIT_TIME
+    hb_resp_wait_time_s = RESP_WAIT_TIME;
+#endif
 
-    if (!IGNORE_PINGS){
-        print("Initializing heartbeat...\n");
-        init_hb(SELF_ID);
-        print("Done init\n");
-    }
-    else {
-        print("Skipped initializing heartbeat\n");
-    }
+#ifndef IGNORE_PINGS
+    init_hb(SELF_ID);
+    print("Initialized heartbeat\n");
+#else
+    print("Skipped initializing heartbeat\n");
+#endif
 
-    print("hb_self_id = ");
-    if (hb_self_id == HB_OBC) {
-        print("OBC\n");
-    } else if (hb_self_id == HB_EPS) {
-        print("EPS\n");
-    } else if (hb_self_id == HB_PAY) {
-        print("PAY\n");
-    }
+    print("Self: %u (%s)\n", self_hb_dev->id, self_hb_dev->name);
+    print("hb_req_period_s = %lu\n", hb_req_period_s);
+    print("hb_resp_wait_time_s = %lu\n", hb_resp_wait_time_s);
+    print("Starting loop\n");
 
-    print("hb_ping_period_s = %lu\n", hb_ping_period_s);
-
-    print("Starting main loop\n");
-
+#ifdef DEBUG_LOG
     uint32_t last_uptime = uptime_s;
+#endif
 
     while (1) {
         run_hb();
-        if (DEBUG_LOG){
-            print_bool("hb_send_obc_req", hb_send_obc_req);
-            print_bool("hb_send_eps_req", hb_send_eps_req);
-            print_bool("hb_send_pay_req", hb_send_pay_req);
 
-            print_bool("hb_received_obc_resp", hb_received_obc_resp);
-            print_bool("hb_received_eps_resp", hb_received_eps_resp);
-            print_bool("hb_received_pay_resp", hb_received_pay_resp);
+#ifdef DEBUG_LOG
+        // Every 5 seconds, print collected count and reason for each device
+        if (uptime_s > last_uptime + 5){
+            last_uptime = uptime_s;
 
-            print_bool("hb_send_obc_resp", hb_send_obc_resp);
-            print_bool("hb_send_eps_resp", hb_send_eps_resp);
-            print_bool("hb_send_pay_resp", hb_send_pay_resp);
-
-            if (uptime_s > last_uptime + 5){
-                last_uptime = uptime_s;
-                print("Latest restart count received: %lu\n", hb_latest_restart_count);
-                print("Latest restart reason received: %u\n", hb_latest_restart_reason);
-
-                print("Stored count: %lu\n", restart_count);
-                print("Stored reason: %u\n", restart_reason);
+            for (uint8_t i = 0; i < HB_NUM_DEVS; i++) {
+                hb_dev_t* dev = (hb_dev_t*) all_hb_devs[i];
+                print("%s: count = %lu, reason = %u\n", dev->name, dev->restart_count, dev->restart_reason);
             }
+
+            print("Stored count: %lu\n", restart_count);
+            print("Stored reason: %u\n", restart_reason);
         }
+#endif
+
     }
 
     return 0;
