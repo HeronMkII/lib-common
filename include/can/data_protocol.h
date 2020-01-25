@@ -82,8 +82,7 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_EPS_CTRL_READ_EEPROM                14
 #define CAN_EPS_CTRL_ERASE_EEPROM               15
 #define CAN_EPS_CTRL_READ_RAM_BYTE              16
-#define CAN_EPS_CTRL_START_TEMP_LPM             17
-#define CAN_EPS_CTRL_FIELD_COUNT                18  // Number of fields
+#define CAN_EPS_CTRL_FIELD_COUNT                17  // Number of fields
 
 // PAY housekeeping
 #define CAN_PAY_HK_HUM              0
@@ -110,8 +109,8 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_PAY_HK_6V_CUR           21
 #define CAN_PAY_HK_10V_VOL          22
 #define CAN_PAY_HK_10V_CUR          23
-#define CAN_PAY_HK_THERM_STAT       24
-#define CAN_PAY_HK_HEAT_STAT        25
+#define CAN_PAY_HK_THERM_EN         24
+#define CAN_PAY_HK_HEAT_EN          25
 #define CAN_PAY_HK_LSW_STAT         26
 #define CAN_PAY_HK_UPTIME           27
 #define CAN_PAY_HK_RESTART_COUNT    28
@@ -129,19 +128,18 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_PAY_CTRL_DISABLE_10V                    4
 #define CAN_PAY_CTRL_GET_HEAT_SP                    5
 #define CAN_PAY_CTRL_SET_HEAT_SP                    6
-#define CAN_PAY_CTRL_POLL_THERM_READINGS            7
-#define CAN_PAY_CTRL_POLL_THERM_STAT                8
-#define CAN_PAY_CTRL_SET_THERM_STAT_OVERRIDE        9
-#define CAN_PAY_CTRL_DISABLE_THERM_STAT_OVERRIDE    10
-#define CAN_PAY_CTRL_MOTOR_DEP_ROUTINE              11
-#define CAN_PAY_CTRL_MOTOR_UP                       12
-#define CAN_PAY_CTRL_MOTOR_DOWN                     13
-#define CAN_PAY_CTRL_READ_EEPROM                    14
-#define CAN_PAY_CTRL_ERASE_EEPROM                   15
-#define CAN_PAY_CTRL_READ_RAM_BYTE                  16
-#define CAN_PAY_CTRL_RESET_SSM                      17
-#define CAN_PAY_CTRL_RESET_OPT                      18
-#define CAN_PAY_CTRL_FIELD_COUNT                    19  // Number of fields
+#define CAN_PAY_CTRL_GET_THERM_READING              7
+#define CAN_PAY_CTRL_GET_THERM_ERR_CODE             8
+#define CAN_PAY_CTRL_SET_THERM_ERR_CODE             9
+#define CAN_PAY_CTRL_MOTOR_DEP_ROUTINE              10
+#define CAN_PAY_CTRL_MOTOR_UP                       11
+#define CAN_PAY_CTRL_MOTOR_DOWN                     12
+#define CAN_PAY_CTRL_READ_EEPROM                    13
+#define CAN_PAY_CTRL_ERASE_EEPROM                   14
+#define CAN_PAY_CTRL_READ_RAM_BYTE                  15
+#define CAN_PAY_CTRL_RESET_SSM                      16
+#define CAN_PAY_CTRL_RESET_OPT                      17
+#define CAN_PAY_CTRL_FIELD_COUNT                    18  // Number of fields
 
 // CAN message status bytes
 #define CAN_STATUS_OK                   0x00
