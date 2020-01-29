@@ -11,6 +11,8 @@
 // Current conversion for INA214
 #define ADC_CUR_SENSE_AMP_GAIN   100.0   // 100x voltage gain
 
+#define EFUSE_IMON_CUR_GAIN 246e-6  // 246 uA/A nominal
+
 
 // Internal voltage reference (V)
 #define DAC_VREF        2.5
@@ -45,10 +47,12 @@ double adc_raw_to_ch_vol(uint16_t raw);
 uint16_t adc_ch_vol_to_raw(double ch_vol);
 double adc_ch_vol_to_circ_vol(double ch_vol, double low_res, double high_res);
 double adc_ch_vol_to_circ_cur(double ch_vol, double sense_res, double ref_vol);
+double adc_ch_vol_to_efuse_cur(double ch_vol, double sense_res);
 double adc_circ_cur_to_ch_vol(double circ_cur, double sense_res, double ref_vol);
 double adc_raw_to_circ_vol(uint16_t raw, double low_res, double high_res);
 double adc_raw_to_circ_cur(uint16_t raw, double sense_res, double ref_vol);
 uint16_t adc_circ_cur_to_raw(double circ_cur, double sense_res, double ref_vol);
+double adc_raw_to_efuse_cur(uint16_t raw, double sense_res);
 double adc_raw_to_therm_temp(uint16_t raw);
 
 double dac_raw_data_to_vol(uint16_t raw_data);

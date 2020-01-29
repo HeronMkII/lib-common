@@ -13,6 +13,9 @@ http://www.ti.com/lit/ds/slas605c/slas605c.pdf
 EPS/PAY ADCs use current monitor - INA214
 http://www.ti.com/lit/ds/symlink/ina214.pdf
 
+EPS uses eFuse for battery current to PAY - TPS25982
+http://www.ti.com/lit/ds/symlink/tps25982.pdf
+
 DAC - DAC7562 - PAY
 Datasheet: http://www.ti.com/lit/ds/symlink/dac8162.pdf
 
@@ -97,6 +100,17 @@ double adc_ch_vol_to_circ_cur(double ch_vol, double sense_res, double ref_vol) {
 }
 
 /*
+Converts a raw voltage on an ADC pin to the output current of the eFuse.
+ch_vol - voltage on an ADC input pin (in V)
+sense_res - sense resistor value (in ohms)
+returns - current in the circuit (in A)
+*/
+double adc_ch_vol_to_efuse_cur(double ch_vol, double sense_res) {
+    double iout = ch_vol / (EFUSE_IMON_CUR_GAIN * sense_res);
+    return iout;
+}
+
+/*
 Converts a current in the circuit to a channel voltage on an ADC pin using
     the known sense resistor current monitoring circuit.
 circ_cur - current in the circuit (in A)
@@ -123,7 +137,7 @@ double adc_raw_to_circ_vol(uint16_t raw, double low_res, double high_res) {
 
 /*
 Converts raw 12 bit data from an ADC channel to a current in the circuit.
-raw_data - 12 bits
+raw - 12 bits
 returns - in A
 */
 double adc_raw_to_circ_cur(uint16_t raw, double sense_res, double ref_vol) {
@@ -138,6 +152,18 @@ returns - 12 bits
 uint16_t adc_circ_cur_to_raw(double circ_cur, double sense_res, double ref_vol) {
     return adc_ch_vol_to_raw(adc_circ_cur_to_ch_vol(circ_cur, sense_res, ref_vol));
 }
+
+/*
+Converts a raw 12-bit ADC value to the output current of the eFuse.
+raw - 12 bits
+sense_res - sense resistor value (in ohms)
+returns - current in the circuit (in A)
+*/
+double adc_raw_to_efuse_cur(uint16_t raw, double sense_res) {
+    double iout = adc_ch_vol_to_efuse_cur(adc_raw_to_ch_vol(raw), sense_res);
+    return iout;
+}
+
 
 /*
 Converts raw 12 bit data from an ADC channel to the temperature measured by a
