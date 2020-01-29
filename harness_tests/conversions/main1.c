@@ -70,12 +70,42 @@ void therm_res_to_temp_test(void) {
     double resistance = 120.0;
     double temp = (double)(-35.0 + 5*(28.171/34.824)); //linear approximation
     ASSERT_FP_EQ(therm_res_to_temp(resistance), temp);
+
+    // TODO - tweak the correct values
+    ASSERT_FP_EQ(therm_res_to_temp(195.653),    -1000.0);
+    ASSERT_FP_EQ(therm_res_to_temp(195.652),    -40.0);
+    ASSERT_FP_EQ(therm_res_to_temp(195.6),      -39.9);
+    ASSERT_FP_EQ(therm_res_to_temp(148.171),    -35.0);
+    ASSERT_FP_EQ(therm_res_to_temp(148.0),      -34.8);
+    ASSERT_FP_EQ(therm_res_to_temp(10.0),       +25.0);
+    ASSERT_FP_EQ(therm_res_to_temp(8.315),      +30.0);
+    ASSERT_FP_EQ(therm_res_to_temp(7.29),       +34.6);
+    ASSERT_FP_EQ(therm_res_to_temp(6.948),      +35.0);
+    ASSERT_FP_EQ(therm_res_to_temp(0.54),       +124.2);
+    ASSERT_FP_EQ(therm_res_to_temp(0.531),      +125.0);
+    ASSERT_FP_EQ(therm_res_to_temp(0.530),      +1000.0);
 }
 
 void therm_temp_to_res_test(void) {
     double resistance = 120.0;
     double temp = (double)(-35.0 + 5*(28.171/34.824));
     ASSERT_FP_EQ(therm_temp_to_res(temp), resistance);
+
+    // TODO - tweak the correct values
+    ASSERT_FP_EQ(195.653,   therm_temp_to_res(-1000.0));
+    ASSERT_FP_EQ(195.652,   therm_temp_to_res(-41.0));
+    ASSERT_FP_EQ(195.652,   therm_temp_to_res(-40.0));
+    ASSERT_FP_EQ(195.6,     therm_temp_to_res(-39.9));
+    ASSERT_FP_EQ(148.171,   therm_temp_to_res(-35.0));
+    ASSERT_FP_EQ(148.0,     therm_temp_to_res(-34.8));
+    ASSERT_FP_EQ(10.0,      therm_temp_to_res(+25.0));
+    ASSERT_FP_EQ(8.315,     therm_temp_to_res(+30.0));
+    ASSERT_FP_EQ(7.29,      therm_temp_to_res(+34.6));
+    ASSERT_FP_EQ(6.948,     therm_temp_to_res(+35.0));
+    ASSERT_FP_EQ(0.54,      therm_temp_to_res(+124.2));
+    ASSERT_FP_EQ(0.531,     therm_temp_to_res(+125.0));
+    ASSERT_FP_EQ(0.531,     therm_temp_to_res(+126.0));
+    ASSERT_FP_EQ(0.530,     therm_temp_to_res(+1000.0));
 }
 
 void therm_res_to_vol_test(void) {

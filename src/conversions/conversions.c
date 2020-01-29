@@ -311,8 +311,12 @@ double therm_res_to_temp(double resistance){
         }
     }
 
-    // This shouldn't happen
-    return 0.0;
+    // If temperature is too high off the scale
+    if (resistance < pgm_read_float(&THERM_RES[THERM_LUT_COUNT - 1])) {
+        return +1000.0;
+    }
+    // If temperature is too low off the scale
+    return -1000.0;
 }
 
 /*
@@ -339,8 +343,12 @@ double therm_temp_to_res(double temp) {
         }
     }
 
-    // This shouldn't happen
-    return 0.0;
+    // If temperature is too high off the scale
+    if (temp > (double) pgm_read_word(&THERM_TEMP[THERM_LUT_COUNT - 1])) {
+        return pgm_read_float(&THERM_RES[THERM_LUT_COUNT - 1]);
+    }
+    // If temperature is too low off the scale
+    return pgm_read_float(&THERM_RES[0]);
 }
 
 /*
