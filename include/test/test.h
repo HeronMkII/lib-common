@@ -2,6 +2,7 @@
 #define TEST_H
 
 #include <uart/uart.h>
+#include <utilities/utilities.h>
 #include <avr/io.h>
 #include <stdint.h>
 #include <stdbool.h>

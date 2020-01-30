@@ -81,6 +81,8 @@ class TestHarness:
         # readline reads an entire line from self.serial[0] (self.serial_port[i])
         # and a trailing '\n' (new line) is kept in the string (but removed by strip method)
         count = int(self.serial[0].readline().strip().decode('utf-8',errors='ignore'))
+        print("Test count: %d" % count)
+        print(sep)
 
         return count
 
@@ -284,9 +286,8 @@ class Test:
             self.handle_assert_two_float_nums(line)
         else:
             # Execute line in code if no other conditions are true
-            # Don't double print UART if in verbose mode
-            if not self.harness.verbose:
-                print("Unrecognized UART RX (%d bytes):" % len(line), line.strip())
+            # Will double print UART if in verbose mode
+            print("Unrecognized UART RX (%d bytes):" % len(line), line.strip())
 
     # Searches for match anywhere in string and returns first subgroup
     def handle_name(self, line):
