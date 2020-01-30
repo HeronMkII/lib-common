@@ -205,9 +205,11 @@ ISR(LIN_TC_vect) {
         static uint8_t c;
         get_uart_char(&c);
 
-        // Add the new character to the RX buffer
-        uart_rx_buf[uart_rx_buf_count] = c;
-        uart_rx_buf_count += 1;
+        // Add the new character to the RX buffer (if it won't overflow)
+        if (uart_rx_buf_count < sizeof(uart_rx_buf) / sizeof(uart_rx_buf[0])) {
+            uart_rx_buf[uart_rx_buf_count] = c;
+            uart_rx_buf_count += 1;
+        }
 
         /*
         Call the RX callback function to process the character buffer
@@ -220,7 +222,7 @@ ISR(LIN_TC_vect) {
 
         // If some number of bytes were read, shift everything in the buffer
         // leftward by the number of bytes read
-        if (read_bytes > 0) {
+        if (read_bytes > 0 && uart_rx_buf_count >= read_bytes) {
             uart_rx_buf_count -= read_bytes;
 
             if (uart_rx_buf_count > 0) {
