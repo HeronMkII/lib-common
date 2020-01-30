@@ -72,7 +72,8 @@ void therm_res_to_temp_test(void) {
     ASSERT_FP_EQ(therm_res_to_temp(resistance), temp);
 
     // TODO - tweak the correct values
-    ASSERT_FP_EQ(therm_res_to_temp(195.653),    -1000.0);
+    ASSERT_FP_EQ(therm_res_to_temp(200.0),      -40.0);
+    ASSERT_FP_EQ(therm_res_to_temp(195.653),    -40.0);
     ASSERT_FP_EQ(therm_res_to_temp(195.652),    -40.0);
     ASSERT_FP_EQ(therm_res_to_temp(195.6),      -39.9);
     ASSERT_FP_EQ(therm_res_to_temp(148.171),    -35.0);
@@ -83,7 +84,7 @@ void therm_res_to_temp_test(void) {
     ASSERT_FP_EQ(therm_res_to_temp(6.948),      +35.0);
     ASSERT_FP_EQ(therm_res_to_temp(0.54),       +124.2);
     ASSERT_FP_EQ(therm_res_to_temp(0.531),      +125.0);
-    ASSERT_FP_EQ(therm_res_to_temp(0.530),      +1000.0);
+    ASSERT_FP_EQ(therm_res_to_temp(0.2),        +125.0);
 }
 
 void therm_temp_to_res_test(void) {

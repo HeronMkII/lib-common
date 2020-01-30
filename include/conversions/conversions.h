@@ -31,7 +31,7 @@
 
 // Lookup tables for thermistor data conversions
 extern const float THERM_RES[];
-extern const int16_t THERM_TEMP[];
+extern const float THERM_TEMP[];
 // Number of points in arrays
 #define THERM_LUT_COUNT 34
 
