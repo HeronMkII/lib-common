@@ -118,28 +118,30 @@ Data formats are based on document: https://utat-ss.readthedocs.io/en/master/our
 #define CAN_PAY_HK_FIELD_COUNT      30  // Number of fields
 
 // PAY optical
-#define CAN_PAY_OPT_FIELD_COUNT 47  // Number of fields
+#define CAN_PAY_OPT_OD_FIELD_COUNT  32  // Optical density
+#define CAN_PAY_OPT_FL_FIELD_COUNT  32  // Fluorescence
+#define CAN_PAY_OPT_TOT_FIELD_COUNT 64  // Total number of fields
 
 // PAY control
-#define CAN_PAY_CTRL_PING                           0
-#define CAN_PAY_CTRL_ENABLE_6V                      1
-#define CAN_PAY_CTRL_DISABLE_6V                     2
-#define CAN_PAY_CTRL_ENABLE_10V                     3
-#define CAN_PAY_CTRL_DISABLE_10V                    4
-#define CAN_PAY_CTRL_GET_HEAT_SP                    5
-#define CAN_PAY_CTRL_SET_HEAT_SP                    6
-#define CAN_PAY_CTRL_GET_THERM_READING              7
-#define CAN_PAY_CTRL_GET_THERM_ERR_CODE             8
-#define CAN_PAY_CTRL_SET_THERM_ERR_CODE             9
-#define CAN_PAY_CTRL_MOTOR_DEP_ROUTINE              10
-#define CAN_PAY_CTRL_MOTOR_UP                       11
-#define CAN_PAY_CTRL_MOTOR_DOWN                     12
-#define CAN_PAY_CTRL_READ_EEPROM                    13
-#define CAN_PAY_CTRL_ERASE_EEPROM                   14
-#define CAN_PAY_CTRL_READ_RAM_BYTE                  15
-#define CAN_PAY_CTRL_RESET_SSM                      16
-#define CAN_PAY_CTRL_RESET_OPT                      17
-#define CAN_PAY_CTRL_FIELD_COUNT                    18  // Number of fields
+#define CAN_PAY_CTRL_PING               0
+#define CAN_PAY_CTRL_ENABLE_6V          1
+#define CAN_PAY_CTRL_DISABLE_6V         2
+#define CAN_PAY_CTRL_ENABLE_10V         3
+#define CAN_PAY_CTRL_DISABLE_10V        4
+#define CAN_PAY_CTRL_GET_HEAT_SP        5
+#define CAN_PAY_CTRL_SET_HEAT_SP        6
+#define CAN_PAY_CTRL_GET_THERM_READING  7
+#define CAN_PAY_CTRL_GET_THERM_ERR_CODE 8
+#define CAN_PAY_CTRL_SET_THERM_ERR_CODE 9
+#define CAN_PAY_CTRL_MOTOR_DEP_ROUTINE  10
+#define CAN_PAY_CTRL_MOTOR_UP           11
+#define CAN_PAY_CTRL_MOTOR_DOWN         12
+#define CAN_PAY_CTRL_READ_EEPROM        13
+#define CAN_PAY_CTRL_ERASE_EEPROM       14
+#define CAN_PAY_CTRL_READ_RAM_BYTE      15
+#define CAN_PAY_CTRL_RESET_SSM          16
+#define CAN_PAY_CTRL_RESET_OPT          17
+#define CAN_PAY_CTRL_FIELD_COUNT        18  // Number of fields
 
 // CAN message status bytes
 #define CAN_STATUS_OK                   0x00
