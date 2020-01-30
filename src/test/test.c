@@ -26,6 +26,7 @@ bool test_enable_time = false;
 
 void run_test(test_t*);
 
+// TODO - refactor UART RX
 
 uint8_t test_count_cb(const uint8_t* data, uint8_t len){
     char* count = COUNT_MSG;
@@ -88,7 +89,10 @@ void run_tests(test_t** suite, uint8_t len) {
         count_cb_flag = 0;
         set_uart_rx_cb(test_count_cb);
     }
-    while(!count_cb_flag);
+    // If the laptop does not send "COUNT\r\n" for 5 seconds, just continue
+    for (uint16_t i = 0; i < 500 && !count_cb_flag; i++) {
+        _delay_ms(10);
+    }
     print("%u\r\n", len);
 
     for (int i = 0; i < len; i++){
@@ -97,14 +101,20 @@ void run_tests(test_t** suite, uint8_t len) {
             start_cb_flag = 0;
             set_uart_rx_cb(test_start_cb);
         }
-        while(!start_cb_flag);
+        // Wait up to 100 ms
+        for (uint16_t i = 0; i < 10 && !start_cb_flag; i++) {
+            _delay_ms(10);
+        }
 
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
             clear_uart_rx_buf();
             seed_cb_flag = 0;
             set_uart_rx_cb(test_seed_cb);
         }
-        while(!seed_cb_flag);
+        // Wait up to 100 ms
+        for (uint16_t i = 0; i < 10 && !seed_cb_flag; i++) {
+            _delay_ms(10);
+        }
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
             // Seed both 16-bit and 32-bit randoms just in case
             srand(seed_cb_seed);
