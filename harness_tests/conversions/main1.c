@@ -32,6 +32,10 @@ void adc_raw_data_to_eps_cur_test(void) {
     ASSERT_FP_EQ(adc_raw_to_circ_cur(raw_data, 0.01, 0.0), 1.7);
 }
 
+void adc_raw_to_efuse_cur_test(void) {
+    ASSERT_FP_EQ(adc_raw_to_efuse_cur(0x570, 511), 13.521);
+}
+
 void adc_raw_data_to_therm_temp_test(void) {
     // 0x1BA -> 0.540 V -> 36.296 kohm -> -6.395 C (rounding goes to -6.411)
     ASSERT_FP_EQ(adc_raw_to_therm_temp(0x1BA), -6.411);
@@ -132,24 +136,25 @@ void therm_vol_to_res_test(void) {
 
 test_t t1 = { .name = "adc_data_to_voltage", .fn = adc_data_to_voltage_test };
 test_t t2 = { .name = "adc_raw_vol_to_eps_vol", .fn = adc_raw_vol_to_eps_vol_test };
-test_t t3 = { .name = "adc_eps_raw_data_to_curret", .fn = adc_raw_vol_to_eps_cur_test };
+test_t t3 = { .name = "adc_eps_raw_data_to_cur", .fn = adc_raw_vol_to_eps_cur_test };
 test_t t4 = { .name = "adc_raw_data_to_eps_vol", .fn = adc_raw_data_to_eps_vol_test };
-test_t t5 = { .name = "adc_eps_raw_data_to_curret", .fn = adc_raw_data_to_eps_cur_test };
-test_t t6 = { .name = "adc_raw_data_to_therm_temp", .fn = adc_raw_data_to_therm_temp_test };
-test_t t7 = { .name = "dac_raw_data_to_vol", .fn = dac_raw_data_to_vol_test };
-test_t t8 = { .name = "dac_vol_to_raw_data", .fn = dac_vol_to_raw_data_test };
-test_t t9 = { .name = "temp_raw_data_to_temperature", .fn = temp_raw_data_to_temperature_test };
-test_t t10 = { .name = "hum_raw_data_to_humidity", .fn = hum_raw_data_to_humidity_test };
-test_t t11 = { .name = "pres_raw_data_to_pressure", .fn = pres_raw_data_to_pressure_test };
-test_t t12 = { .name = "opt_adc_raw_data_to_vol", .fn = opt_adc_raw_data_to_vol_test };
-test_t t13 = { .name = "therm_res_to_temp", .fn = therm_res_to_temp_test };
-test_t t14 = { .name = "therm_temp_to_res", .fn = therm_temp_to_res_test };
-test_t t15 = { .name = "therm_res_to_vol", .fn = therm_res_to_vol_test };
-test_t t16 = { .name = "therm_vol_to_res", .fn = therm_vol_to_res_test };
+test_t t5 = { .name = "adc_eps_raw_data_to_cur", .fn = adc_raw_data_to_eps_cur_test };
+test_t t6 = { .name = "adc_raw_to_efuse_cur", .fn = adc_raw_to_efuse_cur_test };
+test_t t7 = { .name = "adc_raw_data_to_therm_temp", .fn = adc_raw_data_to_therm_temp_test };
+test_t t8 = { .name = "dac_raw_data_to_vol", .fn = dac_raw_data_to_vol_test };
+test_t t9 = { .name = "dac_vol_to_raw_data", .fn = dac_vol_to_raw_data_test };
+test_t t10 = { .name = "temp_raw_data_to_temperature", .fn = temp_raw_data_to_temperature_test };
+test_t t11 = { .name = "hum_raw_data_to_humidity", .fn = hum_raw_data_to_humidity_test };
+test_t t12 = { .name = "pres_raw_data_to_pressure", .fn = pres_raw_data_to_pressure_test };
+test_t t13 = { .name = "opt_adc_raw_data_to_vol", .fn = opt_adc_raw_data_to_vol_test };
+test_t t14 = { .name = "therm_res_to_temp", .fn = therm_res_to_temp_test };
+test_t t15 = { .name = "therm_temp_to_res", .fn = therm_temp_to_res_test };
+test_t t16 = { .name = "therm_res_to_vol", .fn = therm_res_to_vol_test };
+test_t t17 = { .name = "therm_vol_to_res", .fn = therm_vol_to_res_test };
 
-test_t* suite[16] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8, &t9, &t10, &t11, &t12, &t13, &t14, &t15, &t16 };
+test_t* suite[] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8, &t9, &t10, &t11, &t12, &t13, &t14, &t15, &t16, &t17 };
 
 int main() {
-    run_tests(suite, 16);
+    run_tests(suite, sizeof(suite) / sizeof(suite[0]));
     return 0;
 }
