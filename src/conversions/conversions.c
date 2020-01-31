@@ -44,6 +44,9 @@ https://cdn.sparkfun.com/assets/7/6/9/3/c/Sensor-Hub-Transport-Protocol-v1.7.pdf
 #include <conversions/conversions.h>
 #include <uart/uart.h>
 
+// Uncomment for logging
+// #define CONVERSIONS_DEBUG
+
 /*
 Converts raw data from an ADC channel to the voltage on that ADC channel input pin.
 raw_data - 12 bit ADC data
@@ -303,7 +306,9 @@ double therm_res_to_temp(double resistance){
         double resistance_prev = pgm_read_float(&THERM_RES[i]);
         double resistance_next = pgm_read_float(&THERM_RES[i + 1]);
 
-        if (resistance <= resistance_prev){
+        // Must compare to next instead of prev or else we will always trigger
+        // at i = 0
+        if (resistance >= resistance_next){
             double temp_prev = pgm_read_float(&THERM_TEMP[i]);
             double temp_next = pgm_read_float(&THERM_TEMP[i + 1]);
             
@@ -312,6 +317,11 @@ double therm_res_to_temp(double resistance){
             double slope = temp_diff / resistance_diff;
 
             double diff = resistance - resistance_prev;  //should be negative
+
+#ifdef CONVERSIONS_DEBUG
+            print("i = %u, slope = %f\n", i, slope);
+#endif
+
             return temp_prev + (diff * slope);
         }
     }
@@ -336,7 +346,9 @@ double therm_temp_to_res(double temp) {
         double temp_prev = pgm_read_float(&THERM_TEMP[i]);
         double temp_next = pgm_read_float(&THERM_TEMP[i + 1]);
 
-        if (temp >= temp_prev){
+        // Must compare to next instead of prev or else we will always trigger
+        // at i = 0
+        if (temp <= temp_next){
             double resistance_prev = pgm_read_float(&THERM_RES[i]);
             double resistance_next = pgm_read_float(&THERM_RES[i + 1]);
             
@@ -345,6 +357,11 @@ double therm_temp_to_res(double temp) {
             double slope = resistance_diff / temp_diff;
 
             double diff = temp - temp_prev;  //should be positive
+
+#ifdef CONVERSIONS_DEBUG
+            print("i = %u, slope = %f\n", i, slope);
+#endif
+
             return resistance_prev + (diff * slope);
         }
     }
