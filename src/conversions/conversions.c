@@ -42,7 +42,10 @@ https://cdn.sparkfun.com/assets/7/6/9/3/c/Sensor-Hub-Transport-Protocol-v1.7.pdf
 */
 
 #include <conversions/conversions.h>
+#include <uart/uart.h>
 
+// Uncomment for logging
+// #define CONVERSIONS_DEBUG
 
 /*
 Converts raw data from an ADC channel to the voltage on that ADC channel input pin.
@@ -277,7 +280,7 @@ const float THERM_RES[THERM_LUT_COUNT] PROGMEM = {
 };
 
 // Temperatures (in C)
-const int16_t THERM_TEMP[THERM_LUT_COUNT] PROGMEM = {
+const float THERM_TEMP[THERM_LUT_COUNT] PROGMEM = {
     -40,        -35,        -30,        -25,        -20,
     -15,        -10,        -5,         0,          5,
     10,         15,         20,         25,         30,
@@ -293,26 +296,38 @@ resistance - thermistor resistance (in kilo-ohms)
 Returns - temperature (in C)
 */
 double therm_res_to_temp(double resistance){
+    // If higher than the highest resistance, cap at the lowest temperature
+    if (resistance >= pgm_read_float(&THERM_RES[0])) {
+        return pgm_read_float(&THERM_TEMP[0]);
+    }
+
     for (uint8_t i = 0; i < THERM_LUT_COUNT - 1; i++){
         // Next value should be smaller than previous value
+        double resistance_prev = pgm_read_float(&THERM_RES[i]);
         double resistance_next = pgm_read_float(&THERM_RES[i + 1]);
 
+        // Must compare to next instead of prev or else we will always trigger
+        // at i = 0
         if (resistance >= resistance_next){
-            double resistance_prev = pgm_read_float(&THERM_RES[i]);
-            int16_t temp_next = pgm_read_word(&THERM_TEMP[i + 1]);
-            int16_t temp_prev = pgm_read_word(&THERM_TEMP[i]);
-
-            double temp_diff = (double) (temp_next - temp_prev);
-            double resistance_diff = (double) (resistance_next - resistance_prev);
+            double temp_prev = pgm_read_float(&THERM_TEMP[i]);
+            double temp_next = pgm_read_float(&THERM_TEMP[i + 1]);
+            
+            double temp_diff = temp_next - temp_prev;
+            double resistance_diff = resistance_next - resistance_prev;
             double slope = temp_diff / resistance_diff;
 
             double diff = resistance - resistance_prev;  //should be negative
+
+#ifdef CONVERSIONS_DEBUG
+            print("i = %u, slope = %f\n", i, slope);
+#endif
+
             return temp_prev + (diff * slope);
         }
     }
 
-    // This shouldn't happen
-    return 0.0;
+    // If lower than the lowest resistance, cap at the highest temperature
+    return pgm_read_float(&THERM_TEMP[THERM_LUT_COUNT - 1]);
 }
 
 /*
@@ -321,26 +336,38 @@ temp - temperature (in C)
 Returns - thermistor resistance (in kilo-ohms)
 */
 double therm_temp_to_res(double temp) {
+    // If lower than the lowest temperature, cap at the highest resistance
+    if (temp <= pgm_read_float(&THERM_TEMP[0])) {
+        return pgm_read_float(&THERM_RES[0]);
+    }
+
     for (uint8_t i = 0; i < THERM_LUT_COUNT - 1; i++){
         // Next value should be bigger than previous value
-        int16_t temp_next = pgm_read_word(&THERM_TEMP[i + 1]);
+        double temp_prev = pgm_read_float(&THERM_TEMP[i]);
+        double temp_next = pgm_read_float(&THERM_TEMP[i + 1]);
 
+        // Must compare to next instead of prev or else we will always trigger
+        // at i = 0
         if (temp <= temp_next){
-            int16_t temp_prev = pgm_read_word(&THERM_TEMP[i]);
-            double resistance_next = pgm_read_float(&THERM_RES[i + 1]);
             double resistance_prev = pgm_read_float(&THERM_RES[i]);
-
-            double resistance_diff = (double) (resistance_next - resistance_prev);
-            double temp_diff = (double) (temp_next - temp_prev);
+            double resistance_next = pgm_read_float(&THERM_RES[i + 1]);
+            
+            double resistance_diff = resistance_next - resistance_prev;
+            double temp_diff = temp_next - temp_prev;
             double slope = resistance_diff / temp_diff;
 
             double diff = temp - temp_prev;  //should be positive
+
+#ifdef CONVERSIONS_DEBUG
+            print("i = %u, slope = %f\n", i, slope);
+#endif
+
             return resistance_prev + (diff * slope);
         }
     }
 
-    // This shouldn't happen
-    return 0.0;
+    // If higher than the highest temperature, cap at the lowest resistance
+    return pgm_read_float(&THERM_RES[THERM_LUT_COUNT - 1]);
 }
 
 /*
