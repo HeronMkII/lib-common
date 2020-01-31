@@ -33,8 +33,7 @@ void adc_raw_data_to_eps_cur_test(void) {
 }
 
 void adc_raw_to_efuse_cur_test(void) {
-    // TODO
-    ASSERT_FP_EQ(adc_raw_to_efuse_cur(0x570, 511), 1.7);
+    ASSERT_FP_EQ(adc_raw_to_efuse_cur(0x570, 511), 13.521);
 }
 
 void adc_raw_data_to_therm_temp_test(void) {
