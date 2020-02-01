@@ -26,7 +26,6 @@ bool test_enable_time = false;
 
 void run_test(test_t*);
 
-// TODO - refactor UART RX
 
 uint8_t test_count_cb(const uint8_t* data, uint8_t len){
     char* count = COUNT_MSG;
