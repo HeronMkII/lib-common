@@ -21,8 +21,8 @@
 #define UPTIME_NUM_CALLBACKS 5
 
 
-// Number in seconds, equal to 1 day
-#define COM_TIMEOUT_DEF_PERIOD    (60UL * 60UL * 24UL)
+// Number in seconds, equal to 12 hours
+#define COM_TIMEOUT_DEF_PERIOD    (60UL * 60UL * 12UL)
 // Number in seconds
 #define COM_TIMEOUT_CB_INTERVAL   1
 
