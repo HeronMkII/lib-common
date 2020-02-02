@@ -61,12 +61,12 @@ uint16_t dac_vol_to_raw_data(double voltage);
 double dac_raw_data_to_heater_setpoint(uint16_t raw_data);
 uint16_t heater_setpoint_to_dac_raw_data(double temp);
 
-double temp_raw_data_to_temperature(uint16_t raw_data);
 double hum_raw_data_to_humidity(uint16_t raw_data);
 double pres_raw_data_to_pressure(uint32_t raw_data);
 
-double opt_adc_raw_data_to_vol(uint32_t raw_data, uint8_t gain);
-double opt_adc_raw_data_to_diff_vol(uint32_t raw_data, uint8_t gain);
+double opt_gain_raw_to_conv(uint8_t raw);
+double opt_int_time_raw_to_conv(uint8_t raw);
+double opt_raw_to_light_intensity(uint32_t raw);
 
 double therm_res_to_temp(double resistance);
 double therm_temp_to_res(double temp);
