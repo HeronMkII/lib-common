@@ -13,18 +13,12 @@
 
 #define EFUSE_IMON_CUR_GAIN 246e-6  // 246 uA/A nominal
 
-
 // Internal voltage reference (V)
 #define DAC_VREF        2.5
 // Internal voltage reference gain
 #define DAC_VREF_GAIN   2
 // Number of bits to represent voltage (also referred to as 'N')
 #define DAC_NUM_BITS    12
-
-
-#define OPT_ADC_V_REF       2.5 // reference voltage (in V)
-#define OPT_ADC_NUM_BITS    24  // number of bits in raw data (called 'N' in datasheet)
-
 
 // Reference (maximum) voltage for thermistor voltage divider
 #define THERM_V_REF 2.5
@@ -36,7 +30,6 @@ extern const float THERM_RES[];
 extern const float THERM_TEMP[];
 // Number of points in arrays
 #define THERM_LUT_COUNT 34
-
 
 // IMU Q points
 #define IMU_ACCEL_Q 8
