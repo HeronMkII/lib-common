@@ -123,6 +123,7 @@ void restart_com_timeout(void) {
 void com_timeout_timer_cb(void) {
     com_timeout_count_s += (uint32_t) COM_TIMEOUT_CB_INTERVAL;
     if (com_timeout_count_s >= com_timeout_period_s) {
+        print("COM TIMEOUT\n");
         reset_self_mcu(UPTIME_RESTART_REASON_COM_TIMEOUT);
         // Program should stop here and restart from the beginning
     }
