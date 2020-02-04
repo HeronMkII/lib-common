@@ -35,6 +35,11 @@ extern const float THERM_TEMP[];
 #define IMU_ACCEL_Q 8
 #define IMU_GYRO_Q  9
 
+#define OPT_ADC_VREF                3.3
+#define OPT_ADC_BITS                10
+#define OPT_ADC_CUR_SENSE           0.010
+#define OPT_ADC_CUR_SENSE_AMP_GAIN  100.0
+
 
 double adc_raw_to_ch_vol(uint16_t raw);
 uint16_t adc_ch_vol_to_raw(double ch_vol);
@@ -56,6 +61,10 @@ uint16_t heater_setpoint_to_dac_raw_data(double temp);
 
 double hum_raw_data_to_humidity(uint16_t raw_data);
 double pres_raw_data_to_pressure(uint32_t raw_data);
+
+double opt_adc_raw_to_ch_vol(uint16_t raw);
+void opt_power_raw_to_conv(
+    uint32_t raw, double* voltage, double* current, double* power);
 
 double opt_gain_raw_to_conv(uint8_t raw);
 double opt_int_time_raw_to_conv(uint8_t raw);

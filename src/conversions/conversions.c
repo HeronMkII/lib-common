@@ -247,6 +247,28 @@ double pres_raw_data_to_pressure(uint32_t raw_data) {
 }
 
 
+double opt_adc_raw_to_ch_vol(uint16_t raw) {
+    return ((double) raw) / ((double) (1 << OPT_ADC_BITS)) * OPT_ADC_VREF;
+}
+
+/*
+Converts raw 24 bits (2 measurements) to voltage, current, and power.
+voltage - in V
+current - in A
+power - in W
+*/
+void opt_power_raw_to_conv(
+        uint32_t raw, double* voltage, double* current, double* power) {
+    uint16_t voltage_raw = (raw >> 12) & 0x3FF;
+    uint16_t current_raw = raw & 0x3FF;
+
+    *voltage = opt_adc_raw_to_ch_vol(voltage_raw);
+    *current = (opt_adc_raw_to_ch_vol(current_raw) / OPT_ADC_CUR_SENSE_AMP_GAIN)
+        / OPT_ADC_CUR_SENSE;
+    *power = (*voltage) * (*current);
+}
+
+
 /*
 Converts bits representing gain to actual gain.
 p.8,16

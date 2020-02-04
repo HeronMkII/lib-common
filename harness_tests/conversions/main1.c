@@ -66,6 +66,16 @@ void opt_raw_to_light_intensity_test(void) {
     ASSERT_FP_EQ(opt_raw_to_light_intensity(raw), 0.371);
 }
 
+void opt_power_test(void) {
+    double voltage = 0.0;
+    double current = 0.0;
+    double power = 0.0;
+    opt_power_raw_to_conv(0x2BC1EF, &voltage, &current, &power);
+    ASSERT_FP_EQ(voltage, 2.256);
+    ASSERT_FP_EQ(current, 1.595);
+    ASSERT_FP_EQ(power, 3.599);
+}
+
 void therm_res_to_temp_test(void) {
     double resistance = 120.0;
     //linear approximation
@@ -142,12 +152,13 @@ test_t t9 = { .name = "dac_vol_to_raw_data", .fn = dac_vol_to_raw_data_test };
 test_t t10 = { .name = "hum_raw_data_to_humidity", .fn = hum_raw_data_to_humidity_test };
 test_t t11 = { .name = "pres_raw_data_to_pressure", .fn = pres_raw_data_to_pressure_test };
 test_t t12 = { .name = "opt_raw_to_light_intensity", .fn = opt_raw_to_light_intensity_test };
-test_t t13 = { .name = "therm_res_to_temp", .fn = therm_res_to_temp_test };
-test_t t14 = { .name = "therm_temp_to_res", .fn = therm_temp_to_res_test };
-test_t t15 = { .name = "therm_res_to_vol", .fn = therm_res_to_vol_test };
-test_t t16 = { .name = "therm_vol_to_res", .fn = therm_vol_to_res_test };
+test_t t13 = { .name = "opt_power", .fn = opt_power_test };
+test_t t14 = { .name = "therm_res_to_temp", .fn = therm_res_to_temp_test };
+test_t t15 = { .name = "therm_temp_to_res", .fn = therm_temp_to_res_test };
+test_t t16 = { .name = "therm_res_to_vol", .fn = therm_res_to_vol_test };
+test_t t17 = { .name = "therm_vol_to_res", .fn = therm_vol_to_res_test };
 
-test_t* suite[] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8, &t9, &t10, &t11, &t12, &t13, &t14, &t15, &t16 };
+test_t* suite[] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8, &t9, &t10, &t11, &t12, &t13, &t14, &t15, &t16, &t17 };
 
 int main() {
     run_tests(suite, sizeof(suite) / sizeof(suite[0]));
