@@ -17,7 +17,8 @@ int main(void)
   print("\nSTARTING PROGRAM\n");
   set_wdt_cb(cb);
 
-  WDT_ENABLE_INTERRUPT(WDTO_2S);
+  // WDT_ENABLE_INTERRUPT(WDTO_2S);
+  WDT_ENABLE_BOTH(WDTO_2S);
 
   // Set up an infinite state inside an atomic block.
   /*
@@ -28,13 +29,13 @@ int main(void)
    *  Interrupts are disabled.
    */
 
-  // ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
     while(1)
     {
       print("delay\n");
       _delay_ms(200);
     }
-  // }
+  }
 
   print("FAILED\n");
 }
