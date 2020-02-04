@@ -19,17 +19,14 @@ http://www.ti.com/lit/ds/symlink/tps25982.pdf
 DAC - DAC7562 - PAY
 Datasheet: http://www.ti.com/lit/ds/symlink/dac8162.pdf
 
-Temperature sensor - LM95071 - PAY
-http://www.ti.com/lit/ds/symlink/lm95071.pdf
-
 Humidity sensor - HIH7131 - PAY
 https://sensing.honeywell.com/honeywell-sensing-humidicon-hih7000-series-product-sheet-009074-6-en.pdf
 
 Pressure sensor - MS5803-05BA - PAY
 http://www.te.com/commerce/DocumentDelivery/DDEController?Action=showdoc&DocId=Data+Sheet%7FMS5803-05BA%7FB3%7Fpdf%7FEnglish%7FENG_DS_MS5803-05BA_B3.pdf%7FCAT-BLPS0011
 
-Optical ADC - AD7194 - PAY-Optical, different from main ADC
-http://www.analog.com/media/en/technical-documentation/data-sheets/AD7194.pdf
+Optical Sensor - TSL2591
+https://ams.com/documents/20143/36005/TSL2591_DS000338_6-00.pdf
 
 Thermistor:
 NTC Thermistor 10k 0402 (1005 Metric) Part # NCU15XH103F60RC
@@ -225,17 +222,6 @@ uint16_t heater_setpoint_to_dac_raw_data(double temp) {
 
 
 /*
-Converts raw data to a temperature from the temperature sensor
-raw_data - 16 bits (INCLUDING the 0b11 on the right that is always there)
-returns - temperature in degrees C (p. 9).
-*/
-double temp_raw_data_to_temperature(uint16_t raw_data) {
-    int16_t signed_temp_data = ((int16_t) raw_data) / 4;
-    // LSB is 0.03125 C
-    return ((double) signed_temp_data) * 0.03125;
-}
-
-/*
 Converts raw data to a humidity measurement (p.6).
 raw_data - 14 bits
 returns - humidity (in %RH, relative humidity)
@@ -262,30 +248,49 @@ double pres_raw_data_to_pressure(uint32_t raw_data) {
 
 
 /*
-Converts a raw measurement to the input voltage on the ADC pin.
-raw_data - 24 bits
-gain - gain scaling factor to multiply the voltage by
-returns - voltage (in V)
-Unipolar operation (only positive)
+Converts bits representing gain to actual gain.
+p.8,16
+Only using channel 0
 */
-double opt_adc_raw_data_to_vol(uint32_t raw_data, uint8_t gain) {
-    // p.31
-    // Code = (2^N * AIN * Gain) / (V_REF)
-    // => AIN = (Code * V_REF) / (2^N * Gain)
-    double num = ((double) raw_data) * ((double) OPT_ADC_V_REF);
-    double denom = (1UL << OPT_ADC_NUM_BITS) * ((double) gain);
-    return num / denom;
+double opt_gain_raw_to_conv(uint8_t raw) {
+    switch (raw) {
+        // Low
+        case 0b00:
+            return 1.0;
+        // Medium
+        case 0b01:
+            return 24.5;
+        // High
+        case 0b10:
+            return 400.0;
+        // Max
+        case 0b11:
+            return 9200.0;
+        default:
+            return 1.0;
+    }
 }
 
-double opt_adc_raw_data_to_diff_vol(uint32_t raw_data, uint8_t gain) {
-  // p.31
-  // Code = 2^(n-1) x [(AIN * Gain / V_REF) + 1]
-  // => AIN = (Code/2^(n-1) - 1) * V_REF/Gain
-  double volt = ((double) raw_data) / (1UL << (OPT_ADC_NUM_BITS - 1));
-  volt -= 1;
-  volt *= ((double) OPT_ADC_V_REF) / ((double) gain);
+/*
+Converts bits representing integration time to integration time (in ms).
+p.16
+*/
+double opt_int_time_raw_to_conv(uint8_t raw) {
+    return (((double) raw) + 1) * 100;
+}
 
-  return volt;
+/*
+Format:
+bits[23:22] are gain
+bits[18:16] are integration time
+bits[15:0] are the data
+Returns intensity value in ADC counts / ms
+*/
+double opt_raw_to_light_intensity(uint32_t raw) {
+    double gain = opt_gain_raw_to_conv((raw >> 22) & 0x03);
+    double int_time = opt_int_time_raw_to_conv((raw >> 16) & 0x07);
+    double reading = (double) (raw & 0xFFFF);
+    return reading / (gain * int_time);
 }
 
 
