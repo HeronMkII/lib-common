@@ -38,12 +38,12 @@ void print_reason_string(void) {
 }
 
 void print_info(void) {
-    print("Restart reason: 0x%lx (", restart_reason);
+    print("Restart reason: 0x%x (", restart_reason);
     print_reason_string();
     print(")\n");
 
     print("restart_count = %lu\n", restart_count);
-    print("restart_reason = %lu\n", restart_reason);
+    print("restart_reason = %u\n", restart_reason);
     print("uptime_s = %lu\n", uptime_s);
 
     print("com_timeout_count_s = %lu\n", com_timeout_count_s);
