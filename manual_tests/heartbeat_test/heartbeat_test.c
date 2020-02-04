@@ -41,6 +41,11 @@ int main(void) {
     init_can();
     print("Starting heartbeat test\n");
 
+    print("\n");
+    print("WARNING: If running this test on 2018-06 PAY-SSM or 2019-02 OBC,");
+    print(" it will fail. You must change the PAY->OBC reset in heartbeat.h.\n");
+    print("\n");
+
     // optional override for ping period
 #ifdef REQ_PERIOD
     hb_req_period_s = REQ_PERIOD;

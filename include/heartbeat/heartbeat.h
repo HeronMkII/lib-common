@@ -47,22 +47,15 @@
 #define HB_EPS_RST_PAY_DDR  DDRC
 
 // PAY resets OBC
-#define HB_PAY_RST_OBC_PIN  PB3
-#define HB_PAY_RST_OBC_PORT PORTB
-#define HB_PAY_RST_OBC_DDR  DDRB
-
-// TODO - use this configuration (matches PAY-SSM flight model)
-// Don't use this configuration yet because on older boards (e.g. 2018-06
-// PAY-SSM, 2019-02 OBC), PC0 is connected to the CAN transceiver LBK (loopback)
-// pin, which will disconnect the CAN transceiver from the bus and cause all CAN
-// messages to fail (no ack) as it is nominally held high in the heartbeat reset
-// configuration
-// Commit 21e79ea01e6942e9d75d2cef865f5d746764304f originally tried to change it
-// to proper PAY-SSM flight configuration
-
-// #define HB_PAY_RST_OBC_PIN  PC0
-// #define HB_PAY_RST_OBC_PORT PORTC
-// #define HB_PAY_RST_OBC_DDR  DDRC
+// NOTE: On older boards (e.g. 2018-06 PAY-SSM, 2019-02 OBC), PC0 is connected
+// to the CAN transceiver LBK (loopback) pin, which will disconnect the CAN
+// transceiver from the bus and cause all CAN messages to fail (no ack) as it is
+// nominally held high in the heartbeat reset configuration
+// If testing on one of those older boards, change the constants to
+// PB3/PORTB/DDRB
+#define HB_PAY_RST_OBC_PIN  PC0
+#define HB_PAY_RST_OBC_PORT PORTC
+#define HB_PAY_RST_OBC_DDR  DDRC
 
 // PAY resets EPS
 #define HB_PAY_RST_EPS_PIN  PD1

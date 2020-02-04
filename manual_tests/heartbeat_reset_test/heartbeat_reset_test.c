@@ -40,15 +40,15 @@ uint8_t uart_cb(const uint8_t* data, uint8_t len) {
         switch (id) {
             case HB_OBC:
                 print("Resetting EPS\n");
-                send_hb_reset(HB_EPS);
+                send_hb_reset((hb_dev_t*) &eps_hb_dev);
                 break;
             case HB_EPS:
                 print("Resetting OBC\n");
-                send_hb_reset(HB_OBC);
+                send_hb_reset((hb_dev_t*) &obc_hb_dev);
                 break;
             case HB_PAY:
                 print("Resetting OBC\n");
-                send_hb_reset(HB_OBC);
+                send_hb_reset((hb_dev_t*) &obc_hb_dev);
                 break;
             default:
                 break;
@@ -59,15 +59,15 @@ uint8_t uart_cb(const uint8_t* data, uint8_t len) {
         switch (id) {
             case HB_OBC:
                 print("Resetting PAY\n");
-                send_hb_reset(HB_PAY);
+                send_hb_reset((hb_dev_t*) &pay_hb_dev);
                 break;
             case HB_EPS:
                 print("Resetting PAY\n");
-                send_hb_reset(HB_PAY);
+                send_hb_reset((hb_dev_t*) &pay_hb_dev);
                 break;
             case HB_PAY:
                 print("Resetting EPS\n");
-                send_hb_reset(HB_EPS);
+                send_hb_reset((hb_dev_t*) &eps_hb_dev);
                 break;
             default:
                 break;

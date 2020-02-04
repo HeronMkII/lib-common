@@ -5,8 +5,6 @@ Byte 1: HB_RECEIVER
 Byte 2: HB_OPCODE (1 = ping request, 2 = ping response)
 Byte 3: Restart Reason (if HB_OPCODE = 2)(See data conversion protocol)
 Byte 4-7: Restart Count (if HB_OPCODE = 2)
-
-TODO - test with flight model PAY with proper reset hardware
 */
 
 #include <avr/eeprom.h>
