@@ -104,8 +104,7 @@ CAN Data Protocol
 #define CAN_PAY_HK_6V_CUR               0x1C
 #define CAN_PAY_HK_10V_VOL              0x1D
 #define CAN_PAY_HK_10V_CUR              0x1E
-#define CAN_PAY_HK_OPT_PWR              0x1F
-#define CAN_PAY_HK_FIELD_COUNT          0x20  // Number of fields
+#define CAN_PAY_HK_FIELD_COUNT          0x1F  // Number of fields
 
 // PAY optical
 #define CAN_PAY_OPT_OD_FIELD_COUNT  0x20  // Optical density
