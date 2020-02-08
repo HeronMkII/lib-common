@@ -128,13 +128,12 @@ CAN Data Protocol
 #define CAN_PAY_CTRL_GET_THERM_READING      0x0D
 #define CAN_PAY_CTRL_GET_THERM_ERR_CODE     0x0E
 #define CAN_PAY_CTRL_SET_THERM_ERR_CODE     0x0F
-#define CAN_PAY_CTRL_MOTOR_DEP_ROUTINE      0x10
-#define CAN_PAY_CTRL_GET_MOTOR_STATUS       0x11
-#define CAN_PAY_CTRL_GET_LSW_STATUS         0x12
-#define CAN_PAY_CTRL_MOTOR_UP               0x13
-#define CAN_PAY_CTRL_MOTOR_DOWN             0x14
-#define CAN_PAY_CTRL_SEND_OPT_SPI           0x15
-#define CAN_PAY_CTRL_FIELD_COUNT            0x16  // Number of fields
+#define CAN_PAY_CTRL_GET_MOTOR_STATUS       0x10
+#define CAN_PAY_CTRL_MOTOR_DEP_ROUTINE      0x11
+#define CAN_PAY_CTRL_MOTOR_UP               0x12
+#define CAN_PAY_CTRL_MOTOR_DOWN             0x13
+#define CAN_PAY_CTRL_SEND_OPT_SPI           0x14
+#define CAN_PAY_CTRL_FIELD_COUNT            0x15  // Number of fields
 
 
 // CAN message status bytes
