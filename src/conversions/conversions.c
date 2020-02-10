@@ -28,12 +28,11 @@ http://www.te.com/commerce/DocumentDelivery/DDEController?Action=showdoc&DocId=D
 Optical Sensor - TSL2591
 https://ams.com/documents/20143/36005/TSL2591_DS000338_6-00.pdf
 
-Thermistor:
-NTC Thermistor 10k 0402 (1005 Metric) Part # NCU15XH103F60RC
-Digikey link: https://www.digikey.ca/product-detail/en/murata-electronics-north-america/NCU15XH103F60RC/490-18149-1-ND/9686729
-Datasheet (page 13. Part # NCU__XH103):
+Thermistor - ERT-J0EG103FA:
+https://www.digikey.ca/product-detail/en/panasonic-electronic-components/ERT-J0EG103FA/P12007CT-ND/526624
+https://industrial.panasonic.com/cdbs/www-data/pdf/AUA0000/AUA0000C8.pdf
 https://www.murata.com/~/media/webrenewal/support/library/catalog/products/thermistor/r03e.ashx?la=en-us
-Datasheet (NCU15XH103F60RC): https://www.murata.com/en-us/api/pdfdownloadapi?cate=luNTCforTempeSenso&partno=NCU15XH103F60RC
+http://www.resistorguide.com/ntc-thermistor/
 
 IMU - BNO080
 https://cdn.sparkfun.com/assets/1/3/4/5/9/BNO080_Datasheet_v1.3.pdf
@@ -316,71 +315,15 @@ double opt_raw_to_light_intensity(uint32_t raw) {
 }
 
 
-// The following two arrays are lookup tables for the thermistors
-// From manufacturer datasheet (pg 13)
-// PROGMEM instructs the compiler to store these values in flash memory
-// (read-only memory where the program instructions are stored)
-
-// Resistances (in kilo-ohms)
-const float THERM_RES[THERM_LUT_COUNT] PROGMEM = {
-    195.652,    148.171,    113.347,    87.559,     68.237,
-    53.650,     42.506,     33.892,     27.219,     22.021,
-    17.926,     14.674,     12.081,     10.000,     8.315,
-    6.948,      5.834,      4.917,      4.161,      3.535,
-    3.014,      2.586,      2.228,      1.925,      1.669,
-    1.452,      1.268,      1.110,      0.974,      0.858,
-    0.758,      0.672,      0.596,      0.531
-};
-
-// Temperatures (in C)
-const float THERM_TEMP[THERM_LUT_COUNT] PROGMEM = {
-    -40,        -35,        -30,        -25,        -20,
-    -15,        -10,        -5,         0,          5,
-    10,         15,         20,         25,         30,
-    35,         40,         45,         50,         55,
-    60,         65,         70,         75,         80,
-    85,         90,         95,         100,        105,
-    110,        115,        120,        125
-};
-
 /*
 Converts the measured thermistor resistance to temperature.
 resistance - thermistor resistance (in kilo-ohms)
 Returns - temperature (in C)
 */
 double therm_res_to_temp(double resistance){
-    // If higher than the highest resistance, cap at the lowest temperature
-    if (resistance >= pgm_read_float(&THERM_RES[0])) {
-        return pgm_read_float(&THERM_TEMP[0]);
-    }
-
-    for (uint8_t i = 0; i < THERM_LUT_COUNT - 1; i++){
-        // Next value should be smaller than previous value
-        double resistance_prev = pgm_read_float(&THERM_RES[i]);
-        double resistance_next = pgm_read_float(&THERM_RES[i + 1]);
-
-        // Must compare to next instead of prev or else we will always trigger
-        // at i = 0
-        if (resistance >= resistance_next){
-            double temp_prev = pgm_read_float(&THERM_TEMP[i]);
-            double temp_next = pgm_read_float(&THERM_TEMP[i + 1]);
-            
-            double temp_diff = temp_next - temp_prev;
-            double resistance_diff = resistance_next - resistance_prev;
-            double slope = temp_diff / resistance_diff;
-
-            double diff = resistance - resistance_prev;  //should be negative
-
-#ifdef CONVERSIONS_DEBUG
-            print("i = %u, slope = %f\n", i, slope);
-#endif
-
-            return temp_prev + (diff * slope);
-        }
-    }
-
-    // If lower than the lowest resistance, cap at the highest temperature
-    return pgm_read_float(&THERM_TEMP[THERM_LUT_COUNT - 1]);
+    double denom = (log(resistance / THERM_NOM_RES) / THERM_BETA)
+        + (1.0 / THERM_NOM_TEMP);
+    return (1.0 / denom) - THERM_CELSIUS_TO_KELVIN;
 }
 
 /*
@@ -389,38 +332,9 @@ temp - temperature (in C)
 Returns - thermistor resistance (in kilo-ohms)
 */
 double therm_temp_to_res(double temp) {
-    // If lower than the lowest temperature, cap at the highest resistance
-    if (temp <= pgm_read_float(&THERM_TEMP[0])) {
-        return pgm_read_float(&THERM_RES[0]);
-    }
-
-    for (uint8_t i = 0; i < THERM_LUT_COUNT - 1; i++){
-        // Next value should be bigger than previous value
-        double temp_prev = pgm_read_float(&THERM_TEMP[i]);
-        double temp_next = pgm_read_float(&THERM_TEMP[i + 1]);
-
-        // Must compare to next instead of prev or else we will always trigger
-        // at i = 0
-        if (temp <= temp_next){
-            double resistance_prev = pgm_read_float(&THERM_RES[i]);
-            double resistance_next = pgm_read_float(&THERM_RES[i + 1]);
-            
-            double resistance_diff = resistance_next - resistance_prev;
-            double temp_diff = temp_next - temp_prev;
-            double slope = resistance_diff / temp_diff;
-
-            double diff = temp - temp_prev;  //should be positive
-
-#ifdef CONVERSIONS_DEBUG
-            print("i = %u, slope = %f\n", i, slope);
-#endif
-
-            return resistance_prev + (diff * slope);
-        }
-    }
-
-    // If higher than the highest temperature, cap at the lowest resistance
-    return pgm_read_float(&THERM_RES[THERM_LUT_COUNT - 1]);
+    double temp_diff = (1.0 / (temp + THERM_CELSIUS_TO_KELVIN))
+        - (1.0 / THERM_NOM_TEMP);
+    return THERM_NOM_RES * exp(THERM_BETA * temp_diff);
 }
 
 /*
