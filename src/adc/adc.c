@@ -155,7 +155,10 @@ void fetch_all_adc_channels(adc_t* adc) {
 
     for (uint8_t i = 0; i < ADC_CHANNELS; i++) {
         if (adc->auto_channels & _BV(i)) { //if the bits representing the channel match the auto_channels
-            adc->channel_data[i] = send_adc_frame(adc, CONTINUE_AUTO1_MODE) & 0x0fff;
+            uint16_t raw_data = send_adc_frame(adc, CONTINUE_AUTO1_MODE);
+            uint8_t channel = raw_data >> 12;
+            adc->channel_data[channel] = raw_data & 0x0fff;
+            // adc->channel_data[i] = send_adc_frame(adc, CONTINUE_AUTO1_MODE) & 0x0fff;
         }
     }
     adc->mode = AUTO1;
@@ -194,4 +197,5 @@ Fetches and reads 16-bit raw data for the specified channel in manual mode.
 uint16_t fetch_and_read_adc_channel(adc_t* adc, uint8_t channel) {
     fetch_adc_channel(adc, channel);
     return read_adc_channel(adc, channel);
+    
 }
