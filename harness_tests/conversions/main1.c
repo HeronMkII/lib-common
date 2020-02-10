@@ -37,8 +37,7 @@ void adc_raw_to_efuse_cur_test(void) {
 }
 
 void adc_raw_data_to_therm_temp_test(void) {
-    // 0x1BA -> 0.540 V -> 36.296 kohm -> -6.395 C (rounding goes to -6.411)
-    ASSERT_FP_EQ(adc_raw_to_therm_temp(0x1BA), -6.411);
+    ASSERT_FP_EQ(adc_raw_to_therm_temp(0x1BA), -5.458);
 }
 
 void dac_raw_data_to_vol_test(void) {
@@ -77,55 +76,36 @@ void opt_power_test(void) {
 }
 
 void therm_res_to_temp_test(void) {
-    double resistance = 120.0;
-    //linear approximation
-    double slope = (-30.0 - (-35.0)) / (113.347 - 148.171);
-    ASSERT_FP_LESS(slope, 0);
-    double temp = -35.0 + (resistance - 148.171) * slope;
-    // There is likely some loss of precision in how the floating point numbers
-    // are stored in memory, so assert it is within a reasonable range
-    ASSERT_FP_EQ(therm_res_to_temp(resistance), temp);
-
-    ASSERT_FP_EQ(therm_res_to_temp(200.0),      -40.0);
-    ASSERT_FP_EQ(therm_res_to_temp(195.653),    -40.0);
-    ASSERT_FP_EQ(therm_res_to_temp(195.652),    -40.0);
-    ASSERT_FP_EQ(therm_res_to_temp(195.4),      -39.973);
-    ASSERT_FP_EQ(therm_res_to_temp(148.171),    -35.0);
-    ASSERT_FP_EQ(therm_res_to_temp(148.0),      -34.975);
+    ASSERT_FP_EQ(therm_res_to_temp(200.0),      -37.319);
+    ASSERT_FP_EQ(therm_res_to_temp(195.653),    -36.957);
+    ASSERT_FP_EQ(therm_res_to_temp(195.652),    -36.957);
+    ASSERT_FP_EQ(therm_res_to_temp(195.4),      -36.936);
+    ASSERT_FP_EQ(therm_res_to_temp(148.171),    -32.278);
+    ASSERT_FP_EQ(therm_res_to_temp(148.0),      -32.258);
     ASSERT_FP_EQ(therm_res_to_temp(10.0),       +25.0);
-    ASSERT_FP_EQ(therm_res_to_temp(8.315),      +30.0);
-    ASSERT_FP_EQ(therm_res_to_temp(7.29),       +33.749);
-    ASSERT_FP_EQ(therm_res_to_temp(6.948),      +35.0);
-    ASSERT_FP_EQ(therm_res_to_temp(0.54),       +124.308);
-    ASSERT_FP_EQ(therm_res_to_temp(0.531),      +125.0);
-    ASSERT_FP_EQ(therm_res_to_temp(0.52),       +125.0);
-    ASSERT_FP_EQ(therm_res_to_temp(0.2),        +125.0);
+    ASSERT_FP_EQ(therm_res_to_temp(8.315),      +29.933);
+    ASSERT_FP_EQ(therm_res_to_temp(7.29),       +33.551);
+    ASSERT_FP_EQ(therm_res_to_temp(6.948),      +34.894);
+    ASSERT_FP_EQ(therm_res_to_temp(0.54),       +128.38);
+    ASSERT_FP_EQ(therm_res_to_temp(0.531),      +129.183);
+    ASSERT_FP_EQ(therm_res_to_temp(0.52),       +130.188);
+    ASSERT_FP_EQ(therm_res_to_temp(0.2),        +182.096);
 }
 
 void therm_temp_to_res_test(void) {
-    double resistance = 120.0;
-    //linear approximation
-    double slope = (-30.0 - (-35.0)) / (113.347 - 148.171);
-    ASSERT_FP_LESS(slope, 0);
-    double temp = -35.0 + (resistance - 148.171) * slope;
-    // There is likely some loss of precision in how the floating point numbers
-    // are stored in memory, so assert it is within a reasonable range
-    ASSERT_FP_EQ(therm_temp_to_res(temp), resistance);
-
-    ASSERT_FP_EQ(195.652,   therm_temp_to_res(-1000.0));
-    ASSERT_FP_EQ(195.652,   therm_temp_to_res(-41.0));
-    ASSERT_FP_EQ(195.652,   therm_temp_to_res(-40.0));
-    ASSERT_FP_EQ(195.396,   therm_temp_to_res(-39.973));
-    ASSERT_FP_EQ(148.171,   therm_temp_to_res(-35.0));
-    ASSERT_FP_EQ(147.997,   therm_temp_to_res(-34.975));
+    ASSERT_FP_EQ(199.998,   therm_temp_to_res(-37.319));
+    ASSERT_FP_EQ(195.653,   therm_temp_to_res(-36.957));
+    ASSERT_FP_EQ(195.404,   therm_temp_to_res(-36.936));
+    ASSERT_FP_EQ(148.17,    therm_temp_to_res(-32.278));
+    ASSERT_FP_EQ(147.997,   therm_temp_to_res(-32.258));
     ASSERT_FP_EQ(10.0,      therm_temp_to_res(+25.0));
-    ASSERT_FP_EQ(8.315,     therm_temp_to_res(+30.0));
-    ASSERT_FP_EQ(7.29,      therm_temp_to_res(+33.749));
-    ASSERT_FP_EQ(6.948,     therm_temp_to_res(+35.0));
-    ASSERT_FP_EQ(0.54,      therm_temp_to_res(+124.308));
-    ASSERT_FP_EQ(0.531,     therm_temp_to_res(+125.0));
-    ASSERT_FP_EQ(0.531,     therm_temp_to_res(+126.0));
-    ASSERT_FP_EQ(0.531,     therm_temp_to_res(+1000.0));
+    ASSERT_FP_EQ(8.315,     therm_temp_to_res(+29.933));
+    ASSERT_FP_EQ(7.29,      therm_temp_to_res(+33.551));
+    ASSERT_FP_EQ(6.948,     therm_temp_to_res(+34.894));
+    ASSERT_FP_EQ(0.54,      therm_temp_to_res(+128.38));
+    ASSERT_FP_EQ(0.531,     therm_temp_to_res(+129.183));
+    ASSERT_FP_EQ(0.52,      therm_temp_to_res(+130.188));
+    ASSERT_FP_EQ(0.197,     therm_temp_to_res(+183.096));
 }
 
 void therm_res_to_vol_test(void) {

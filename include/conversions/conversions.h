@@ -1,6 +1,7 @@
 #ifndef CONVERSIONS_H
 #define CONVERSIONS_H
 
+#include <math.h>
 #include <stdint.h>
 
 #include <avr/pgmspace.h>
@@ -25,11 +26,10 @@
 // Reference resistance (connected to ground) in kohm
 #define THERM_R_REF 10.0
 
-// Lookup tables for thermistor data conversions
-extern const float THERM_RES[];
-extern const float THERM_TEMP[];
-// Number of points in arrays
-#define THERM_LUT_COUNT 34
+#define THERM_CELSIUS_TO_KELVIN 273.15
+#define THERM_BETA              3380.0  // in Kelvin
+#define THERM_NOM_RES           10.0    // in kilo-ohms
+#define THERM_NOM_TEMP          (25.0 + THERM_CELSIUS_TO_KELVIN)    // in Kelvin
 
 // IMU Q points
 #define IMU_ACCEL_Q 8
