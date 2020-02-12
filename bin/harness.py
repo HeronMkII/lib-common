@@ -489,7 +489,7 @@ if __name__ == "__main__":
     # nargs specifies the number of arguments, with '+' inserting arguments of that type into a list
     # required is self-explanatory, metavar assigns a displayed name to each argument when using the help argument
     # See https://docs.python.org/2/howto/argparse.html for flag example
-    parser.add_argument('-p', '--prog', nargs='+', required=True,
+    parser.add_argument('-p', '--port', nargs='+', required=True,
             metavar=('port1', 'port2'),
             help='list of programming ports')
     parser.add_argument('-u', '--uart', nargs='+', required=True,
@@ -513,7 +513,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     root_path = "harness_tests"
     test_path = args.test_dir
-    port = args.prog
+    port = args.port
     uart = args.uart
     verbose = args.verbose
     binary = args.binary
