@@ -32,6 +32,10 @@ void adc_raw_data_to_eps_cur_test(void) {
     ASSERT_FP_EQ(adc_raw_to_circ_cur(raw_data, 0.01, 0.0), 1.7);
 }
 
+void adc_circ_cur_to_raw_test(void) {
+    ASSERT_EQ(adc_circ_cur_to_raw(1, 0.008, 0.0), 655);
+}
+
 void adc_raw_to_efuse_cur_test(void) {
     ASSERT_FP_EQ(adc_raw_to_efuse_cur(0x570, 511), 13.521);
 }
@@ -125,6 +129,7 @@ test_t t2 = { .name = "adc_raw_vol_to_eps_vol", .fn = adc_raw_vol_to_eps_vol_tes
 test_t t3 = { .name = "adc_eps_raw_data_to_cur", .fn = adc_raw_vol_to_eps_cur_test };
 test_t t4 = { .name = "adc_raw_data_to_eps_vol", .fn = adc_raw_data_to_eps_vol_test };
 test_t t5 = { .name = "adc_eps_raw_data_to_cur", .fn = adc_raw_data_to_eps_cur_test };
+test_t t5b = { .name = "adc_circ_cur_to_raw", .fn = adc_circ_cur_to_raw_test };
 test_t t6 = { .name = "adc_raw_to_efuse_cur", .fn = adc_raw_to_efuse_cur_test };
 test_t t7 = { .name = "adc_raw_data_to_therm_temp", .fn = adc_raw_data_to_therm_temp_test };
 test_t t8 = { .name = "dac_raw_data_to_vol", .fn = dac_raw_data_to_vol_test };
@@ -138,7 +143,7 @@ test_t t15 = { .name = "therm_temp_to_res", .fn = therm_temp_to_res_test };
 test_t t16 = { .name = "therm_res_to_vol", .fn = therm_res_to_vol_test };
 test_t t17 = { .name = "therm_vol_to_res", .fn = therm_vol_to_res_test };
 
-test_t* suite[] = { &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8, &t9, &t10, &t11, &t12, &t13, &t14, &t15, &t16, &t17 };
+test_t* suite[] = { &t1, &t2, &t3, &t4, &t5, &t5b, &t6, &t7, &t8, &t9, &t10, &t11, &t12, &t13, &t14, &t15, &t16, &t17 };
 
 int main() {
     run_tests(suite, sizeof(suite) / sizeof(suite[0]));
