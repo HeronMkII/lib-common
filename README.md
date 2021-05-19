@@ -1,22 +1,100 @@
 # lib-common
 
-Lib-common contains a common set of libraries to be used across all subsystems.
+lib-common contains common libraries to be used across all subsystems that use the ATmega64M1 microcontroller (MCU), i.e. OBC, EPS, and PAY-SSM.
 
-Lib-common currently (as of Oct. 1, 2018) provides support for:
-
-* UART
-* SPI
+lib-common provides support for:
+* ADC (Analog to Digital Converter, ADS7952)
 * CAN
+* Data conversions from their "raw" form to usable measurements
+* DAC (Digital to Analog Converter, DAC7562)
 * Heartbeat (error recovery)
-* Timers
+* PEX (Port Expander, MCP23S17)
 * Heap-free data structures
     * Queues
     * Stacks
-* ADC (Analog to Digital Converter, ADS7952)
-* DAC (Digital to Analog Converter, DAC7562)
-* PEX (Port Expander, MCP23S17)
-* Data conversions from their "raw" form to usable measurements
+* SPI
 * Test harness for assertion-based testing
+* Timers
+* UART
+* Uptime and restart information tracking
+* Utility functions
+* Watchdog timer
+
+# Repositories using lib-common
+
+Three repositories include lib-common as a Git submodule:
+- [obc](https://github.com/HeronMkII/obc)
+- [eps](https://github.com/HeronMkII/eps)
+- [pay](https://github.com/HeronMkII/pay)
+
+For most of the HERON project, we used the ATmega32M1 MCU. We later switched to the ATmega64M1 MCU, which is identical but has more flash memory and SRAM.
+
+The PAY-Optical subsystem uses the ATmega328P MCU. The [pay-optical](https://github.com/HeronMkII/pay-optical) repository does not include lib-common as a Git submodule, but rather has a version of lib-common that was copied and modified for the ATmega328P MCU.
+
+# Repository structure
+
+## lib-common
+
+This repository contains the following folders:
+- bin: Contains the test harness, a Python script used to automate unit testing and diagnostics on MCUs
+- build: For compiled libraries
+- examples: Sample programs for using individual features
+- harness_tests: Test programs using the test harness framework for automated testing
+- include: Header (.h) files for libraries
+- lib: For compiled libraries
+- manual_tests: Test programs without using the test harness framework, i.e. by manually observing behaviour and output
+- src: Source (.c) files for libraries
+
+## obc, eps, pay, pay-optical
+
+Each of these repositories contains the following folders (with some variations between repositories):
+- examples: Sample programs for using individual features
+- harness_tests: Test programs using the test harness framework for automated testing
+- lib-common: Git submodule with common libraries (not in pay-optical)
+- lib-common-ported: Copied and modified version of lib-common to support the ATmega328P MCU
+- manual_tests: Test programs without using the test harness framework, i.e. by manually observing behaviour and output
+- src: Source (.c) and header (.h) files, main program
+- test-software: Miscellaneous testing programs (not run on an MCU)
+
+# Running software
+
+## Update and compile lib-common
+
+In obc, eps, and pay, this must be done before running any software.
+
+Fetch the latest commit from the lib-common submodule and compile it:
+```
+$ make lib-common
+```
+
+## Main program
+
+This does not work in lib-common because there is no main program.
+
+Compile and upload the main program to the MCU:
+```
+$ make upload
+```
+
+## Manual test or example program
+
+Choose the appropriate program, then compile and upload the program to the MCU, for example in pay:
+```
+$ cd manual_tests/adc_test
+$ make upload
+```
+
+## Harness test(s)
+
+Choose the appropriate program, then run the test harness Python script. This will compile and upload the program to the MCU, then collect and display the test results. For example, in lib-common:
+```
+$ make harness TEST=harness_tests/adc
+```
+
+Alternatively, you can specify a folder containing multiple test subfolders to run all of them.
+```
+$ make harness TEST=harness_tests
+```
 
 # Prerequisites
 
