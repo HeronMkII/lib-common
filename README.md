@@ -51,7 +51,7 @@ Each of these repositories contains the following folders (with some variations 
 - examples: Sample programs for using individual features
 - harness_tests: Test programs using the test harness framework for automated testing
 - lib-common: Git submodule with common libraries (not in pay-optical)
-- lib-common-ported: Copied and modified version of lib-common to support the ATmega328P MCU
+- lib-common-ported: Copied and modified version of lib-common to support the ATmega328P MCU (only in pay-optical)
 - manual_tests: Test programs without using the test harness framework, i.e. by manually observing behaviour and output
 - src: Source (.c) and header (.h) files, main program
 - test-software: Miscellaneous testing programs (not run on an MCU)
